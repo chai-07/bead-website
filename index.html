@@ -3,799 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>拼豆图纸生成器 Pro</title>
-    
-    <!-- 引入 OpenCV.js -->
-    <script async src="https://docs.opencv.org/4.8.0/opencv.js" 
-            onload="onOpenCvReady()" id="opencvScript"></script>
-    
+    <title>免费拼豆图纸生成器 Pro - by 三金超人_SuperTrigen</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #1a1a2e;
-            color: #eee;
-            min-height: 100vh;
-        }
-        
-        .app-container {
-            display: flex;
-            height: 100vh;
-            gap: 0;
-        }
-        
-        /* ===== 左侧控制面板 ===== */
-        .control-panel {
-            width: 320px;
-            min-width: 320px;
-            background: #16213e;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            border-right: 2px solid #0f3460;
-        }
-        
-        .control-panel h1 {
-            font-size: 20px;
-            color: #e94560;
-            text-align: center;
-            margin-bottom: 5px;
-        }
-        
-        .control-panel .subtitle {
-            font-size: 12px;
-            color: #888;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
-        .control-group {
-            background: #1a1a2e;
-            border-radius: 10px;
-            padding: 15px;
-        }
-        
-        .control-group h3 {
-            font-size: 14px;
-            color: #e94560;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #0f3460;
-            padding-bottom: 8px;
-        }
-        
-        .setting-row {
-            margin-bottom: 14px;
-        }
-        
-        .setting-row label {
-            display: block;
-            font-size: 13px;
-            color: #aaa;
-            margin-bottom: 5px;
-        }
-        
-        .setting-row .value-display {
-            float: right;
-            color: #e94560;
-            font-weight: bold;
-        }
-        
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #0f3460;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #e94560;
-            cursor: pointer;
-        }
-        
-        select {
-            width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            background: #0f3460;
-            color: #eee;
-            border: 1px solid #1a3a6e;
-            font-size: 13px;
-        }
-        
-        .upload-btn {
-            width: 100%;
-            padding: 12px;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        
-        .upload-btn:hover {
-            background: #ff6b81;
-            transform: translateY(-1px);
-        }
-        
-        .generate-btn {
-            width: 100%;
-            padding: 14px;
-            background: #0f3460;
-            color: white;
-            border: 2px solid #e94560;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        
-        .generate-btn:hover {
-            background: #e94560;
-        }
-        
-        .download-btn {
-            width: 100%;
-            padding: 12px;
-            background: #00b894;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .download-btn:hover {
-            background: #00d2a0;
-        }
-        
-        .file-info {
-            font-size: 12px;
-            color: #888;
-            text-align: center;
-            word-break: break-all;
-        }
-        
-        /* ===== 中间原图预览 ===== */
-        .preview-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #1a1a2e;
-            padding: 30px;
-            border-right: 2px solid #0f3460;
-            min-width: 300px;
-        }
-        
-        .preview-panel h2 {
-            font-size: 16px;
-            color: #888;
-            margin-bottom: 20px;
-        }
-        
-        .preview-box {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .preview-box img {
-            max-width: 100%;
-            max-height: 70vh;
-            object-fit: contain;
-        }
-        
-        .placeholder {
-            color: #444;
-            font-size: 14px;
-            text-align: center;
-            padding: 50px;
-        }
-        
-        .placeholder .icon {
-            font-size: 60px;
-            display: block;
-            margin-bottom: 15px;
-        }
-        
-        /* ===== 右侧图纸预览 ===== */
-        .result-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #1a1a2e;
-            padding: 30px;
-            min-width: 300px;
-            overflow: auto;
-        }
-        
-        .result-panel h2 {
-            font-size: 16px;
-            color: #888;
-            margin-bottom: 20px;
-        }
-        
-        .result-box canvas {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 10px;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-        }
-        
-        /* 响应式 */
-        @media (max-width: 1000px) {
-            .app-container {
-                flex-direction: column;
-            }
-            .control-panel {
-                width: 100%;
-                min-width: auto;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 10px;
-                padding: 10px;
-            }
-            .control-group {
-                flex: 1;
-                min-width: 200px;
-            }
-            .preview-panel, .result-panel {
-                min-width: auto;
-                padding: 15px;
-            }
-        }
-        
-        /* 加载提示 */
-        .loading-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .loading-box {
-            background: #16213e;
-            padding: 30px 50px;
-            border-radius: 15px;
-            text-align: center;
-        }
-        
-        .loading-box .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #0f3460;
-            border-top: 4px solid #e94560;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2e;color:#eee;min-height:100vh}
+        .app-container{display:flex;height:100vh}
+        .control-panel{width:340px;min-width:340px;background:#16213e;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border-right:2px solid #0f3460}
+        .control-panel h1{font-size:18px;color:#e94560;text-align:center}
+        .control-panel .subtitle{font-size:11px;color:#888;text-align:center;margin-bottom:2px}
+        .control-panel .author{font-size:10px;color:#555;text-align:center;margin-bottom:6px}
+        .control-panel .author a{color:#6c5ce7;text-decoration:none}
+        .control-panel .author a:hover{color:#e94560}
+        .control-group{background:#1a1a2e;border-radius:10px;padding:12px}
+        .control-group h3{font-size:13px;color:#e94560;margin-bottom:8px;border-bottom:1px solid #0f3460;padding-bottom:6px}
+        .setting-row{margin-bottom:8px}
+        .setting-row label{display:block;font-size:12px;color:#aaa;margin-bottom:2px}
+        .setting-row .hint{font-size:10px;color:#666;display:block;margin-top:1px}
+        .value-display{float:right;color:#e94560;font-weight:bold;font-size:12px}
+        input[type="range"]{width:100%;height:5px;border-radius:3px;background:#0f3460;-webkit-appearance:none;cursor:pointer}
+        input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#e94560;cursor:pointer}
+        select,input[type="color"]{width:100%;padding:6px;border-radius:5px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:12px}
+        input[type="color"]{height:32px;cursor:pointer}
+        .btn{width:100%;padding:10px;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold}
+        .btn-upload{background:#e94560}.btn-upload:hover{background:#ff6b81}
+        .btn-generate{background:#0f3460;border:2px solid #e94560}.btn-generate:hover{background:#e94560}
+        .btn-download{background:#00b894}.btn-download:hover{background:#00d2a0}.btn-download:disabled{opacity:.4;cursor:not-allowed}
+        .btn-reset{background:#636e72;margin-bottom:4px}.btn-reset:hover{background:#7f8c8d}
+        .btn-clear{background:#e17055;margin-bottom:4px}.btn-clear:hover{background:#f19075}
+        .btn-undo{background:#6c5ce7;margin-bottom:4px}.btn-undo:hover{background:#7c6cf7}
+        .file-info{font-size:11px;color:#888;text-align:center}
+        .preview-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a2e;padding:20px;border-right:2px solid #0f3460;min-width:280px}
+        .preview-panel h2{font-size:14px;color:#888;margin-bottom:15px}
+        .preview-box{max-width:100%;max-height:65vh;border-radius:10px;overflow:hidden;background:#111;display:flex;align-items:center;justify-content:center}
+        .preview-box img{max-width:100%;max-height:65vh;object-fit:contain}
+        .result-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a2e;padding:20px;min-width:280px;overflow:auto}
+        .result-panel h2{font-size:14px;color:#888;margin-bottom:15px}
+        .result-box canvas{max-width:100%;max-height:60vh;border-radius:10px;image-rendering:pixelated;cursor:crosshair}
+        .placeholder{color:#444;font-size:13px;text-align:center;padding:40px}
+        .placeholder .icon{font-size:50px;display:block;margin-bottom:12px}
+        .tool-info{font-size:11px;color:#e94560;text-align:center;margin-top:5px;min-height:18px}
+        .color-picker-row{display:flex;gap:6px;align-items:center}
+        .color-picker-row input[type="color"]{flex:1}
+        @media(max-width:1000px){.app-container{flex-direction:column}.control-panel{width:100%;min-width:auto;flex-direction:row;flex-wrap:wrap;gap:8px;padding:8px}.control-group{flex:1;min-width:160px}}
+        .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000}
+        .loading-box{background:#16213e;padding:30px 50px;border-radius:15px;text-align:center}
+        .loading-box .spinner{width:40px;height:40px;border:4px solid #0f3460;border-top:4px solid #e94560;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px}
+        @keyframes spin{to{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
-    <div class="app-container">
-        
-        <!-- ===== 左侧：控制面板 ===== -->
-        <div class="control-panel">
-            <h1>🎨 拼豆生成器 Pro</h1>
-            <p class="subtitle">图片 → 轮廓检测 → 颜色量化 → 方格图纸</p>
-            
-            <!-- 上传区域 -->
-            <div class="control-group">
-                <h3>📁 上传图片</h3>
-                <input type="file" id="fileInput" accept="image/*" style="display:none;">
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    选择图片上传
-                </button>
-                <p class="file-info" id="fileInfo">未选择文件</p>
-            </div>
-            
-            <!-- 画布尺寸 -->
-            <div class="control-group">
-                <h3>📐 画布尺寸</h3>
-                <div class="setting-row">
-                    <label>拼豆网格</label>
-                    <select id="canvasSize">
-                        <option value="29">29×29 小底板</option>
-                        <option value="40" selected>40×40 中底板</option>
-                        <option value="50">50×50 标准底板</option>
-                        <option value="80">80×80 大底板</option>
-                        <option value="100">100×100 超大底板</option>
-                    </select>
-                </div>
-            </div>
-            
-            <!-- 轮廓设置 -->
-            <div class="control-group">
-                <h3>✏️ 轮廓设置</h3>
-                <div class="setting-row">
-                    <label>
-                        轮廓粗细
-                        <span class="value-display" id="contourValue">2</span>px
-                    </label>
-                    <input type="range" id="contourThickness" min="0" max="4" value="2" step="1">
-                </div>
-            </div>
-            
-            <!-- 颜色量化 -->
-            <div class="control-group">
-                <h3>🎨 颜色量化</h3>
-                <div class="setting-row">
-                    <label>
-                        最大颜色数
-                        <span class="value-display" id="colorCountValue">24</span>
-                    </label>
-                    <input type="range" id="maxColors" min="8" max="48" value="24" step="2">
-                </div>
-            </div>
-            
-            <!-- 网格设置 -->
-            <div class="control-group">
-                <h3>🔲 网格设置</h3>
-                <div class="setting-row">
-                    <label>显示网格线</label>
-                    <select id="showGrid">
-                        <option value="yes" selected>是</option>
-                        <option value="no">否</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <label>网格线颜色</label>
-                    <input type="color" id="gridColor" value="#dddddd" style="width:100%; height:35px; border:none; cursor:pointer;">
-                </div>
-            </div>
-            
-            <!-- 生成按钮 -->
-            <button class="generate-btn" id="generateBtn" disabled>
-                🎨 生成拼豆图纸
-            </button>
-            
-            <!-- 下载按钮 -->
-            <button class="download-btn" id="downloadBtn" disabled onclick="downloadResult()">
-                💾 下载图纸 PNG
-            </button>
-        </div>
-        
-        <!-- ===== 中间：原图预览 ===== -->
-        <div class="preview-panel" id="previewPanel">
-            <h2>📷 原图预览</h2>
-            <div class="preview-box" id="previewBox">
-                <div class="placeholder" id="placeholder">
-                    <span class="icon">🖼️</span>
-                    请上传图片
-                </div>
-                <img id="originalImage" style="display:none;" alt="原图">
-            </div>
-        </div>
-        
-        <!-- ===== 右侧：图纸结果 ===== -->
-        <div class="result-panel" id="resultPanel">
-            <h2>🧩 拼豆图纸</h2>
-            <div class="result-box">
-                <canvas id="resultCanvas"></canvas>
-                <div class="placeholder" id="resultPlaceholder">
-                    <span class="icon">🔮</span>
-                    生成后显示图纸
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- OpenCV 加载提示 -->
-    <div class="loading-overlay" id="loadingOverlay" style="display:none;">
-        <div class="loading-box">
-            <div class="spinner"></div>
-            <p id="loadingText">处理中...</p>
-        </div>
-    </div>
+<div class="app-container">
+<div class="control-panel">
+<h1>🎨 免费拼豆图纸生成器 Pro </h1>
+<p class="author" style="font-size:18px; margin-top:12px;">by <a href="https://github.com/chai-07" target="_blank">三金超人_SuperTrigen</a></p>
+<div class="control-group"><h3>📁 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
+<div class="control-group"><h3>📐 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option></select><span class="hint">生成的拼豆图纸尺寸</span></div></div>
+<div class="control-group"><h3>🔧 图像增强（量化前执行）</h3>
+<div class="setting-row"><label>黑色阈值 <span class="value-display" id="blackValue">0</span></label><input type="range" id="blackThreshold" min="0" max="40" value="0" step="1"><span class="hint">压暗部去灰雾，让画面更通透</span></div>
+<div class="setting-row"><label>伽马校正 <span class="value-display" id="gammaValue">1.00</span></label><input type="range" id="gamma" min="50" max="200" value="100" step="5"><span class="hint">校正整体亮度曲线，解决发灰问题</span></div>
+<div class="setting-row"><label>饱和度 <span class="value-display" id="satValue">100</span>%</label><input type="range" id="saturation" min="60" max="160" value="100" step="1"><span class="hint">增强色彩鲜艳度，保留色相信息</span></div>
+<div class="setting-row"><label>对比度 <span class="value-display" id="contrastValue">100</span>%</label><input type="range" id="contrast" min="90" max="130" value="100" step="1"><span class="hint">拉开明暗层次，让轮廓更清晰</span></div>
+<div class="setting-row"><label>亮度 <span class="value-display" id="brightValue">0</span></label><input type="range" id="brightness" min="-40" max="40" value="0" step="1"><span class="hint">整体提亮或压暗画面</span></div>
+<div class="setting-row"><label>锐化 <span class="value-display" id="sharpValue">0</span></label><input type="range" id="sharpen" min="0" max="20" value="0" step="1"><span class="hint">增强边缘清晰度，保留像素感</span></div>
+<div class="setting-row"><label>降噪 <span class="value-display" id="denoiseValue">0</span></label><input type="range" id="denoise" min="0" max="10" value="0" step="1"><span class="hint">减少杂色碎点，让色块更干净</span></div>
+<button class="btn btn-reset" onclick="resetParams()">↺ 重置所有参数</button></div>
+<div class="control-group"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">24</span></label><input type="range" id="maxColors" min="4" max="48" value="24" step="1"><span class="hint">控制图纸使用的拼豆颜色数量</span></div></div>
+<div class="control-group"><h3>🧹 清理</h3><button class="btn btn-clear" onclick="removeSingles()">🧹 清除1×1孤立点</button><span class="hint" style="display:block;text-align:center;margin-top:4px;">仅删除完全孤立的单点，不伤结构</span></div>
+<div class="control-group"><h3>🔲 网格</h3><div class="setting-row"><label>显示网格线</label><select id="showGrid"><option value="yes" selected>是</option><option value="no">否</option></select></div><div class="setting-row"><label>网格线颜色</label><input type="color" id="gridColor" value="#cccccc"></div></div>
+<div class="control-group"><h3>🖌️ 手动修图</h3><div class="color-picker-row"><span>画笔色</span><input type="color" id="brushColor" value="#ff0000"><span>大小 <span id="brushSizeValue">1</span></span><input type="range" id="brushSize" min="1" max="5" value="1" step="1" style="width:60px"></div><button class="btn btn-undo" onclick="undoBrush()">↩ 撤回上一步</button><p class="tool-info" id="toolInfo">点击图纸格子修改颜色</p></div>
+<button class="btn btn-generate" id="generateBtn">🎨 生成图纸</button>
+<button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载 PNG</button>
+</div>
+<div class="preview-panel"><h2>📷 原图</h2><div class="preview-box"><div class="placeholder" id="placeholder"><span class="icon">🖼️</span>请上传图片</div><img id="originalImage" style="display:none" alt="原图"></div></div>
+<div class="result-panel"><h2>🧩 图纸</h2><div class="result-box"><canvas id="resultCanvas"></canvas><div class="placeholder" id="resultPlaceholder"><span class="icon">🔮</span>生成后显示</div></div><p class="tool-info" id="pixelInfo"></p></div>
+</div>
+<div class="loading-overlay" id="loadingOverlay" style="display:none"><div class="loading-box"><div class="spinner"></div><p id="loadingText">处理中...</p></div></div>
 
-    <script>
-    // ===== 全局变量 =====
-    let originalImage = null;
-    let opencvReady = false;
-    let processingImage = null; // 存储待处理的图片
-    
-    // OpenCV 加载完成的回调
-    function onOpenCvReady() {
-        console.log('✅ OpenCV.js 加载完成');
-        opencvReady = true;
-        document.getElementById('generateBtn').disabled = false;
-        
-        // 如果有待处理的图片，自动处理
-        if (processingImage) {
-            processImage(processingImage);
-            processingImage = null;
-        }
-    }
-    
-    // ===== DOM 元素 =====
-    const fileInput = document.getElementById('fileInput');
-    const fileInfo = document.getElementById('fileInfo');
-    const generateBtn = document.getElementById('generateBtn');
-    const downloadBtn = document.getElementById('downloadBtn');
-    
-    // ===== 滑块实时显示数值 =====
-    document.getElementById('contourThickness').addEventListener('input', function() {
-        document.getElementById('contourValue').textContent = this.value;
+<script>
+var originalImage = null;
+var gridW = 0, gridH = 0, gridData = null, displayScale = 20;
+var undoStack = []; // 撤回栈
+
+function bind(id, disp, fmt) {
+    document.getElementById(id).addEventListener('input', function() {
+        document.getElementById(disp).textContent = fmt ? fmt(this.value) : this.value;
     });
-    
-    document.getElementById('maxColors').addEventListener('input', function() {
-        document.getElementById('colorCountValue').textContent = this.value;
-    });
-    
-    // ===== 上传图片 =====
-    fileInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        if (!file.type.startsWith('image/')) {
-            alert('请上传图片文件！');
-            return;
+}
+bind('blackThreshold','blackValue'); bind('gamma','gammaValue',v=>(v/100).toFixed(2));
+bind('saturation','satValue',v=>v+'%'); bind('contrast','contrastValue',v=>v+'%');
+bind('brightness','brightValue'); bind('sharpen','sharpValue');
+bind('maxColors','colorCountValue'); bind('denoise','denoiseValue');
+document.getElementById('brushSize').addEventListener('input',function(){document.getElementById('brushSizeValue').textContent=this.value});
+
+// 重置参数
+function resetParams(){
+    setSlider('blackThreshold',0,'blackValue');
+    setSlider('gamma',100,'gammaValue',v=>(v/100).toFixed(2));
+    setSlider('saturation',100,'satValue',v=>v+'%');
+    setSlider('contrast',100,'contrastValue',v=>v+'%');
+    setSlider('brightness',0,'brightValue');
+    setSlider('sharpen',0,'sharpValue');
+    setSlider('denoise',0,'denoiseValue');
+    setSlider('maxColors',24,'colorCountValue');
+    document.getElementById('pixelInfo').textContent = '参数已重置';
+}
+function setSlider(id,val,disp,fmt){document.getElementById(id).value=val;document.getElementById(disp).textContent=fmt?fmt(val):val}
+function clampR(v,min,max){return Math.max(min,Math.min(max,v))}
+
+document.getElementById('fileInput').addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    if(!f.type.startsWith('image/')){alert('请上传图片');return}
+    document.getElementById('fileInfo').textContent='📄 '+f.name;
+    var r=new FileReader();
+    r.onload=function(ev){
+        var img=new Image();
+        img.onload=function(){originalImage=img;document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';document.getElementById('placeholder').style.display='none'};
+        img.src=ev.target.result;
+    };
+    r.readAsDataURL(f);
+});
+
+document.getElementById('generateBtn').addEventListener('click',function(){
+    if(!originalImage){alert('请先上传图片');return}
+    processImage();
+});
+
+// ==================== 正确流水线：增强 → 最近邻缩放 → 量化 ====================
+function processImage(){
+    showLoading('处理中...');
+    setTimeout(function(){
+        try{
+            var cs = parseInt(document.getElementById('canvasSize').value);
+            var bt = parseInt(document.getElementById('blackThreshold').value);
+            var gm = parseInt(document.getElementById('gamma').value)/100;
+            var sat = parseInt(document.getElementById('saturation').value)/100;
+            var con = parseInt(document.getElementById('contrast').value);
+            var bri = parseInt(document.getElementById('brightness').value);
+            var shp = parseInt(document.getElementById('sharpen').value);
+            var den = parseInt(document.getElementById('denoise').value);
+            var mc = parseInt(document.getElementById('maxColors').value);
+            var sg = document.getElementById('showGrid').value==='yes';
+            var gc = document.getElementById('gridColor').value;
+
+            var enhanced = applyEnhanceOnOriginal(originalImage, bt, gm, sat, con, bri, shp, den);
+            var scaled = nearestNeighborScale(enhanced, cs);
+            var quantized = medianCutQuantize(scaled, mc);
+            gridW = cs; gridH = cs;
+            gridData = getGridData(quantized, cs);
+            undoStack = []; // 清空撤回栈
+
+            var fin = drawGridFromData(cs, sg, gc);
+            displayResult(fin);
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('toolInfo').textContent = '✅ 正确流水线：增强→缩放→量化';
+            hideLoading();
+        }catch(e){
+            console.error(e); hideLoading();
+            alert('处理失败: '+e.message);
         }
-        
-        fileInfo.textContent = '📄 ' + file.name;
-        
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            const img = new Image();
-            img.onload = function() {
-                originalImage = img;
-                
-                // 显示原图
-                const previewImg = document.getElementById('originalImage');
-                previewImg.src = ev.target.result;
-                previewImg.style.display = 'block';
-                document.getElementById('placeholder').style.display = 'none';
-                
-                // 启用生成按钮（如果OpenCV已就绪）
-                if (opencvReady) {
-                    generateBtn.disabled = false;
-                }
-            };
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-    
-    // ===== 生成按钮 =====
-    generateBtn.addEventListener('click', function() {
-        if (!originalImage) {
-            alert('请先上传图片！');
-            return;
-        }
-        
-        if (!opencvReady) {
-            alert('OpenCV.js 还在加载中，请稍候...');
-            return;
-        }
-        
-        processImage(originalImage);
-    });
-    
-    // ===== 核心处理流程 =====
-    function processImage(img) {
-        showLoading('正在处理图片...');
-        
-        // 使用 setTimeout 让 loading 显示出来
-        setTimeout(() => {
-            try {
-                // 读取参数
-                const canvasSize = parseInt(document.getElementById('canvasSize').value);
-                const contourThickness = parseInt(document.getElementById('contourThickness').value);
-                const maxColors = parseInt(document.getElementById('maxColors').value);
-                const showGrid = document.getElementById('showGrid').value === 'yes';
-                const gridColor = document.getElementById('gridColor').value;
-                
-                // ===== 步骤1：预处理 - 画到canvas获取RGBA =====
-                updateLoading('步骤1/5：预处理图片...');
-                const preprocessed = preprocessImage(img, canvasSize);
-                
-                // ===== 步骤2：轮廓检测 =====
-                updateLoading('步骤2/5：检测轮廓...');
-                const withContours = detectContours(preprocessed, contourThickness);
-                
-                // ===== 步骤3：颜色量化 =====
-                updateLoading('步骤3/5：颜色量化...');
-                const quantized = quantizeColors(withContours, maxColors);
-                
-                // ===== 步骤4：缩放到目标尺寸 =====
-                updateLoading('步骤4/5：缩放到网格...');
-                const resized = resizeToGrid(quantized, canvasSize);
-                
-                // ===== 步骤5：叠加网格 =====
-                updateLoading('步骤5/5：绘制网格图纸...');
-                const finalResult = drawGrid(resized, canvasSize, showGrid, gridColor);
-                
-                // 显示结果
-                displayResult(finalResult, canvasSize);
-                
-                // 启用下载
-                downloadBtn.disabled = false;
-                
-                hideLoading();
-                
-            } catch (error) {
-                console.error('处理失败:', error);
-                hideLoading();
-                alert('处理失败: ' + error.message);
-            }
-        }, 100);
+    }, 100);
+}
+
+function applyEnhanceOnOriginal(img, bt, gm, sat, con, bri, shp, den){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');
+    c.width=img.width;c.height=img.height;
+    ctx.drawImage(img,0,0);
+    if(den>0){c=denoise(c,den);ctx=c.getContext('2d')}
+    var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
+    for(var i=0;i<p.length;i+=4){
+        var r=p[i]/255,g=p[i+1]/255,b=p[i+2]/255;
+        if(p[i+3]<128)continue;
+        if(bt>0){var t=bt/100;r=blackLift(r,t);g=blackLift(g,t);b=blackLift(b,t)}
+        if(gm!==1){r=Math.pow(r,1/gm);g=Math.pow(g,1/gm);b=Math.pow(b,1/gm)}
+        if(sat!==1){var gy=0.299*r+0.587*g+0.114*b;r=c01(gy+sat*(r-gy));g=c01(gy+sat*(g-gy));b=c01(gy+sat*(b-gy))}
+        if(con!==100){var f=(259*(con+255))/(255*(259-con));r=c01(f*(r-0.5)+0.5);g=c01(f*(g-0.5)+0.5);b=c01(f*(b-0.5)+0.5)}
+        if(bri!==0){var bv=bri/100;r=c01(r+bv);g=c01(g+bv);b=c01(b+bv)}
+        p[i]=Math.round(c01(r)*255);p[i+1]=Math.round(c01(g)*255);p[i+2]=Math.round(c01(b)*255);
     }
-    
-    // ===== 步骤1：预处理 =====
-    function preprocessImage(img, targetSize) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // 保持比例缩放到接近目标尺寸
-        const ratio = img.width / img.height;
-        let w, h;
-        if (ratio > 1) {
-            w = Math.min(img.width, targetSize * 4);
-            h = Math.round(w / ratio);
-        } else {
-            h = Math.min(img.height, targetSize * 4);
-            w = Math.round(h * ratio);
-        }
-        
-        canvas.width = w;
-        canvas.height = h;
-        
-        // 白色背景
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, w, h);
-        
-        // 绘制图片
-        ctx.drawImage(img, 0, 0, w, h);
-        
-        return canvas;
+    ctx.putImageData(id,0,0);
+    if(shp>0)c=sharpen(c,shp);
+    return c;
+}
+function blackLift(v,t){return v<t?v*v/t:(v-t)/(1-t)}
+function c01(v){return Math.max(0,Math.min(1,v))}
+
+function nearestNeighborScale(sourceCanvas, targetSize){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');
+    c.width=targetSize;c.height=targetSize;
+    ctx.imageSmoothingEnabled=false;
+    var size=Math.min(sourceCanvas.width,sourceCanvas.height);
+    var sx=Math.floor((sourceCanvas.width-size)/2),sy=Math.floor((sourceCanvas.height-size)/2);
+    ctx.drawImage(sourceCanvas,sx,sy,size,size,0,0,targetSize,targetSize);
+    return c;
+}
+
+function denoise(sc,str){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,c.width,c.height),w=c.width,h=c.height,src=id.data,dst=new Uint8ClampedArray(src),r=Math.min(str,2);
+    for(var y=r;y<h-r;y++)for(var x=r;x<w-r;x++)for(var ch=0;ch<3;ch++){
+        var vals=[];for(var dy=-r;dy<=r;dy++)for(var dx=-r;dx<=r;dx++)vals.push(src[((y+dy)*w+(x+dx))*4+ch]);
+        vals.sort(function(a,b){return a-b});dst[(y*w+x)*4+ch]=vals[Math.floor(vals.length/2)];
     }
-    
-    // ===== 步骤2：轮廓检测 (OpenCV.js)【优化降噪版】 =====
-    function detectContours(sourceCanvas, thickness) {
-        if (thickness === 0) return sourceCanvas;
-
-        const src = cv.imread(sourceCanvas);
-        const dst = src.clone();
-
-        const gray = new cv.Mat();
-        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-
-        // ==========【新增降噪：高斯模糊，消除低清图噪点】==========
-        const blurGray = new cv.Mat();
-        cv.GaussianBlur(gray, blurGray, new cv.Size(3,3), 0);
-
-        // Canny阈值微调，门槛更高，忽略微弱噪点边缘
-        const edges = new cv.Mat();
-        cv.Canny(blurGray, edges, 70, 180);
-
-        if (thickness > 1) {
-            const kernel = cv.Mat.ones(thickness, thickness, cv.CV_8U);
-            cv.dilate(edges, edges, kernel);
-            kernel.delete();
-        }
-
-        const contours = new cv.MatVector();
-        const hierarchy = new cv.Mat();
-        cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-
-        // ==========【过滤极小碎轮廓！去掉噪点生成的细碎黑线】==========
-        const blackColor = new cv.Scalar(0, 0, 0, 255);
-        const minContourArea = 8; // 面积小于8像素的轮廓直接丢弃
-        for(let i = 0; i < contours.size(); i++){
-            const cnt = contours.get(i);
-            const area = cv.contourArea(cnt);
-            if(area > minContourArea){
-                cv.drawContours(dst, contours, i, blackColor, thickness);
-            }
-        }
-
-        const resultCanvas = document.createElement('canvas');
-        cv.imshow(resultCanvas, dst);
-
-        // 内存释放
-        src.delete();
-        dst.delete();
-        gray.delete();
-        blurGray.delete();
-        edges.delete();
-        contours.delete();
-        hierarchy.delete();
-
-        return resultCanvas;
+    for(var i=0;i<src.length;i++)src[i]=dst[i];ctx.putImageData(id,0,0);return c;
+}
+function sharpen(sc,str){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,c.width,c.height),w=c.width,h=c.height,src=id.data,dst=new Uint8ClampedArray(src),f=str/10,k=[0,-f,0,-f,1+4*f,-f,0,-f,0];
+    for(var y=1;y<h-1;y++)for(var x=1;x<w-1;x++)for(var ch=0;ch<3;ch++){
+        var idx=(y*w+x)*4+ch,sum=0;for(var ky=-1;ky<=1;ky++)for(var kx=-1;kx<=1;kx++)sum+=k[(ky+1)*3+(kx+1)]*src[((y+ky)*w+(x+kx))*4+ch];
+        dst[idx]=Math.max(0,Math.min(255,Math.round(sum)));
     }
-    
-    // ===== 步骤3：颜色量化【优化低清图抗抖动版本】 =====
-    function quantizeColors(sourceCanvas, maxColors) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = sourceCanvas.width;
-        canvas.height = sourceCanvas.height;
-        ctx.drawImage(sourceCanvas, 0, 0);
+    for(var i=0;i<src.length;i++)src[i]=dst[i];ctx.putImageData(id,0,0);return c;
+}
 
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const pixels = imageData.data;
+function medianCutQuantize(sc, maxColors){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');
+    c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
+    var pixels=[];
+    for(var i=0;i<p.length;i+=4){if(p[i+3]>=128)pixels.push([p[i],p[i+1],p[i+2]])}
+    if(pixels.length===0)return c;
+    var boxes=[{pixels:pixels,rng:[0,255,0,255,0,255]}];
+    while(boxes.length<maxColors){
+        var bestIdx=0,bestCount=0;
+        for(var i=0;i<boxes.length;i++){if(boxes[i].pixels.length>bestCount){bestCount=boxes[i].pixels.length;bestIdx=i}}
+        var box=boxes[bestIdx];if(box.pixels.length<2)break;
+        var rng=box.rng,dr=rng[1]-rng[0],dg=rng[3]-rng[2],db=rng[5]-rng[4];
+        var ch=dr>=dg&&dr>=db?0:(dg>=db?1:2);
+        box.pixels.sort(function(a,b){return a[ch]-b[ch]});
+        var mid=Math.floor(box.pixels.length/2);
+        var p1=box.pixels.slice(0,mid),p2=box.pixels.slice(mid);
+        boxes.splice(bestIdx,1,{pixels:p1,rng:getRange(p1)},{pixels:p2,rng:getRange(p2)});
+    }
+    var palette=[];
+    for(var i=0;i<boxes.length;i++){
+        var sum=[0,0,0],px=boxes[i].pixels;
+        for(var j=0;j<px.length;j++){sum[0]+=px[j][0];sum[1]+=px[j][1];sum[2]+=px[j][2]}
+        palette.push([Math.round(sum[0]/px.length),Math.round(sum[1]/px.length),Math.round(sum[2]/px.length)]);
+    }
+    for(var i=0;i<p.length;i+=4){
+        if(p[i+3]<128)continue;
+        var best=0,bd=Infinity;
+        for(var j=0;j<palette.length;j++){var d=weightedLabDist([p[i],p[i+1],p[i+2]],palette[j]);if(d<bd){bd=d;best=j}}
+        p[i]=palette[best][0];p[i+1]=palette[best][1];p[i+2]=palette[best][2];
+    }
+    ctx.putImageData(id,0,0);return c;
+}
+function getRange(px){
+    var rmn=255,rmx=0,gmn=255,gmx=0,bmn=255,bmx=0;
+    for(var i=0;i<px.length;i++){var r=px[i][0],g=px[i][1],b=px[i][2];if(r<rmn)rmn=r;if(r>rmx)rmx=r;if(g<gmn)gmn=g;if(g>gmx)gmx=g;if(b<bmn)bmn=b;if(b>bmx)bmx=b}
+    return[rmn,rmx,gmn,gmx,bmn,bmx];
+}
+function rgb2lab(rgb){
+    var r=rgb[0]/255,g=rgb[1]/255,b=rgb[2]/255;
+    r=r>0.04045?Math.pow((r+0.055)/1.055,2.4):r/12.92;g=g>0.04045?Math.pow((g+0.055)/1.055,2.4):g/12.92;b=b>0.04045?Math.pow((b+0.055)/1.055,2.4):b/12.92;
+    var x=(r*0.4124+g*0.3576+b*0.1805)/0.95047,y=(r*0.2126+g*0.7152+b*0.0722)/1.0,z=(r*0.0193+g*0.1192+b*0.9505)/1.08883;
+    var fx=x>0.008856?Math.cbrt(x):(903.3*x+16)/116,fy=y>0.008856?Math.cbrt(y):(903.3*y+16)/116,fz=z>0.008856?Math.cbrt(z):(903.3*z+16)/116;
+    return[116*fy-16,500*(fx-fy),200*(fy-fz)];
+}
+function weightedLabDist(rgb1,rgb2){
+    var l1=rgb2lab(rgb1),l2=rgb2lab(rgb2);
+    var dl=l1[0]-l2[0],da=l1[1]-l2[1],db=l1[2]-l2[2];
+    return Math.sqrt(dl*dl + 2.2*da*da + 2.2*db*db);
+}
 
-        const colorMap = {};
-        const colorList = [];
+function getGridData(sc,gs){
+    var ctx=sc.getContext('2d');var id=ctx.getImageData(0,0,gs,gs),p=id.data;
+    var data=[];
+    for(var y=0;y<gs;y++){data[y]=[];for(var x=0;x<gs;x++){var idx=(y*gs+x)*4;data[y][x]=[p[idx],p[idx+1],p[idx+2],p[idx+3]]}}
+    return data;
+}
 
-        for (let i = 0; i < pixels.length; i += 4) {
-            const r = pixels[i];
-            const g = pixels[i + 1];
-            const b = pixels[i + 2];
-            const a = pixels[i + 3];
-            if (a < 128) continue;
-            // 更大步长预合并颜色，减少候选数量
-            const qr = Math.round(r / 20) * 20;
-            const qg = Math.round(g / 20) * 20;
-            const qb = Math.round(b / 20) * 20;
-            const key = qr + ',' + qg + ',' + qb;
-            if (!colorMap[key]) {
-                colorMap[key] = { r: qr, g: qg, b: qb, count: 0 };
-                colorList.push(colorMap[key]);
-            }
-            colorMap[key].count++;
-        }
-
-        colorList.sort((a, b) => b.count - a.count);
-        const topColors = colorList.slice(0, maxColors);
-
-        // 人眼加权色彩距离，比单纯平方距离更自然
-        for (let i = 0; i < pixels.length; i += 4) {
-            const r = pixels[i];
-            const g = pixels[i + 1];
-            const b = pixels[i + 2];
-            const a = pixels[i + 3];
-            if (a < 128) continue;
-
-            let minDist = Infinity;
-            let bestColor = topColors[0];
-            for (const color of topColors) {
-                // 人眼权重：绿色敏感度最高
-                const dist =
-                    2.0 * (r - color.r) ** 2 +
-                    4.0 * (g - color.g) ** 2 +
-                    3.0 * (b - color.b) ** 2;
-                if (dist < minDist) {
-                    minDist = dist;
-                    bestColor = color;
+function removeSingles(){
+    if(!gridData)return;
+    saveUndo();
+    var w=gridData[0].length,h=gridData.length,changed=0;
+    for(var y=0;y<h;y++){
+        for(var x=0;x<w;x++){
+            var color=gridData[y][x];
+            var sameNeighbors=0,diffColor=null;
+            for(var dy=-1;dy<=1;dy++){
+                for(var dx=-1;dx<=1;dx++){
+                    if(dx===0&&dy===0)continue;
+                    var nx=x+dx,ny=y+dy;if(nx<0||nx>=w||ny<0||ny>=h)continue;
+                    var nc=gridData[ny][nx];
+                    if(nc[0]===color[0]&&nc[1]===color[1]&&nc[2]===color[2])sameNeighbors++;
+                    else diffColor=nc;
                 }
             }
-            pixels[i] = bestColor.r;
-            pixels[i + 1] = bestColor.g;
-            pixels[i + 2] = bestColor.b;
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-        return canvas;
-    }
-    
-    // ===== 步骤4：缩放到网格尺寸 =====
-    function resizeToGrid(sourceCanvas, gridSize) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        canvas.width = gridSize;
-        canvas.height = gridSize;
-        
-        // 关闭平滑，获得像素化效果
-        ctx.imageSmoothingEnabled = false;
-        
-        // 居中裁剪为正方形
-        const size = Math.min(sourceCanvas.width, sourceCanvas.height);
-        const sx = Math.floor((sourceCanvas.width - size) / 2);
-        const sy = Math.floor((sourceCanvas.height - size) / 2);
-        
-        ctx.drawImage(sourceCanvas, sx, sy, size, size, 0, 0, gridSize, gridSize);
-        
-        return canvas;
-    }
-    
-    // ===== 步骤5：叠加网格 =====
-    function drawGrid(sourceCanvas, gridSize, showGrid, gridColor) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        const cellSize = 20; // 每个格子的显示像素
-        canvas.width = gridSize * cellSize;
-        canvas.height = gridSize * cellSize;
-        
-        // 绘制像素化内容
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(sourceCanvas, 0, 0, gridSize, gridSize, 0, 0, canvas.width, canvas.height);
-        
-        // 叠加网格线
-        if (showGrid) {
-            ctx.strokeStyle = gridColor;
-            ctx.lineWidth = 0.5;
-            
-            for (let i = 0; i <= gridSize; i++) {
-                const pos = i * cellSize;
-                ctx.beginPath();
-                ctx.moveTo(pos, 0);
-                ctx.lineTo(pos, canvas.height);
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.moveTo(0, pos);
-                ctx.lineTo(canvas.width, pos);
-                ctx.stroke();
+            if(sameNeighbors===0&&diffColor){
+                gridData[y][x]=[diffColor[0],diffColor[1],diffColor[2],255];
+                changed++;
             }
         }
-        
-        return canvas;
     }
-    
-    // ===== 显示结果 =====
-    function displayResult(resultCanvas, gridSize) {
-        const resultCanvasEl = document.getElementById('resultCanvas');
-        resultCanvasEl.width = resultCanvas.width;
-        resultCanvasEl.height = resultCanvas.height;
-        
-        const ctx = resultCanvasEl.getContext('2d');
-        ctx.drawImage(resultCanvas, 0, 0);
-        
-        document.getElementById('resultPlaceholder').style.display = 'none';
-        
-        // 存储当前结果用于下载
-        resultCanvasEl._resultData = resultCanvas;
+    if(changed>0)rerender();
+    document.getElementById('pixelInfo').textContent='清除了 '+changed+' 个孤立点';
+}
+
+// 保存状态用于撤回
+function saveUndo(){
+    if(!gridData)return;
+    var copy=[];
+    for(var y=0;y<gridData.length;y++){copy[y]=[];for(var x=0;x<gridData[y].length;x++){copy[y][x]=gridData[y][x].slice()}}
+    undoStack.push(copy);
+    if(undoStack.length>20)undoStack.shift();
+}
+
+function undoBrush(){
+    if(undoStack.length===0){document.getElementById('pixelInfo').textContent='没有可撤回的操作';return}
+    gridData=undoStack.pop();
+    rerender();
+    document.getElementById('pixelInfo').textContent='已撤回 ('+undoStack.length+' 步历史)';
+}
+
+function drawGridFromData(gs,sg,gc){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d'),cs=20;c.width=gs*cs;c.height=gs*cs;ctx.imageSmoothingEnabled=false;
+    for(var y=0;y<gs;y++)for(var x=0;x<gs;x++){
+        var clr=gridData[y][x];ctx.fillStyle='rgb('+clr[0]+','+clr[1]+','+clr[2]+')';ctx.fillRect(x*cs,y*cs,cs,cs);
+        if(sg){ctx.strokeStyle=gc;ctx.lineWidth=0.5;ctx.strokeRect(x*cs,y*cs,cs,cs)}
     }
-    
-    // ===== 下载 =====
-    function downloadResult() {
-        const resultCanvasEl = document.getElementById('resultCanvas');
-        const link = document.createElement('a');
-        link.download = '拼豆图纸_' + new Date().toISOString().slice(0,10) + '.png';
-        link.href = resultCanvasEl.toDataURL('image/png');
-        link.click();
-    }
-    
-    // ===== 加载提示 =====
-    function showLoading(text) {
-        document.getElementById('loadingOverlay').style.display = 'flex';
-        document.getElementById('loadingText').textContent = text;
-    }
-    
-    function updateLoading(text) {
-        document.getElementById('loadingText').textContent = text;
-    }
-    
-    function hideLoading() {
-        document.getElementById('loadingOverlay').style.display = 'none';
-    }
-    
-    console.log('✅ 拼豆生成器 Pro 已就绪');
-    console.log('⏳ 等待 OpenCV.js 加载...');
-    </script>
+    return c;
+}
+function rerender(){var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;var fin=drawGridFromData(gridW,sg,gc);displayResult(fin)}
+function displayResult(rc){var el=document.getElementById('resultCanvas');el.width=rc.width;el.height=rc.height;el.getContext('2d').drawImage(rc,0,0);document.getElementById('resultPlaceholder').style.display='none';displayScale=20}
+function downloadResult(){var link=document.createElement('a');link.download='bead_'+new Date().toISOString().slice(0,10)+'.png';link.href=document.getElementById('resultCanvas').toDataURL('image/png');link.click()}
+
+// 手动修图（带撤回）
+document.getElementById('resultCanvas').addEventListener('click',function(e){
+    if(!gridData)return;
+    saveUndo();
+    var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
+    var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    var gx=Math.floor(mx*sx/displayScale),gy=Math.floor(my*sx/displayScale);
+    if(gx<0||gx>=gridW||gy<0||gy>=gridH)return;
+    var bc=document.getElementById('brushColor').value;
+    var br=parseInt(bc.slice(1,3),16),bg=parseInt(bc.slice(3,5),16),bb=parseInt(bc.slice(5,7),16);
+    var bs=parseInt(document.getElementById('brushSize').value);
+    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH)gridData[ny][nx]=[br,bg,bb,255]}
+    rerender();document.getElementById('pixelInfo').textContent='修改: ('+gx+','+gy+') → '+bc+' (可按撤回)';
+});
+
+function showLoading(t){document.getElementById('loadingOverlay').style.display='flex';document.getElementById('loadingText').textContent=t}
+function hideLoading(){document.getElementById('loadingOverlay').style.display='none'}
+console.log('✅ v5就绪 by 三金超人_SuperTrigen');
+</script>
 </body>
 </html>
