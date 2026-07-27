@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼豆图纸生成器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f0f4f8; 
+            padding: 20px; 
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .box { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 { color: #ff6b6b; margin-bottom: 10px; }
+        h2 { color: #333; margin-bottom: 20px; font-size: 18px; }
+        
+        .upload-area {
+            border: 3px dashed #ccc;
+            padding: 50px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .upload-area:hover { border-color: #ff6b6b; background: #fff5f5; }
+        
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover { background: #ff5252; }
+        button.gray { background: #95a5a6; }
+        button.gray:hover { background: #7f8c8d; }
+        
+        .row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .col {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        img, canvas {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+        
+        .color-box {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            vertical-align: middle;
+            margin-right: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .color-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .color-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-top: 15px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .setting-row {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <h1>🎨 拼豆图纸生成器</h1>
+            <h2>上传图片 → 自动生成拼豆图纸 → 导出打印</h2>
+        </div>
+
+        <!-- 第一步：上传图片 -->
+        <div class="box">
+            <h2>📷 第一步：上传图片</h2>
+            <div class="upload-area" id="uploadBox">
+                <div style="font-size: 50px;">📁</div>
+                <p>点击上传或拖拽图片到这里</p>
+                <p style="color: #999; font-size: 14px;">支持 JPG、PNG 格式</p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+        </div>
+
+        <!-- 第二步：设置 -->
+        <div class="box" id="settingsBox" style="display: none;">
+            <h2>⚙️ 第二步：调整设置</h2>
+            <div class="setting-row">
+                <label>拼豆数量（越多越精细）</label>
+                <input type="range" id="beadCount" min="10" max="80" value="40">
+                <span>当前：<span id="beadCountValue">40</span> 颗/边</span>
+            </div>
+            <button onclick="generateBead()">🎨 生成图纸</button>
+        </div>
+
+        <!-- 第三步：结果 -->
+        <div class="box" id="resultBox" style="display: none;">
+            <h2>✨ 第三步：查看结果</h2>
+            <div class="row">
+                <div class="col">
+                    <h3>原图</h3>
+                    <img id="originalImg" alt="原图">
+                </div>
+                <div class="col">
+                    <h3>拼豆图纸</h3>
+                    <canvas id="beadCanvas"></canvas>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3>所需拼豆清单</h3>
+                <div class="color-list" id="beadList"></div>
+                <div class="total" id="totalCount"></div>
+            </div>
+            
+            <button onclick="downloadImage()">💾 下载图纸</button>
+            <button onclick="window.print()" class="gray">🖨️ 打印图纸</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== 拼豆颜色库 ==========
+        const BEAD_COLORS = {
+            '白色':   [255, 255, 255],
+            '黑色':   [0, 0, 0],
+            '灰色':   [128, 128, 128],
+            '浅灰':   [200, 200, 200],
+            '红色':   [255, 0, 0],
+            '深红':   [180, 0, 0],
+            '粉色':   [255, 182, 193],
+            '橙色':   [255, 165, 0],
+            '黄色':   [255, 255, 0],
+            '金黄':   [255, 200, 0],
+            '绿色':   [0, 200, 0],
+            '深绿':   [0, 128, 0],
+            '浅绿':   [144, 238, 144],
+            '蓝色':   [0, 0, 255],
+            '天蓝':   [135, 206, 235],
+            '深蓝':   [0, 0, 150],
+            '紫色':   [160, 32, 240],
+            '浅紫':   [200, 162, 200],
+            '棕色':   [139, 69, 19],
+            '肤色':   [255, 218, 185],
+            '米色':   [245, 245, 220],
+            '透明':   [240, 248, 255],
+        };
+
+        let uploadedImage = null;
+
+        // ========== 上传图片 ==========
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadBox.addEventListener('click', () => fileInput.click());
+        
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#ff6b6b';
+        });
+        
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.style.borderColor = '#ccc';
+        });
+        
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#ccc';
+            const file = e.dataTransfer.files[0];
+            if (file) handleFile(file);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('请上传图片文件！');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    uploadedImage = img;
+                    document.getElementById('settingsBox').style.display = 'block';
+                    document.getElementById('originalImg').src = e.target.result;
+                    document.getElementById('resultBox').style.display = 'block';
+                    generateBead(); // 自动生成
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ========== 滑块 ==========
+        document.getElementById('beadCount').addEventListener('input', (e) => {
+            document.getElementById('beadCountValue').textContent = e.target.value;
+        });
+
+        // ========== 核心：生成拼豆图纸 ==========
+        function generateBead() {
+            if (!uploadedImage) return;
+            
+            const beadCount = parseInt(document.getElementById('beadCount').value);
+            
+            // 创建画布
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 计算尺寸（保持原图比例）
+            const ratio = uploadedImage.width / uploadedImage.height;
+            let width, height;
+            
+            if (ratio > 1) {
+                width = beadCount;
+                height = Math.round(beadCount / ratio);
+            } else {
+                height = beadCount;
+                width = Math.round(beadCount * ratio);
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // 绘制缩小后的图片
+            ctx.imageSmoothingEnabled = false; // 关键：关闭平滑，获得像素效果
+            ctx.drawImage(uploadedImage, 0, 0, width, height);
+            
+            // 获取像素数据
+            const imageData = ctx.getImageData(0, 0, width, height);
+            const pixels = imageData.data;
+            
+            // 统计颜色
+            const colorCount = {};
+            
+            // 遍历每个像素
+            for (let i = 0; i < pixels.length; i += 4) {
+                const r = pixels[i];
+                const g = pixels[i + 1];
+                const b = pixels[i + 2];
+                const a = pixels[i + 3];
+                
+                // 跳过透明像素
+                if (a < 128) continue;
+                
+                // 找到最接近的拼豆颜色
+                const closest = findClosestBead(r, g, b);
+                
+                // 替换像素颜色
+                pixels[i] = closest[0];
+                pixels[i + 1] = closest[1];
+                pixels[i + 2] = closest[2];
+                
+                // 统计
+                const colorKey = closest.join(',');
+                colorCount[colorKey] = (colorCount[colorKey] || 0) + 1;
+            }
+            
+            // 更新画布
+            ctx.putImageData(imageData, 0, 0);
+            
+            // 显示结果
+            const resultCanvas = document.getElementById('beadCanvas');
+            const resultCtx = resultCanvas.getContext('2d');
+            
+            // 放大显示（每个像素显示为20px）
+            const displaySize = 20;
+            resultCanvas.width = width * displaySize;
+            resultCanvas.height = height * displaySize;
+            resultCtx.imageSmoothingEnabled = false;
+            
+            // 绘制网格和颜色
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = (y * width + x) * 4;
+                    const r = pixels[idx];
+                    const g = pixels[idx + 1];
+                    const b = pixels[idx + 2];
+                    const a = pixels[idx + 3];
+                    
+                    if (a < 128) continue;
+                    
+                    resultCtx.fillStyle = `rgb(${r},${g},${b})`;
+                    resultCtx.fillRect(
+                        x * displaySize, 
+                        y * displaySize, 
+                        displaySize, 
+                        displaySize
+                    );
+                    
+                    // 网格线
+                    resultCtx.strokeStyle = '#eee';
+                    resultCtx.strokeRect(
+                        x * displaySize, 
+                        y * displaySize, 
+                        displaySize, 
+                        displaySize
+                    );
+                }
+            }
+            
+            // 显示颜色清单
+            displayColorList(colorCount);
+        }
+
+        // ========== 查找最接近的拼豆颜色 ==========
+        function findClosestBead(r, g, b) {
+            let minDistance = Infinity;
+            let closest = [255, 255, 255];
+            
+            for (const [name, color] of Object.entries(BEAD_COLORS)) {
+                const distance = Math.sqrt(
+                    Math.pow(r - color[0], 2) +
+                    Math.pow(g - color[1], 2) +
+                    Math.pow(b - color[2], 2)
+                );
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = color;
+                }
+            }
+            
+            return closest;
+        }
+
+        // ========== 显示颜色清单 ==========
+        function displayColorList(colorCount) {
+            const listDiv = document.getElementById('beadList');
+            let total = 0;
+            let html = '';
+            
+            // 按数量排序
+            const sorted = Object.entries(colorCount).sort((a, b) => b[1] - a[1]);
+            
+            for (const [rgb, count] of sorted) {
+                const [r, g, b] = rgb.split(',').map(Number);
+                const colorName = getColorName(r, g, b);
+                
+                html += `
+                    <div class="color-item">
+                        <span>
+                            <span class="color-box" style="background: rgb(${rgb})"></span>
+                            ${colorName}
+                        </span>
+                        <span><strong>${count}</strong> 颗</span>
+                    </div>
+                `;
+                total += count;
+            }
+            
+            listDiv.innerHTML = html;
+            document.getElementById('totalCount').textContent = `总计需要：${total} 颗拼豆`;
+        }
+
+        // ========== 获取颜色名称 ==========
+        function getColorName(r, g, b) {
+            let closest = '自定义色';
+            let minDist = Infinity;
+            
+            for (const [name, color] of Object.entries(BEAD_COLORS)) {
+                const dist = Math.sqrt(
+                    Math.pow(r - color[0], 2) +
+                    Math.pow(g - color[1], 2) +
+                    Math.pow(b - color[2], 2)
+                );
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = name;
+                }
+            }
+            
+            return closest;
+        }
+
+        // ========== 下载图纸 ==========
+        function downloadImage() {
+            const canvas = document.getElementById('beadCanvas');
+            const link = document.createElement('a');
+            link.download = '拼豆图纸.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        console.log('✅ 拼豆生成器已就绪！');
+    </script>
+</body>
+</html>
