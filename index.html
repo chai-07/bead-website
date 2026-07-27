@@ -8,9 +8,8 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2e;color:#eee;min-height:100vh}
         .app-container{display:flex;height:100vh}
-        .control-panel{width:340px;min-width:340px;background:#16213e;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border-right:2px solid #0f3460}
+        .control-panel{width:380px;min-width:380px;background:#16213e;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border-right:2px solid #0f3460}
         .control-panel h1{font-size:18px;color:#e94560;text-align:center}
-        .control-panel .subtitle{font-size:11px;color:#888;text-align:center;margin-bottom:2px}
         .control-panel .author{font-size:10px;color:#555;text-align:center;margin-bottom:6px}
         .control-panel .author a{color:#6c5ce7;text-decoration:none}
         .control-panel .author a:hover{color:#e94560}
@@ -23,7 +22,7 @@
         input[type="range"]{width:100%;height:5px;border-radius:3px;background:#0f3460;-webkit-appearance:none;cursor:pointer}
         input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#e94560;cursor:pointer}
         select,input[type="color"]{width:100%;padding:6px;border-radius:5px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:12px}
-        input[type="color"]{height:32px;cursor:pointer}
+        input[type="text"]{width:100%;padding:6px;border-radius:5px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:12px}
         .btn{width:100%;padding:10px;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold}
         .btn-upload{background:#e94560}.btn-upload:hover{background:#ff6b81}
         .btn-generate{background:#0f3460;border:2px solid #e94560}.btn-generate:hover{background:#e94560}
@@ -32,9 +31,17 @@
         .btn-reset{background:#636e72;margin-bottom:4px}.btn-reset:hover{background:#7f8c8d}
         .btn-clear{background:#e17055;margin-bottom:4px}.btn-clear:hover{background:#f19075}
         .btn-undo{background:#6c5ce7;margin-bottom:4px}.btn-undo:hover{background:#7c6cf7}
+        .btn-eyedrop{background:#fdcb6e;color:#333;margin-bottom:4px}.btn-eyedrop:hover{background:#ffeaa7}.btn-eyedrop.active{background:#e94560;color:#fff}
         .file-info{font-size:11px;color:#888;text-align:center}
         .checkbox-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#aaa;margin-bottom:8px}
         .checkbox-row input[type="checkbox"]{width:16px;height:16px;cursor:pointer}
+        .mard-full-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-height:300px;overflow-y:auto;padding:5px;background:#0f3460;border-radius:6px;margin-top:6px}
+        .mard-full-item{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:4px 2px;border-radius:4px;border:2px solid transparent;transition:0.15s}
+        .mard-full-item:hover{border-color:#fff;background:#1a3a6e}
+        .mard-full-item.active{border-color:#e94560;background:#1a1a2e;box-shadow:0 0 10px #e94560}
+        .mard-full-swatch{width:28px;height:28px;border-radius:3px;border:1px solid #555}
+        .mard-full-label{font-size:9px;color:#ccc;margin-top:2px;text-align:center}
+        .eyedrop-cursor{cursor:crosshair}
         .preview-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a2e;padding:20px;border-right:2px solid #0f3460;min-width:280px}
         .preview-panel h2{font-size:14px;color:#888;margin-bottom:15px}
         .preview-box{max-width:100%;max-height:65vh;border-radius:10px;overflow:auto;background:#111;display:flex;align-items:center;justify-content:center}
@@ -46,8 +53,6 @@
         .placeholder{color:#444;font-size:13px;text-align:center;padding:40px}
         .placeholder .icon{font-size:50px;display:block;margin-bottom:12px}
         .tool-info{font-size:11px;color:#e94560;text-align:center;margin-top:5px;min-height:18px}
-        .color-picker-row{display:flex;gap:6px;align-items:center}
-        .color-picker-row input[type="color"]{flex:1}
         @media(max-width:1000px){.app-container{flex-direction:column}.control-panel{width:100%;min-width:auto;flex-direction:row;flex-wrap:wrap;gap:8px;padding:8px}.control-group{flex:1;min-width:160px}}
         .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000}
         .loading-box{background:#16213e;padding:30px 50px;border-radius:15px;text-align:center}
@@ -63,21 +68,30 @@
 <div class="control-group"><h3>📁 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
 <div class="control-group"><h3>📐 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option></select><span class="hint">生成的拼豆图纸尺寸</span></div></div>
 <div class="control-group"><h3>🔧 图像增强（量化前执行）</h3>
-<div class="setting-row"><label>深色归一阈值 <span class="value-display" id="darkUnifyValue">0</span></label><input type="range" id="darkUnify" min="0" max="60" value="0" step="1"><span class="hint">亮度低于此值的像素强制变纯黑，统一线条颜色</span></div>
+<div class="setting-row"><label>深色归一阈值 <span class="value-display" id="darkUnifyValue">0</span></label><input type="range" id="darkUnify" min="0" max="60" value="0" step="1"><span class="hint">亮度低于此值的像素强制变纯黑</span></div>
 <div class="setting-row"><label>黑色阈值 <span class="value-display" id="blackValue">0</span></label><input type="range" id="blackThreshold" min="0" max="40" value="0" step="1"><span class="hint">压暗部去灰雾，让画面更通透</span></div>
-<div class="setting-row"><label>伽马校正 <span class="value-display" id="gammaValue">1.00</span></label><input type="range" id="gamma" min="50" max="200" value="100" step="5"><span class="hint">校正整体亮度曲线，解决发灰问题</span></div>
-<div class="setting-row"><label>饱和度 <span class="value-display" id="satValue">100</span>%</label><input type="range" id="saturation" min="60" max="160" value="100" step="1"><span class="hint">增强色彩鲜艳度，保留色相信息</span></div>
-<div class="setting-row"><label>对比度 <span class="value-display" id="contrastValue">100</span>%</label><input type="range" id="contrast" min="90" max="130" value="100" step="1"><span class="hint">拉开明暗层次，让轮廓更清晰</span></div>
-<div class="setting-row"><label>亮度 <span class="value-display" id="brightValue">0</span></label><input type="range" id="brightness" min="-40" max="40" value="0" step="1"><span class="hint">整体提亮或压暗画面</span></div>
-<div class="setting-row"><label>锐化 <span class="value-display" id="sharpValue">0</span></label><input type="range" id="sharpen" min="0" max="20" value="0" step="1"><span class="hint">增强边缘清晰度，保留像素感</span></div>
-<div class="setting-row"><label>降噪 <span class="value-display" id="denoiseValue">0</span></label><input type="range" id="denoise" min="0" max="10" value="0" step="1"><span class="hint">减少杂色碎点，让色块更干净</span></div>
+<div class="setting-row"><label>伽马校正 <span class="value-display" id="gammaValue">1.00</span></label><input type="range" id="gamma" min="50" max="200" value="100" step="5"><span class="hint">校正整体亮度曲线</span></div>
+<div class="setting-row"><label>饱和度 <span class="value-display" id="satValue">100</span>%</label><input type="range" id="saturation" min="60" max="160" value="100" step="1"><span class="hint">增强色彩鲜艳度</span></div>
+<div class="setting-row"><label>对比度 <span class="value-display" id="contrastValue">100</span>%</label><input type="range" id="contrast" min="90" max="130" value="100" step="1"><span class="hint">拉开明暗层次</span></div>
+<div class="setting-row"><label>亮度 <span class="value-display" id="brightValue">0</span></label><input type="range" id="brightness" min="-40" max="40" value="0" step="1"><span class="hint">整体提亮或压暗</span></div>
+<div class="setting-row"><label>锐化 <span class="value-display" id="sharpValue">0</span></label><input type="range" id="sharpen" min="0" max="20" value="0" step="1"><span class="hint">增强边缘清晰度</span></div>
+<div class="setting-row"><label>降噪 <span class="value-display" id="denoiseValue">0</span></label><input type="range" id="denoise" min="0" max="10" value="0" step="1"><span class="hint">减少杂色碎点</span></div>
 <button class="btn btn-reset" onclick="resetParams()">↺ 重置所有参数</button></div>
-<div class="control-group"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">24</span></label><input type="range" id="maxColors" min="4" max="48" value="24" step="1"><span class="hint">控制图纸使用的拼豆颜色数量</span></div></div>
-<div class="control-group"><h3>🧹 清理</h3><button class="btn btn-clear" onclick="removeSingles()">🧹 清除1×1孤立点</button><span class="hint" style="display:block;text-align:center;margin-top:4px;">仅删除完全孤立的单点，不伤结构</span></div>
+<div class="control-group"><h3>🧹 清理</h3><button class="btn btn-clear" onclick="removeSingles()">🧹 清除1×1孤立点</button></div>
 <div class="control-group"><h3>🔲 网格</h3><div class="setting-row"><label>显示网格线</label><select id="showGrid"><option value="yes" selected>是</option><option value="no">否</option></select></div><div class="setting-row"><label>网格线颜色</label><input type="color" id="gridColor" value="#cccccc"></div></div>
-<div class="control-group"><h3>🖌️ 手动修图</h3><div class="color-picker-row"><span>画笔色</span><input type="color" id="brushColor" value="#ff0000"><span>大小 <span id="brushSizeValue">1</span></span><input type="range" id="brushSize" min="1" max="5" value="1" step="1" style="width:60px"></div><button class="btn btn-undo" onclick="undoBrush()">↩ 撤回上一步</button><p class="tool-info" id="toolInfo">点击图纸格子修改颜色</p></div>
+<div class="control-group"><h3>🖌️ 手动修图</h3>
+<p style="font-size:11px;color:#aaa;margin-bottom:4px;">画笔: <span id="brushColorDisplay" style="color:#e94560;">M002 黑色</span></p>
+<div style="display:flex;gap:4px;margin-bottom:6px;">
+    <button class="btn btn-eyedrop" id="eyedropBtn" onclick="toggleEyedropper()" style="flex:1;">💉 取色管</button>
+    <input type="text" id="mardCodeInput" placeholder="输入MARD编码" style="flex:2;" onkeydown="if(event.key==='Enter')setBrushByCode()">
+    <button onclick="setBrushByCode()" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;">确定</button>
+</div>
+<p style="font-size:10px;color:#666;margin-bottom:4px;">全色板取色（点击选色）</p>
+<div class="mard-full-grid" id="mardFullGrid"></div>
+<div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
+<button class="btn btn-undo" onclick="undoBrush()">↩ 撤回上一步</button></div>
 <button class="btn btn-generate" id="generateBtn">🎨 生成图纸</button>
-<div class="checkbox-row"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示色号标注</label></div>
+<div class="checkbox-row"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div>
 <button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
 <button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
 </div>
@@ -87,42 +101,200 @@
 <div class="loading-overlay" id="loadingOverlay" style="display:none"><div class="loading-box"><div class="spinner"></div><p id="loadingText">处理中...</p></div></div>
 
 <script>
-var originalImage = null;
-var gridW = 0, gridH = 0, gridData = null, displayScale = 20;
-var undoStack = [];
-var colorPalette = [];
-var showCodes = false;
+var MARD_COLORS = [
+    // A系｜黄・浅橙（A1～A26）
+    {id:"A1",name:"浅黄1",rgb:[250,244,200]},{id:"A2",name:"浅黄2",rgb:[255,255,213]},
+    {id:"A3",name:"浅黄3",rgb:[255,248,208]},{id:"A4",name:"浅橙1",rgb:[255,232,194]},
+    {id:"A5",name:"浅橙2",rgb:[255,211,163]},{id:"A6",name:"橙1",rgb:[254,172,76]},
+    {id:"A7",name:"橙2",rgb:[254,139,76]},{id:"A8",name:"黄1",rgb:[255,218,69]},
+    {id:"A9",name:"橙3",rgb:[255,153,91]},{id:"A10",name:"橙4",rgb:[247,124,49]},
+    {id:"A11",name:"浅橙3",rgb:[255,194,133]},{id:"A12",name:"浅橙4",rgb:[249,187,105]},
+    {id:"A13",name:"黄2",rgb:[254,198,103]},{id:"A14",name:"黄3",rgb:[255,188,66]},
+    {id:"A15",name:"黄4",rgb:[251,246,94]},{id:"A16",name:"浅黄4",rgb:[254,255,151]},
+    {id:"A17",name:"黄5",rgb:[253,225,115]},{id:"A18",name:"浅橙5",rgb:[254,190,125]},
+    {id:"A19",name:"浅橙6",rgb:[255,208,140]},{id:"A20",name:"黄6",rgb:[255,213,104]},
+    {id:"A21",name:"浅黄5",rgb:[255,227,149]},{id:"A22",name:"黄绿1",rgb:[244,245,125]},
+    {id:"A23",name:"肤色1",rgb:[230,201,183]},{id:"A24",name:"浅黄6",rgb:[247,248,162]},
+    {id:"A25",name:"黄7",rgb:[255,214,125]},{id:"A26",name:"黄8",rgb:[255,200,48]},
+    // B系｜绿色（B1～B32）
+    {id:"B1",name:"黄绿2",rgb:[230,238,49]},{id:"B2",name:"荧光绿1",rgb:[99,243,71]},
+    {id:"B3",name:"浅绿1",rgb:[158,247,128]},{id:"B4",name:"绿1",rgb:[93,224,53]},
+    {id:"B5",name:"绿2",rgb:[53,227,82]},{id:"B6",name:"薄荷绿1",rgb:[101,226,166]},
+    {id:"B7",name:"绿3",rgb:[61,175,128]},{id:"B8",name:"绿4",rgb:[28,156,79]},
+    {id:"B9",name:"深绿1",rgb:[39,82,58]},{id:"B10",name:"薄荷绿2",rgb:[149,211,194]},
+    {id:"B11",name:"橄榄绿1",rgb:[93,114,42]},{id:"B12",name:"绿5",rgb:[22,111,65]},
+    {id:"B13",name:"浅绿2",rgb:[202,235,123]},{id:"B14",name:"绿6",rgb:[173,233,70]},
+    {id:"B15",name:"深绿2",rgb:[46,81,50]},{id:"B16",name:"浅绿3",rgb:[197,237,156]},
+    {id:"B17",name:"橄榄绿2",rgb:[155,177,58]},{id:"B18",name:"黄绿3",rgb:[230,238,73]},
+    {id:"B19",name:"绿7",rgb:[114,184,120]},{id:"B20",name:"绿8",rgb:[74,143,82]},
+    {id:"B21",name:"绿9",rgb:[135,194,152]},{id:"B22",name:"绿10",rgb:[87,158,118]},
+    {id:"B23",name:"绿11",rgb:[50,115,83]},{id:"B24",name:"浅绿4",rgb:[238,252,165]},
+    {id:"B25",name:"绿12",rgb:[115,153,97]},{id:"B26",name:"卡其绿",rgb:[141,122,53]},
+    {id:"B27",name:"绿13",rgb:[107,140,97]},{id:"B28",name:"深绿3",rgb:[69,107,68]},
+    {id:"B29",name:"绿14",rgb:[197,226,84]},{id:"B30",name:"绿15",rgb:[146,196,112]},
+    {id:"B31",name:"绿16",rgb:[98,145,80]},{id:"B32",name:"橄榄绿3",rgb:[156,171,90]},
+    // C系｜蓝色（C1～C29）
+    {id:"C1",name:"浅蓝1",rgb:[182,232,247]},{id:"C2",name:"浅蓝2",rgb:[134,216,242]},
+    {id:"C3",name:"蓝1",rgb:[73,184,232]},{id:"C4",name:"蓝2",rgb:[38,152,216]},
+    {id:"C5",name:"蓝3",rgb:[25,127,201]},{id:"C6",name:"蓝4",rgb:[20,103,173]},
+    {id:"C7",name:"蓝5",rgb:[15,78,138]},{id:"C8",name:"深蓝1",rgb:[12,55,102]},
+    {id:"C9",name:"浅蓝3",rgb:[214,232,244]},{id:"C10",name:"浅蓝4",rgb:[166,212,237]},
+    {id:"C11",name:"蓝6",rgb:[115,185,224]},{id:"C12",name:"蓝7",rgb:[63,150,205]},
+    {id:"C13",name:"蓝8",rgb:[36,122,191]},{id:"C14",name:"蓝9",rgb:[26,97,158]},
+    {id:"C15",name:"蓝10",rgb:[18,74,124]},{id:"C16",name:"深蓝2",rgb:[13,52,92]},
+    {id:"C17",name:"浅蓝5",rgb:[224,240,248]},{id:"C18",name:"浅蓝6",rgb:[178,216,234]},
+    {id:"C19",name:"蓝11",rgb:[128,185,216]},{id:"C20",name:"蓝12",rgb:[74,153,196]},
+    {id:"C21",name:"蓝13",rgb:[44,126,178]},{id:"C22",name:"蓝14",rgb:[32,102,148]},
+    {id:"C23",name:"蓝15",rgb:[21,79,118]},{id:"C24",name:"深蓝3",rgb:[15,58,90]},
+    {id:"C25",name:"青1",rgb:[169,229,229]},{id:"C26",name:"青2",rgb:[114,209,209]},
+    {id:"C27",name:"青3",rgb:[56,181,181]},{id:"C28",name:"青4",rgb:[32,148,148]},
+    {id:"C29",name:"青5",rgb:[20,111,111]},
+    // D系｜紫色・蓝紫（D1～D26）
+    {id:"D1",name:"浅紫1",rgb:[233,227,247]},{id:"D2",name:"浅紫2",rgb:[217,207,242]},
+    {id:"D3",name:"紫1",rgb:[195,178,233]},{id:"D4",name:"紫2",rgb:[170,144,224]},
+    {id:"D5",name:"紫3",rgb:[143,108,214]},{id:"D6",name:"紫4",rgb:[117,77,204]},
+    {id:"D7",name:"紫5",rgb:[93,52,189]},{id:"D8",name:"紫6",rgb:[70,35,160]},
+    {id:"D9",name:"深紫1",rgb:[49,24,122]},{id:"D10",name:"浅紫3",rgb:[240,231,249]},
+    {id:"D11",name:"浅紫4",rgb:[226,211,244]},{id:"D12",name:"紫7",rgb:[206,184,235]},
+    {id:"D13",name:"紫8",rgb:[181,152,226]},{id:"D14",name:"紫9",rgb:[139,39,155]},
+    {id:"D15",name:"紫10",rgb:[47,31,144]},{id:"D16",name:"浅紫5",rgb:[227,225,238]},
+    {id:"D17",name:"蓝紫1",rgb:[196,212,246]},{id:"D18",name:"紫11",rgb:[164,94,199]},
+    {id:"D19",name:"浅紫6",rgb:[216,195,215]},{id:"D20",name:"紫12",rgb:[156,50,178]},
+    {id:"D21",name:"紫13",rgb:[154,0,155]},{id:"D22",name:"浅紫7",rgb:[221,191,224]},
+    {id:"D23",name:"紫14",rgb:[189,143,200]},{id:"D24",name:"紫15",rgb:[156,86,170]},
+    {id:"D25",name:"紫16",rgb:[122,54,136]},{id:"D26",name:"深紫2",rgb:[86,36,99]},
+    // E系｜红・粉・肤色（E1～E24）
+    {id:"E1",name:"浅粉1",rgb:[255,214,232]},{id:"E2",name:"浅粉2",rgb:[255,196,221]},
+    {id:"E3",name:"粉1",rgb:[255,183,231]},{id:"E4",name:"粉2",rgb:[255,159,216]},
+    {id:"E5",name:"粉3",rgb:[255,132,200]},{id:"E6",name:"粉4",rgb:[255,102,184]},
+    {id:"E7",name:"粉5",rgb:[249,72,163]},{id:"E8",name:"粉6",rgb:[233,40,140]},
+    {id:"E9",name:"深粉1",rgb:[210,23,120]},{id:"E10",name:"粉7",rgb:[209,59,149]},
+    {id:"E11",name:"浅粉3",rgb:[247,169,198]},{id:"E12",name:"粉8",rgb:[247,143,195]},
+    {id:"E13",name:"深粉2",rgb:[181,0,109]},{id:"E14",name:"肤色2",rgb:[255,209,186]},
+    {id:"E15",name:"肤色3",rgb:[248,199,201]},{id:"E16",name:"肤色4",rgb:[255,243,235]},
+    {id:"E17",name:"肤色5",rgb:[249,226,214]},{id:"E18",name:"肤色6",rgb:[243,210,193]},
+    {id:"E19",name:"暗红1",rgb:[145,25,50]},{id:"E20",name:"红1",rgb:[216,69,69]},
+    {id:"E21",name:"红2",rgb:[230,103,103]},{id:"E22",name:"浅红1",rgb:[242,146,146]},
+    {id:"E23",name:"浅红2",rgb:[248,178,178]},{id:"E24",name:"浅红3",rgb:[252,210,210]},
+    // F系｜橙色・橘粉（F1～F25）
+    {id:"F1",name:"浅橘1",rgb:[255,229,217]},{id:"F2",name:"浅橘2",rgb:[255,215,199]},
+    {id:"F3",name:"橘1",rgb:[255,201,181]},{id:"F4",name:"橘2",rgb:[255,186,159]},
+    {id:"F5",name:"橘3",rgb:[255,168,133]},{id:"F6",name:"橘4",rgb:[255,147,102]},
+    {id:"F7",name:"橘5",rgb:[255,124,71]},{id:"F8",name:"橘6",rgb:[247,97,39]},
+    {id:"F9",name:"深橘1",rgb:[228,72,16]},{id:"F10",name:"浅橘3",rgb:[255,233,216]},
+    {id:"F11",name:"浅橘4",rgb:[255,219,195]},{id:"F12",name:"橘7",rgb:[255,204,171]},
+    {id:"F13",name:"橘8",rgb:[255,187,143]},{id:"F14",name:"橘9",rgb:[255,166,112]},
+    {id:"F15",name:"橘10",rgb:[255,142,78]},{id:"F16",name:"橘11",rgb:[255,114,41]},
+    {id:"F17",name:"橘12",rgb:[244,87,14]},{id:"F18",name:"深橘2",rgb:[214,64,6]},
+    {id:"F19",name:"浅橘5",rgb:[255,225,205]},{id:"F20",name:"橘13",rgb:[255,208,179]},
+    {id:"F21",name:"橘14",rgb:[255,188,148]},{id:"F22",name:"橘15",rgb:[255,164,111]},
+    {id:"F23",name:"橘16",rgb:[255,135,70]},{id:"F24",name:"橘17",rgb:[255,106,29]},
+    {id:"F25",name:"橘18",rgb:[224,78,9]},
+    // G系｜棕色・大地色（G1～G21）
+    {id:"G1",name:"浅棕1",rgb:[255,241,228]},{id:"G2",name:"浅棕2",rgb:[252,198,172]},
+    {id:"G3",name:"浅棕3",rgb:[241,196,165]},{id:"G4",name:"棕1",rgb:[220,179,135]},
+    {id:"G5",name:"棕2",rgb:[231,179,78]},{id:"G6",name:"棕3",rgb:[227,160,20]},
+    {id:"G7",name:"棕4",rgb:[209,132,33]},{id:"G8",name:"棕5",rgb:[185,106,30]},
+    {id:"G9",name:"棕6",rgb:[156,84,26]},{id:"G10",name:"棕7",rgb:[122,65,21]},
+    {id:"G11",name:"棕8",rgb:[90,48,16]},{id:"G12",name:"深棕1",rgb:[61,32,11]},
+    {id:"G13",name:"浅棕4",rgb:[242,217,196]},{id:"G14",name:"浅棕5",rgb:[226,190,164]},
+    {id:"G15",name:"米黄1",rgb:[252,249,224]},{id:"G16",name:"棕9",rgb:[208,168,130]},
+    {id:"G17",name:"棕10",rgb:[187,140,96]},{id:"G18",name:"棕11",rgb:[158,112,66]},
+    {id:"G19",name:"棕12",rgb:[127,88,50]},{id:"G20",name:"棕13",rgb:[94,64,36]},
+    {id:"G21",name:"深棕2",rgb:[68,46,26]},
+    // H系｜黑白灰（H1～H23）
+    {id:"H1",name:"白色",rgb:[255,255,255]},{id:"H2",name:"灰1",rgb:[242,242,242]},
+    {id:"H3",name:"灰2",rgb:[229,229,229]},{id:"H4",name:"灰3",rgb:[216,216,216]},
+    {id:"H5",name:"灰4",rgb:[203,203,203]},{id:"H6",name:"灰5",rgb:[190,190,190]},
+    {id:"H7",name:"灰6",rgb:[177,177,177]},{id:"H8",name:"灰7",rgb:[164,164,164]},
+    {id:"H9",name:"灰8",rgb:[151,151,151]},{id:"H10",name:"灰9",rgb:[138,138,138]},
+    {id:"H11",name:"灰10",rgb:[125,125,125]},{id:"H12",name:"灰11",rgb:[112,112,112]},
+    {id:"H13",name:"灰12",rgb:[99,99,99]},{id:"H14",name:"灰13",rgb:[86,86,86]},
+    {id:"H15",name:"灰14",rgb:[73,73,73]},{id:"H16",name:"灰15",rgb:[60,60,60]},
+    {id:"H17",name:"灰16",rgb:[47,47,47]},{id:"H18",name:"深灰1",rgb:[15,15,15]},
+    {id:"H19",name:"黑色",rgb:[0,0,0]},{id:"H20",name:"灰17",rgb:[245,245,245]},
+    {id:"H21",name:"灰18",rgb:[234,234,234]},{id:"H22",name:"灰蓝",rgb:[202,202,212]},
+    {id:"H23",name:"灰绿",rgb:[154,157,148]},
+    // M系｜莫兰迪灰调（M1～M15）
+    {id:"M1",name:"莫兰迪绿",rgb:[188,198,184]},{id:"M2",name:"莫兰迪绿2",rgb:[138,163,134]},
+    {id:"M3",name:"莫兰迪蓝灰",rgb:[105,125,128]},{id:"M4",name:"莫兰迪米",rgb:[227,210,188]},
+    {id:"M5",name:"莫兰迪黄绿",rgb:[208,204,170]},{id:"M6",name:"莫兰迪棕",rgb:[176,167,130]},
+    {id:"M7",name:"莫兰迪灰棕",rgb:[180,164,151]},{id:"M8",name:"莫兰迪粉棕",rgb:[179,130,129]},
+    {id:"M9",name:"莫兰迪棕2",rgb:[165,135,103]},{id:"M10",name:"莫兰迪紫灰",rgb:[197,178,188]},
+    {id:"M11",name:"莫兰迪紫",rgb:[159,117,148]},{id:"M12",name:"莫兰迪暗红",rgb:[100,71,73]},
+    {id:"M13",name:"莫兰迪橘",rgb:[209,144,102]},{id:"M14",name:"莫兰迪红",rgb:[199,115,98]},
+    {id:"M15",name:"莫兰迪灰",rgb:[116,125,122]}
+];
 
-function bind(id, disp, fmt) {
-    document.getElementById(id).addEventListener('input', function() {
-        document.getElementById(disp).textContent = fmt ? fmt(this.value) : this.value;
-    });
+var originalImage=null,gridW=0,gridH=0,gridData=null,displayScale=30;
+var undoStack=[],colorPalette=[],showCodes=false;
+var selectedBrushColor=[0,0,0],selectedBrushId='M002',eyedropperActive=false;
+
+function bind(id,disp,fmt){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener('input',function(){document.getElementById(disp).textContent=fmt?fmt(this.value):this.value;});
 }
-bind('darkUnify','darkUnifyValue');
-bind('blackThreshold','blackValue'); bind('gamma','gammaValue',v=>(v/100).toFixed(2));
-bind('saturation','satValue',v=>v+'%'); bind('contrast','contrastValue',v=>v+'%');
-bind('brightness','brightValue'); bind('sharpen','sharpValue');
-bind('maxColors','colorCountValue'); bind('denoise','denoiseValue');
-document.getElementById('brushSize').addEventListener('input',function(){document.getElementById('brushSizeValue').textContent=this.value});
+bind('darkUnify','darkUnifyValue');bind('blackThreshold','blackValue');
+bind('gamma','gammaValue',function(v){return(v/100).toFixed(2);});bind('saturation','satValue',function(v){return v+'%';});
+bind('contrast','contrastValue',function(v){return v+'%';});bind('brightness','brightValue');
+bind('sharpen','sharpValue');bind('denoise','denoiseValue');
+document.getElementById('brushSize').addEventListener('input',function(){document.getElementById('brushSizeValue').textContent=this.value;});
+
+function initMardFullGrid(){
+    var grid=document.getElementById('mardFullGrid');
+    grid.innerHTML='';
+    for(var i=0;i<MARD_COLORS.length;i++){
+        var mc=MARD_COLORS[i];
+        var item=document.createElement('div');
+        item.className='mard-full-item';
+        item.title=mc.id+' '+mc.name;
+        item.innerHTML='<div class="mard-full-swatch" style="background:rgb('+mc.rgb.join(',')+')"></div><div class="mard-full-label">'+mc.id+'</div>';
+        item.dataset.index=i;
+        item.addEventListener('click',function(e){
+            if(eyedropperActive){toggleEyedropper();return}
+            var idx=parseInt(this.dataset.index);
+            selectBrush(idx);
+        });
+        grid.appendChild(item);
+    }
+    selectBrush(1);
+}
+function selectBrush(idx){
+    selectedBrushColor=MARD_COLORS[idx].rgb.slice();
+    selectedBrushId=MARD_COLORS[idx].id;
+    document.getElementById('brushColorDisplay').textContent=MARD_COLORS[idx].id+' '+MARD_COLORS[idx].name;
+    document.getElementById('mardCodeInput').value=MARD_COLORS[idx].id;
+    document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
+    var items=document.getElementById('mardFullGrid').children;
+    if(items[idx]){items[idx].classList.add('active');items[idx].scrollIntoView({block:'nearest'});}
+}
+function setBrushByCode(){
+    var code=document.getElementById('mardCodeInput').value.trim().toUpperCase();
+    for(var i=0;i<MARD_COLORS.length;i++){
+        if(MARD_COLORS[i].id===code){selectBrush(i);return;}
+    }
+    alert('未找到色号: '+code);
+}
+function toggleEyedropper(){
+    eyedropperActive=!eyedropperActive;
+    var btn=document.getElementById('eyedropBtn');
+    var canvas=document.getElementById('resultCanvas');
+    if(eyedropperActive){btn.classList.add('active');btn.textContent='💉 取色中...';canvas.classList.add('eyedrop-cursor');}
+    else{btn.classList.remove('active');btn.textContent='💉 取色管';canvas.classList.remove('eyedrop-cursor');}
+}
+initMardFullGrid();
 
 function resetParams(){
-    setSlider('darkUnify',0,'darkUnifyValue');
-    setSlider('blackThreshold',0,'blackValue');
-    setSlider('gamma',100,'gammaValue',v=>(v/100).toFixed(2));
-    setSlider('saturation',100,'satValue',v=>v+'%');
-    setSlider('contrast',100,'contrastValue',v=>v+'%');
-    setSlider('brightness',0,'brightValue');
-    setSlider('sharpen',0,'sharpValue');
+    setSlider('darkUnify',0,'darkUnifyValue');setSlider('blackThreshold',0,'blackValue');
+    setSlider('gamma',100,'gammaValue',function(v){return(v/100).toFixed(2);});
+    setSlider('saturation',100,'satValue',function(v){return v+'%';});
+    setSlider('contrast',100,'contrastValue',function(v){return v+'%';});
+    setSlider('brightness',0,'brightValue');setSlider('sharpen',0,'sharpValue');
     setSlider('denoise',0,'denoiseValue');
-    setSlider('maxColors',24,'colorCountValue');
-    document.getElementById('pixelInfo').textContent = '参数已重置';
 }
-function setSlider(id,val,disp,fmt){document.getElementById(id).value=val;document.getElementById(disp).textContent=fmt?fmt(val):val}
-
-function toggleColorCodes(){
-    showCodes = document.getElementById('showColorCodes').checked;
-    if(gridData) rerender();
-}
+function setSlider(id,val,disp,fmt){var el=document.getElementById(id);if(el)el.value=val;document.getElementById(disp).textContent=fmt?fmt(val):val;}
+function toggleColorCodes(){showCodes=document.getElementById('showColorCodes').checked;if(gridData)rerender();}
 
 document.getElementById('fileInput').addEventListener('change',function(e){
     var f=e.target.files[0];if(!f)return;
@@ -146,50 +318,62 @@ function processImage(){
     showLoading('处理中...');
     setTimeout(function(){
         try{
-            var du = parseInt(document.getElementById('darkUnify').value);
-            var cs = parseInt(document.getElementById('canvasSize').value);
-            var bt = parseInt(document.getElementById('blackThreshold').value);
-            var gm = parseInt(document.getElementById('gamma').value)/100;
-            var sat = parseInt(document.getElementById('saturation').value)/100;
-            var con = parseInt(document.getElementById('contrast').value);
-            var bri = parseInt(document.getElementById('brightness').value);
-            var shp = parseInt(document.getElementById('sharpen').value);
-            var den = parseInt(document.getElementById('denoise').value);
-            var mc = parseInt(document.getElementById('maxColors').value);
-            var sg = document.getElementById('showGrid').value==='yes';
-            var gc = document.getElementById('gridColor').value;
-
-            var enhanced = applyEnhanceOnOriginal(originalImage, du, bt, gm, sat, con, bri, shp, den);
-            var scaled = nearestNeighborScale(enhanced, cs);
-            var result = medianCutQuantize(scaled, mc);
-            var quantized = result.canvas;
-            colorPalette = result.palette;
-            quantized = lineRepair(quantized, cs);
-            gridW = cs; gridH = cs;
-            gridData = getGridData(quantized, cs);
-            undoStack = [];
-
+            var du=parseInt(document.getElementById('darkUnify').value);
+            var cs=parseInt(document.getElementById('canvasSize').value);
+            var bt=parseInt(document.getElementById('blackThreshold').value);
+            var gm=parseInt(document.getElementById('gamma').value)/100;
+            var sat=parseInt(document.getElementById('saturation').value)/100;
+            var con=parseInt(document.getElementById('contrast').value);
+            var bri=parseInt(document.getElementById('brightness').value);
+            var shp=parseInt(document.getElementById('sharpen').value);
+            var den=parseInt(document.getElementById('denoise').value);
+            var sg=document.getElementById('showGrid').value==='yes';
+            var gc=document.getElementById('gridColor').value;
+            var enhanced=applyEnhanceOnOriginal(originalImage,du,bt,gm,sat,con,bri,shp,den);
+            var scaled=nearestNeighborScale(enhanced,cs);
+            var result=mardQuantize(scaled);
+            var quantized=result.canvas;
+            colorPalette=result.palette;
+            quantized=lineRepair(quantized,cs);
+            gridW=cs;gridH=cs;
+            gridData=getGridData(quantized,cs);
+            undoStack=[];
             rerender();
-            document.getElementById('downloadBtn').disabled = false;
-            document.getElementById('downloadCodeBtn').disabled = false;
-            document.getElementById('toolInfo').textContent = '✅ 深色归一→增强→缩放→量化→线修复';
+            document.getElementById('downloadBtn').disabled=false;
+            document.getElementById('downloadCodeBtn').disabled=false;
             hideLoading();
-        }catch(e){
-            console.error(e); hideLoading();
-            alert('处理失败: '+e.message);
-        }
-    }, 100);
+        }catch(e){console.error(e);hideLoading();alert('处理失败: '+e.message);}
+    },100);
 }
 
-function applyEnhanceOnOriginal(img, du, bt, gm, sat, con, bri, shp, den){
+function mardQuantize(sc){
     var c=document.createElement('canvas'),ctx=c.getContext('2d');
-    c.width=img.width;c.height=img.height;
-    ctx.drawImage(img,0,0);
+    c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
+    var paletteRgb=[],used={};
+    for(var i=0;i<p.length;i+=4){
+        if(p[i+3]<128)continue;
+        var best=0,bd=Infinity;
+        for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist([p[i],p[i+1],p[i+2]],MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}
+        var key=MARD_COLORS[best].id;if(!used[key]){used[key]=true;paletteRgb.push(MARD_COLORS[best].rgb);}
+    }
+    for(var i=0;i<p.length;i+=4){
+        if(p[i+3]<128)continue;
+        var best=0,bd=Infinity;
+        for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist([p[i],p[i+1],p[i+2]],MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}
+        p[i]=MARD_COLORS[best].rgb[0];p[i+1]=MARD_COLORS[best].rgb[1];p[i+2]=MARD_COLORS[best].rgb[2];
+    }
+    ctx.putImageData(id,0,0);
+    return{canvas:c,palette:paletteRgb};
+}
+
+function applyEnhanceOnOriginal(img,du,bt,gm,sat,con,bri,shp,den){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');
+    c.width=img.width;c.height=img.height;ctx.drawImage(img,0,0);
     if(den>0){c=denoise(c,den);ctx=c.getContext('2d')}
     var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
     for(var i=0;i<p.length;i+=4){
-        var r=p[i],g=p[i+1],b=p[i+2];
-        if(p[i+3]<128)continue;
+        var r=p[i],g=p[i+1],b=p[i+2];if(p[i+3]<128)continue;
         if(du>0){var lum=0.299*r+0.587*g+0.114*b;if(lum<du){p[i]=0;p[i+1]=0;p[i+2]=0;continue}}
         var rf=r/255,gf=g/255,bf=b/255;
         if(bt>0){var t=bt/100;rf=blackLift(rf,t);gf=blackLift(gf,t);bf=blackLift(bf,t)}
@@ -199,23 +383,16 @@ function applyEnhanceOnOriginal(img, du, bt, gm, sat, con, bri, shp, den){
         if(bri!==0){var bv=bri/100;rf=c01(rf+bv);gf=c01(gf+bv);bf=c01(bf+bv)}
         p[i]=Math.round(c01(rf)*255);p[i+1]=Math.round(c01(gf)*255);p[i+2]=Math.round(c01(bf)*255);
     }
-    ctx.putImageData(id,0,0);
-    if(shp>0)c=sharpen(c,shp);
-    return c;
+    ctx.putImageData(id,0,0);if(shp>0)c=sharpen(c,shp);return c;
 }
 function blackLift(v,t){return v<t?v*v/t:(v-t)/(1-t)}
 function c01(v){return Math.max(0,Math.min(1,v))}
-
-function nearestNeighborScale(sourceCanvas, targetSize){
+function nearestNeighborScale(sc,ts){
     var c=document.createElement('canvas'),ctx=c.getContext('2d');
-    c.width=targetSize;c.height=targetSize;
-    ctx.imageSmoothingEnabled=false;
-    var size=Math.min(sourceCanvas.width,sourceCanvas.height);
-    var sx=Math.floor((sourceCanvas.width-size)/2),sy=Math.floor((sourceCanvas.height-size)/2);
-    ctx.drawImage(sourceCanvas,sx,sy,size,size,0,0,targetSize,targetSize);
-    return c;
+    c.width=ts;c.height=ts;ctx.imageSmoothingEnabled=false;
+    var size=Math.min(sc.width,sc.height),sx=Math.floor((sc.width-size)/2),sy=Math.floor((sc.height-size)/2);
+    ctx.drawImage(sc,sx,sy,size,size,0,0,ts,ts);return c;
 }
-
 function denoise(sc,str){
     var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
     var id=ctx.getImageData(0,0,c.width,c.height),w=c.width,h=c.height,src=id.data,dst=new Uint8ClampedArray(src),r=Math.min(str,2);
@@ -234,46 +411,6 @@ function sharpen(sc,str){
     }
     for(var i=0;i<src.length;i++)src[i]=dst[i];ctx.putImageData(id,0,0);return c;
 }
-
-function medianCutQuantize(sc, maxColors){
-    var c=document.createElement('canvas'),ctx=c.getContext('2d');
-    c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
-    var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
-    var pixels=[];
-    for(var i=0;i<p.length;i+=4){if(p[i+3]>=128)pixels.push([p[i],p[i+1],p[i+2]])}
-    if(pixels.length===0)return {canvas:c,palette:[[0,0,0]]};
-    var boxes=[{pixels:pixels,rng:[0,255,0,255,0,255]}];
-    while(boxes.length<maxColors){
-        var bestIdx=0,bestCount=0;
-        for(var i=0;i<boxes.length;i++){if(boxes[i].pixels.length>bestCount){bestCount=boxes[i].pixels.length;bestIdx=i}}
-        var box=boxes[bestIdx];if(box.pixels.length<2)break;
-        var rng=box.rng,dr=rng[1]-rng[0],dg=rng[3]-rng[2],db=rng[5]-rng[4];
-        var ch=dr>=dg&&dr>=db?0:(dg>=db?1:2);
-        box.pixels.sort(function(a,b){return a[ch]-b[ch]});
-        var mid=Math.floor(box.pixels.length/2);
-        var p1=box.pixels.slice(0,mid),p2=box.pixels.slice(mid);
-        boxes.splice(bestIdx,1,{pixels:p1,rng:getRange(p1)},{pixels:p2,rng:getRange(p2)});
-    }
-    var palette=[];
-    for(var i=0;i<boxes.length;i++){
-        var sum=[0,0,0],px=boxes[i].pixels;
-        for(var j=0;j<px.length;j++){sum[0]+=px[j][0];sum[1]+=px[j][1];sum[2]+=px[j][2]}
-        palette.push([Math.round(sum[0]/px.length),Math.round(sum[1]/px.length),Math.round(sum[2]/px.length)]);
-    }
-    for(var i=0;i<p.length;i+=4){
-        if(p[i+3]<128)continue;
-        var best=0,bd=Infinity;
-        for(var j=0;j<palette.length;j++){var d=weightedLabDist([p[i],p[i+1],p[i+2]],palette[j]);if(d<bd){bd=d;best=j}}
-        p[i]=palette[best][0];p[i+1]=palette[best][1];p[i+2]=palette[best][2];
-    }
-    ctx.putImageData(id,0,0);
-    return {canvas:c,palette:palette};
-}
-function getRange(px){
-    var rmn=255,rmx=0,gmn=255,gmx=0,bmn=255,bmx=0;
-    for(var i=0;i<px.length;i++){var r=px[i][0],g=px[i][1],b=px[i][2];if(r<rmn)rmn=r;if(r>rmx)rmx=r;if(g<gmn)gmn=g;if(g>gmx)gmx=g;if(b<bmn)bmn=b;if(b>bmx)bmx=b}
-    return[rmn,rmx,gmn,gmx,bmn,bmx];
-}
 function rgb2lab(rgb){
     var r=rgb[0]/255,g=rgb[1]/255,b=rgb[2]/255;
     r=r>0.04045?Math.pow((r+0.055)/1.055,2.4):r/12.92;g=g>0.04045?Math.pow((g+0.055)/1.055,2.4):g/12.92;b=b>0.04045?Math.pow((b+0.055)/1.055,2.4):b/12.92;
@@ -282,245 +419,104 @@ function rgb2lab(rgb){
     return[116*fy-16,500*(fx-fy),200*(fy-fz)];
 }
 function weightedLabDist(rgb1,rgb2){
-    var l1=rgb2lab(rgb1),l2=rgb2lab(rgb2);
-    var dl=l1[0]-l2[0],da=l1[1]-l2[1],db=l1[2]-l2[2];
-    return Math.sqrt(dl*dl + 2.2*da*da + 2.2*db*db);
+    var l1=rgb2lab(rgb1),l2=rgb2lab(rgb2);var dl=l1[0]-l2[0],da=l1[1]-l2[1],db=l1[2]-l2[2];
+    return Math.sqrt(dl*dl+2.2*da*da+2.2*db*db);
 }
-
-function lineRepair(sc, gs){
-    var c=document.createElement('canvas'),ctx=c.getContext('2d');
-    c.width=gs;c.height=gs;ctx.drawImage(sc,0,0);
+function lineRepair(sc,gs){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=gs;c.height=gs;ctx.drawImage(sc,0,0);
     var id=ctx.getImageData(0,0,gs,gs),p=id.data;
-    for(var y=1;y<gs-1;y++){
-        for(var x=1;x<gs-1;x++){
-            var idx=(y*gs+x)*4;
-            var r=p[idx],g=p[idx+1],b=p[idx+2];
-            if(r===0&&g===0&&b===0)continue;
-            var blackCount=0,whiteCount=0;
-            for(var dy=-1;dy<=1;dy++){
-                for(var dx=-1;dx<=1;dx++){
-                    if(dx===0&&dy===0)continue;
-                    var nidx=((y+dy)*gs+(x+dx))*4;
-                    var nr=p[nidx],ng=p[nidx+1],nb=p[nidx+2];
-                    if(nr===0&&ng===0&&nb===0)blackCount++;
-                    if(nr===255&&ng===255&&nb===255)whiteCount++;
-                }
-            }
-            if(blackCount>=5&&whiteCount<=1){p[idx]=0;p[idx+1]=0;p[idx+2]=0;}
-        }
-    }
-    ctx.putImageData(id,0,0);
-    return c;
+    for(var y=1;y<gs-1;y++){for(var x=1;x<gs-1;x++){
+        var idx=(y*gs+x)*4;var r=p[idx],g=p[idx+1],b=p[idx+2];if(r===0&&g===0&&b===0)continue;
+        var bc=0,wc=0;
+        for(var dy=-1;dy<=1;dy++){for(var dx=-1;dx<=1;dx++){
+            if(dx===0&&dy===0)continue;var nidx=((y+dy)*gs+(x+dx))*4;
+            var nr=p[nidx],ng=p[nidx+1],nb=p[nidx+2];
+            if(nr===0&&ng===0&&nb===0)bc++;if(nr===255&&ng===255&&nb===255)wc++;
+        }}
+        if(bc>=5&&wc<=1){p[idx]=0;p[idx+1]=0;p[idx+2]=0;}
+    }}
+    ctx.putImageData(id,0,0);return c;
 }
 function getGridData(sc,gs){
     var ctx=sc.getContext('2d');var id=ctx.getImageData(0,0,gs,gs),p=id.data;
-    var data=[];
-    for(var y=0;y<gs;y++){data[y]=[];for(var x=0;x<gs;x++){var idx=(y*gs+x)*4;data[y][x]=[p[idx],p[idx+1],p[idx+2],p[idx+3]]}}
+    var data=[];for(var y=0;y<gs;y++){data[y]=[];for(var x=0;x<gs;x++){var idx=(y*gs+x)*4;data[y][x]=[p[idx],p[idx+1],p[idx+2],p[idx+3]]}}
     return data;
 }
-
+function findMardId(rgb){
+    var best=null,bd=Infinity;
+    for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(rgb,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=MARD_COLORS[j];}}
+    return best?best.id:'??';
+}
 function removeSingles(){
-    if(!gridData)return;
-    saveUndo();
+    if(!gridData)return;saveUndo();
     var w=gridData[0].length,h=gridData.length,changed=0;
-    for(var y=0;y<h;y++){
-        for(var x=0;x<w;x++){
-            var color=gridData[y][x];
-            var sameNeighbors=0,diffColor=null;
-            for(var dy=-1;dy<=1;dy++){
-                for(var dx=-1;dx<=1;dx++){
-                    if(dx===0&&dy===0)continue;
-                    var nx=x+dx,ny=y+dy;if(nx<0||nx>=w||ny<0||ny>=h)continue;
-                    var nc=gridData[ny][nx];
-                    if(nc[0]===color[0]&&nc[1]===color[1]&&nc[2]===color[2])sameNeighbors++;
-                    else diffColor=nc;
-                }
-            }
-            if(sameNeighbors===0&&diffColor){
-                gridData[y][x]=[diffColor[0],diffColor[1],diffColor[2],255];
-                changed++;
-            }
-        }
-    }
-    if(changed>0)rerender();
-    document.getElementById('pixelInfo').textContent='清除了 '+changed+' 个孤立点';
+    for(var y=0;y<h;y++){for(var x=0;x<w;x++){
+        var color=gridData[y][x];var sn=0,dc=null;
+        for(var dy=-1;dy<=1;dy++){for(var dx=-1;dx<=1;dx++){
+            if(dx===0&&dy===0)continue;var nx=x+dx,ny=y+dy;if(nx<0||nx>=w||ny<0||ny>=h)continue;
+            var nc=gridData[ny][nx];if(nc[0]===color[0]&&nc[1]===color[1]&&nc[2]===color[2])sn++;else dc=nc;
+        }}
+        if(sn===0&&dc){gridData[y][x]=[dc[0],dc[1],dc[2],255];changed++;}
+    }}
+    if(changed>0)rerender();document.getElementById('pixelInfo').textContent='清除 '+changed+' 个孤立点';
 }
-
 function saveUndo(){
-    if(!gridData)return;
-    var copy=[];
+    if(!gridData)return;var copy=[];
     for(var y=0;y<gridData.length;y++){copy[y]=[];for(var x=0;x<gridData[y].length;x++){copy[y][x]=gridData[y][x].slice()}}
-    undoStack.push(copy);
-    if(undoStack.length>20)undoStack.shift();
+    undoStack.push(copy);if(undoStack.length>20)undoStack.shift();
 }
-
 function undoBrush(){
-    if(undoStack.length===0){document.getElementById('pixelInfo').textContent='没有可撤回的操作';return}
-    gridData=undoStack.pop();
-    rerender();
-    document.getElementById('pixelInfo').textContent='已撤回 ('+undoStack.length+' 步历史)';
+    if(undoStack.length===0){document.getElementById('pixelInfo').textContent='无可撤回';return}
+    gridData=undoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已撤回('+undoStack.length+'步)';
 }
-
-// 生成色号清单文字
 function getColorListText(){
-    var counts = {};
-    for(var y=0;y<gridData.length;y++){
-        for(var x=0;x<gridData[y].length;x++){
-            var c = gridData[y][x];
-            var key = c[0]+','+c[1]+','+c[2];
-            counts[key] = (counts[key]||0) + 1;
-        }
-    }
-    var sorted = Object.entries(counts).sort(function(a,b){return b[1]-a[1]});
-    var codeMap = {};
-    for(var i=0;i<colorPalette.length;i++){
-        var p = colorPalette[i];
-        codeMap[p[0]+','+p[1]+','+p[2]] = i+1;
-    }
-    var lines = [];
-    for(var i=0;i<sorted.length;i++){
-        var rgb = sorted[i][0].split(',').map(Number);
-        var count = sorted[i][1];
-        var code = codeMap[sorted[i][0]] || '?';
-        var hex = '#'+('0'+rgb[0].toString(16)).slice(-2)+('0'+rgb[1].toString(16)).slice(-2)+('0'+rgb[2].toString(16)).slice(-2);
-        var numStr = (code<10?'0':'')+code;
-        lines.push(numStr+'  '+hex.toUpperCase()+'  ×'+count);
-    }
-    lines.push('共 '+sorted.length+' 色 | 总计 '+gridW*gridH+' 颗');
+    var counts={},idMap={};
+    for(var y=0;y<gridData.length;y++){for(var x=0;x<gridData[y].length;x++){
+        var c=gridData[y][x];var key=c[0]+','+c[1]+','+c[2];counts[key]=(counts[key]||0)+1;if(!idMap[key])idMap[key]=findMardId(c);
+    }}
+    var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1];});
+    var lines=[];for(var i=0;i<sorted.length;i++){var rgb=sorted[i][0].split(',').map(Number);var count=sorted[i][1];lines.push({id:idMap[sorted[i][0]],count:count,rgb:rgb});}
     return lines;
 }
-
 function drawGridFromData(gs,sg,gc){
-    var c=document.createElement('canvas'),ctx=c.getContext('2d');
-    var margin = 30;
-    var cs = 20;
-    var colorListLines = getColorListText();
-    var listHeight = colorListLines.length * 16 + 20;
-    var totalW = gs*cs + margin*2;
-    var totalH = gs*cs + margin*2 + listHeight;
-    c.width = totalW; c.height = totalH;
-    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,totalW,totalH);
-    ctx.imageSmoothingEnabled = false;
-
-    var codeMap = {};
-    for(var i=0;i<colorPalette.length;i++){
-        var p = colorPalette[i];
-        codeMap[p[0]+','+p[1]+','+p[2]] = i+1;
-    }
-
-    for(var y=0;y<gs;y++){
-        for(var x=0;x<gs;x++){
-            var clr = gridData[y][x];
-            var key = clr[0]+','+clr[1]+','+clr[2];
-            ctx.fillStyle = 'rgb('+clr[0]+','+clr[1]+','+clr[2]+')';
-            ctx.fillRect(margin + x*cs, margin + y*cs, cs, cs);
-            if(sg){
-                ctx.strokeStyle = gc;
-                ctx.lineWidth = 0.5;
-                ctx.strokeRect(margin + x*cs, margin + y*cs, cs, cs);
-            }
-            if(showCodes){
-                var code = codeMap[key] || '?';
-                var lum = 0.299*clr[0] + 0.587*clr[1] + 0.114*clr[2];
-                ctx.fillStyle = lum > 128 ? '#000' : '#fff';
-                ctx.font = (cs<15?'7px':'9px') + ' monospace';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(code, margin + x*cs + cs/2, margin + y*cs + cs/2);
-            }
-        }
-    }
-
-    // 行列号
-    ctx.fillStyle = '#333';
-    ctx.font = (cs<15?'7px':'9px') + ' monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for(var x=0;x<gs;x++){
-        ctx.fillText(x+1, margin + x*cs + cs/2, margin/2);
-        ctx.fillText(x+1, margin + x*cs + cs/2, totalH - listHeight - margin/2);
-    }
-    ctx.textAlign = 'right';
-    for(var y=0;y<gs;y++){
-        ctx.fillText(y+1, margin - 5, margin + y*cs + cs/2);
-    }
-    ctx.textAlign = 'left';
-    for(var y=0;y<gs;y++){
-        ctx.fillText(y+1, totalW - margin + 5, margin + y*cs + cs/2);
-    }
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(margin, margin, gs*cs, gs*cs);
-
-    // 色号清单
-    var listY = gs*cs + margin + 10;
-    ctx.fillStyle = '#222';
-    ctx.font = '12px monospace';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    for(var i=0;i<colorListLines.length;i++){
-        ctx.fillText(colorListLines[i], margin, listY + i*16);
-    }
-
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');var margin=40,cs=30;
+    var cl=getColorListText();var lh=cl.length*22+30;
+    var tw=gs*cs+margin*2,th=gs*cs+margin*2+lh;
+    c.width=tw;c.height=th;ctx.fillStyle='#fff';ctx.fillRect(0,0,tw,th);ctx.imageSmoothingEnabled=false;
+    for(var y=0;y<gs;y++){for(var x=0;x<gs;x++){
+        var clr=gridData[y][x];ctx.fillStyle='rgb('+clr[0]+','+clr[1]+','+clr[2]+')';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);
+        if(sg){ctx.strokeStyle=gc;ctx.lineWidth=0.5;ctx.strokeRect(margin+x*cs,margin+y*cs,cs,cs);}
+        if(showCodes){var mid=findMardId(clr);var lum=0.299*clr[0]+0.587*clr[1]+0.114*clr[2];ctx.fillStyle=lum>128?'#000':'#fff';ctx.font='9px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(mid,margin+x*cs+cs/2,margin+y*cs+cs/2);}
+    }}
+    ctx.fillStyle='#333';ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(var x=0;x<gs;x++){ctx.fillText(x+1,margin+x*cs+cs/2,margin/2);ctx.fillText(x+1,margin+x*cs+cs/2,th-lh-margin/2);}
+    ctx.textAlign='right';for(var y=0;y<gs;y++){ctx.fillText(y+1,margin-5,margin+y*cs+cs/2);}
+    ctx.textAlign='left';for(var y=0;y<gs;y++){ctx.fillText(y+1,tw-margin+5,margin+y*cs+cs/2);}
+    ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(margin,margin,gs*cs,gs*cs);
+    var ly=gs*cs+margin+15;ctx.font='bold 13px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText('色号',margin,ly);ctx.fillText('色卡',margin+60,ly);ctx.fillText('数量',margin+160,ly);ly+=22;
+    for(var i=0;i<cl.length;i++){var item=cl[i];ctx.font='12px monospace';ctx.fillStyle='#222';ctx.fillText(item.id,margin,ly+3);ctx.fillStyle='rgb('+item.rgb.join(',')+')';ctx.fillRect(margin+55,ly,20,18);ctx.strokeStyle='#999';ctx.strokeRect(margin+55,ly,20,18);ctx.fillStyle='#222';ctx.fillText('×'+item.count,margin+85,ly+3);ly+=22;}
+    ctx.fillStyle='#e94560';ctx.font='bold 12px monospace';ctx.fillText('共 '+cl.length+' 色 | 总计 '+gs*gs+' 颗',margin,ly+5);
     return c;
 }
-function rerender(){
-    var sg = document.getElementById('showGrid').value==='yes';
-    var gc = document.getElementById('gridColor').value;
-    var fin = drawGridFromData(gridW, sg, gc);
-    displayResult(fin);
-}
-function displayResult(rc){
-    var el = document.getElementById('resultCanvas');
-    el.width = rc.width; el.height = rc.height;
-    el.getContext('2d').drawImage(rc, 0, 0);
-    document.getElementById('resultPlaceholder').style.display = 'none';
-    displayScale = 20;
-}
-function downloadResult(){
-    showCodes = false;
-    rerender();
-    var link = document.createElement('a');
-    link.download = 'bead_effect_'+new Date().toISOString().slice(0,10)+'.png';
-    link.href = document.getElementById('resultCanvas').toDataURL('image/png');
-    link.click();
-    showCodes = document.getElementById('showColorCodes').checked;
-    rerender();
-}
-function downloadCodeResult(){
-    showCodes = true;
-    rerender();
-    setTimeout(function(){
-        var link = document.createElement('a');
-        link.download = 'bead_codes_'+new Date().toISOString().slice(0,10)+'.png';
-        link.href = document.getElementById('resultCanvas').toDataURL('image/png');
-        link.click();
-        showCodes = document.getElementById('showColorCodes').checked;
-        rerender();
-    },200);
-}
+function rerender(){var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;var fin=drawGridFromData(gridW,sg,gc);displayResult(fin);}
+function displayResult(rc){var el=document.getElementById('resultCanvas');el.width=rc.width;el.height=rc.height;el.getContext('2d').drawImage(rc,0,0);document.getElementById('resultPlaceholder').style.display='none';displayScale=30;}
+function downloadResult(){showCodes=false;rerender();var l=document.createElement('a');l.download='bead_effect_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();showCodes=document.getElementById('showColorCodes').checked;rerender();}
+function downloadCodeResult(){showCodes=true;rerender();setTimeout(function(){var l=document.createElement('a');l.download='bead_codes_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();showCodes=document.getElementById('showColorCodes').checked;rerender();},200);}
 
 document.getElementById('resultCanvas').addEventListener('click',function(e){
-    if(!gridData)return;
-    saveUndo();
-    var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
-    var mx=e.clientX-rect.left,my=e.clientY-rect.top;
-    var margin = 30;
-    var cs = 20;
-    var gx = Math.floor((mx*sx - margin) / cs);
-    var gy = Math.floor((my*sx - margin) / cs);
+    if(!gridData)return;var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
+    var mx=e.clientX-rect.left,my=e.clientY-rect.top;var margin=40,cs=30;
+    var gx=Math.floor((mx*sx-margin)/cs),gy=Math.floor((my*sx-margin)/cs);
     if(gx<0||gx>=gridW||gy<0||gy>=gridH)return;
-    var bc=document.getElementById('brushColor').value;
-    var br=parseInt(bc.slice(1,3),16),bg=parseInt(bc.slice(3,5),16),bb=parseInt(bc.slice(5,7),16);
-    var bs=parseInt(document.getElementById('brushSize').value);
-    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH)gridData[ny][nx]=[br,bg,bb,255]}
-    rerender();
-    document.getElementById('pixelInfo').textContent='修改: ('+gx+','+gy+') → '+bc+' (可按撤回)';
+    if(eyedropperActive){var clr=gridData[gy][gx];var best=0,bd=Infinity;for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(clr,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}selectBrush(best);toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → '+MARD_COLORS[best].id;return;}
+    saveUndo();var bs=parseInt(document.getElementById('brushSize').value);
+    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH)gridData[ny][nx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];}
+    rerender();document.getElementById('pixelInfo').textContent='修改: ('+gx+','+gy+') → '+selectedBrushId;
 });
-
 function showLoading(t){document.getElementById('loadingOverlay').style.display='flex';document.getElementById('loadingText').textContent=t}
 function hideLoading(){document.getElementById('loadingOverlay').style.display='none'}
-console.log('✅ 生成器就绪 by 三金超人_SuperTrigen');
+console.log('✅ 就绪 by 三金超人_SuperTrigen');
 </script>
 </body>
 </html>
