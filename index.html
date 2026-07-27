@@ -3,436 +3,799 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>拼豆图纸生成器</title>
+    <title>拼豆图纸生成器 Pro</title>
+    
+    <!-- 引入 OpenCV.js -->
+    <script async src="https://docs.opencv.org/4.8.0/opencv.js" 
+            onload="onOpenCvReady()" id="opencvScript"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #f0f4f8; 
-            padding: 20px; 
-        }
-        .container { max-width: 800px; margin: 0 auto; }
         
-        .box { 
-            background: white; 
-            padding: 30px; 
-            border-radius: 15px; 
-            margin: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
         }
         
-        h1 { color: #ff6b6b; margin-bottom: 10px; }
-        h2 { color: #333; margin-bottom: 20px; font-size: 18px; }
+        .app-container {
+            display: flex;
+            height: 100vh;
+            gap: 0;
+        }
         
-        .upload-area {
-            border: 3px dashed #ccc;
-            padding: 50px;
+        /* ===== 左侧控制面板 ===== */
+        .control-panel {
+            width: 320px;
+            min-width: 320px;
+            background: #16213e;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-right: 2px solid #0f3460;
+        }
+        
+        .control-panel h1 {
+            font-size: 20px;
+            color: #e94560;
             text-align: center;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s;
+            margin-bottom: 5px;
         }
-        .upload-area:hover { border-color: #ff6b6b; background: #fff5f5; }
         
-        button {
-            background: #ff6b6b;
+        .control-panel .subtitle {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .control-group {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .control-group h3 {
+            font-size: 14px;
+            color: #e94560;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #0f3460;
+            padding-bottom: 8px;
+        }
+        
+        .setting-row {
+            margin-bottom: 14px;
+        }
+        
+        .setting-row label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .setting-row .value-display {
+            float: right;
+            color: #e94560;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #0f3460;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #e94560;
+            cursor: pointer;
+        }
+        
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            background: #0f3460;
+            color: #eee;
+            border: 1px solid #1a3a6e;
+            font-size: 13px;
+        }
+        
+        .upload-btn {
+            width: 100%;
+            padding: 12px;
+            background: #e94560;
             color: white;
             border: none;
-            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        
+        .upload-btn:hover {
+            background: #ff6b81;
+            transform: translateY(-1px);
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 14px;
+            background: #0f3460;
+            color: white;
+            border: 2px solid #e94560;
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            margin: 10px 5px;
-        }
-        button:hover { background: #ff5252; }
-        button.gray { background: #95a5a6; }
-        button.gray:hover { background: #7f8c8d; }
-        
-        .row {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .col {
-            flex: 1;
-            min-width: 250px;
-        }
-        
-        img, canvas {
-            max-width: 100%;
-            border-radius: 10px;
-            border: 1px solid #eee;
-        }
-        
-        .color-box {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border-radius: 3px;
-            vertical-align: middle;
-            margin-right: 8px;
-            border: 1px solid #ddd;
-        }
-        
-        .color-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 10px;
-        }
-        
-        .color-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .total {
-            font-size: 20px;
             font-weight: bold;
-            color: #ff6b6b;
-            margin-top: 15px;
+            transition: 0.3s;
         }
-
-        input[type="range"] {
+        
+        .generate-btn:hover {
+            background: #e94560;
+        }
+        
+        .download-btn {
             width: 100%;
-            margin: 10px 0;
-        }
-
-        .setting-row {
-            margin: 15px 0;
+            padding: 12px;
+            background: #00b894;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
         }
         
-        label {
+        .download-btn:hover {
+            background: #00d2a0;
+        }
+        
+        .file-info {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            word-break: break-all;
+        }
+        
+        /* ===== 中间原图预览 ===== */
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a2e;
+            padding: 30px;
+            border-right: 2px solid #0f3460;
+            min-width: 300px;
+        }
+        
+        .preview-panel h2 {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        
+        .preview-box {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .preview-box img {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+        
+        .placeholder {
+            color: #444;
+            font-size: 14px;
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .placeholder .icon {
+            font-size: 60px;
             display: block;
-            margin-bottom: 5px;
-            color: #555;
-            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        /* ===== 右侧图纸预览 ===== */
+        .result-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a2e;
+            padding: 30px;
+            min-width: 300px;
+            overflow: auto;
+        }
+        
+        .result-panel h2 {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+        
+        .result-box canvas {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 10px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1000px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .control-panel {
+                width: 100%;
+                min-width: auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 10px;
+            }
+            .control-group {
+                flex: 1;
+                min-width: 200px;
+            }
+            .preview-panel, .result-panel {
+                min-width: auto;
+                padding: 15px;
+            }
+        }
+        
+        /* 加载提示 */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-box {
+            background: #16213e;
+            padding: 30px 50px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .loading-box .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #0f3460;
+            border-top: 4px solid #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="box">
-            <h1>🎨 拼豆图纸生成器</h1>
-            <h2>上传图片 → 自动生成拼豆图纸 → 导出打印</h2>
-        </div>
-
-        <!-- 第一步：上传图片 -->
-        <div class="box">
-            <h2>📷 第一步：上传图片</h2>
-            <div class="upload-area" id="uploadBox">
-                <div style="font-size: 50px;">📁</div>
-                <p>点击上传或拖拽图片到这里</p>
-                <p style="color: #999; font-size: 14px;">支持 JPG、PNG 格式</p>
-                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+    <div class="app-container">
+        
+        <!-- ===== 左侧：控制面板 ===== -->
+        <div class="control-panel">
+            <h1>🎨 拼豆生成器 Pro</h1>
+            <p class="subtitle">图片 → 轮廓检测 → 颜色量化 → 方格图纸</p>
+            
+            <!-- 上传区域 -->
+            <div class="control-group">
+                <h3>📁 上传图片</h3>
+                <input type="file" id="fileInput" accept="image/*" style="display:none;">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    选择图片上传
+                </button>
+                <p class="file-info" id="fileInfo">未选择文件</p>
             </div>
-        </div>
-
-        <!-- 第二步：设置 -->
-        <div class="box" id="settingsBox" style="display: none;">
-            <h2>⚙️ 第二步：调整设置</h2>
-            <div class="setting-row">
-                <label>拼豆数量（越多越精细）</label>
-                <input type="range" id="beadCount" min="10" max="80" value="40">
-                <span>当前：<span id="beadCountValue">40</span> 颗/边</span>
-            </div>
-            <button onclick="generateBead()">🎨 生成图纸</button>
-        </div>
-
-        <!-- 第三步：结果 -->
-        <div class="box" id="resultBox" style="display: none;">
-            <h2>✨ 第三步：查看结果</h2>
-            <div class="row">
-                <div class="col">
-                    <h3>原图</h3>
-                    <img id="originalImg" alt="原图">
-                </div>
-                <div class="col">
-                    <h3>拼豆图纸</h3>
-                    <canvas id="beadCanvas"></canvas>
+            
+            <!-- 画布尺寸 -->
+            <div class="control-group">
+                <h3>📐 画布尺寸</h3>
+                <div class="setting-row">
+                    <label>拼豆网格</label>
+                    <select id="canvasSize">
+                        <option value="29">29×29 小底板</option>
+                        <option value="40" selected>40×40 中底板</option>
+                        <option value="50">50×50 标准底板</option>
+                        <option value="80">80×80 大底板</option>
+                        <option value="100">100×100 超大底板</option>
+                    </select>
                 </div>
             </div>
             
-            <div style="margin-top: 20px;">
-                <h3>所需拼豆清单</h3>
-                <div class="color-list" id="beadList"></div>
-                <div class="total" id="totalCount"></div>
+            <!-- 轮廓设置 -->
+            <div class="control-group">
+                <h3>✏️ 轮廓设置</h3>
+                <div class="setting-row">
+                    <label>
+                        轮廓粗细
+                        <span class="value-display" id="contourValue">2</span>px
+                    </label>
+                    <input type="range" id="contourThickness" min="0" max="4" value="2" step="1">
+                </div>
             </div>
             
-            <button onclick="downloadImage()">💾 下载图纸</button>
-            <button onclick="window.print()" class="gray">🖨️ 打印图纸</button>
+            <!-- 颜色量化 -->
+            <div class="control-group">
+                <h3>🎨 颜色量化</h3>
+                <div class="setting-row">
+                    <label>
+                        最大颜色数
+                        <span class="value-display" id="colorCountValue">24</span>
+                    </label>
+                    <input type="range" id="maxColors" min="8" max="48" value="24" step="2">
+                </div>
+            </div>
+            
+            <!-- 网格设置 -->
+            <div class="control-group">
+                <h3>🔲 网格设置</h3>
+                <div class="setting-row">
+                    <label>显示网格线</label>
+                    <select id="showGrid">
+                        <option value="yes" selected>是</option>
+                        <option value="no">否</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label>网格线颜色</label>
+                    <input type="color" id="gridColor" value="#dddddd" style="width:100%; height:35px; border:none; cursor:pointer;">
+                </div>
+            </div>
+            
+            <!-- 生成按钮 -->
+            <button class="generate-btn" id="generateBtn" disabled>
+                🎨 生成拼豆图纸
+            </button>
+            
+            <!-- 下载按钮 -->
+            <button class="download-btn" id="downloadBtn" disabled onclick="downloadResult()">
+                💾 下载图纸 PNG
+            </button>
+        </div>
+        
+        <!-- ===== 中间：原图预览 ===== -->
+        <div class="preview-panel" id="previewPanel">
+            <h2>📷 原图预览</h2>
+            <div class="preview-box" id="previewBox">
+                <div class="placeholder" id="placeholder">
+                    <span class="icon">🖼️</span>
+                    请上传图片
+                </div>
+                <img id="originalImage" style="display:none;" alt="原图">
+            </div>
+        </div>
+        
+        <!-- ===== 右侧：图纸结果 ===== -->
+        <div class="result-panel" id="resultPanel">
+            <h2>🧩 拼豆图纸</h2>
+            <div class="result-box">
+                <canvas id="resultCanvas"></canvas>
+                <div class="placeholder" id="resultPlaceholder">
+                    <span class="icon">🔮</span>
+                    生成后显示图纸
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- OpenCV 加载提示 -->
+    <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <p id="loadingText">处理中...</p>
         </div>
     </div>
 
     <script>
-        // ========== 拼豆颜色库 ==========
-        const BEAD_COLORS = {
-            '白色':   [255, 255, 255],
-            '黑色':   [0, 0, 0],
-            '灰色':   [128, 128, 128],
-            '浅灰':   [200, 200, 200],
-            '红色':   [255, 0, 0],
-            '深红':   [180, 0, 0],
-            '粉色':   [255, 182, 193],
-            '橙色':   [255, 165, 0],
-            '黄色':   [255, 255, 0],
-            '金黄':   [255, 200, 0],
-            '绿色':   [0, 200, 0],
-            '深绿':   [0, 128, 0],
-            '浅绿':   [144, 238, 144],
-            '蓝色':   [0, 0, 255],
-            '天蓝':   [135, 206, 235],
-            '深蓝':   [0, 0, 150],
-            '紫色':   [160, 32, 240],
-            '浅紫':   [200, 162, 200],
-            '棕色':   [139, 69, 19],
-            '肤色':   [255, 218, 185],
-            '米色':   [245, 245, 220],
-            '透明':   [240, 248, 255],
-        };
-
-        let uploadedImage = null;
-
-        // ========== 上传图片 ==========
-        const uploadBox = document.getElementById('uploadBox');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadBox.addEventListener('click', () => fileInput.click());
+    // ===== 全局变量 =====
+    let originalImage = null;
+    let opencvReady = false;
+    let processingImage = null; // 存储待处理的图片
+    
+    // OpenCV 加载完成的回调
+    function onOpenCvReady() {
+        console.log('✅ OpenCV.js 加载完成');
+        opencvReady = true;
+        document.getElementById('generateBtn').disabled = false;
         
-        uploadBox.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadBox.style.borderColor = '#ff6b6b';
-        });
+        // 如果有待处理的图片，自动处理
+        if (processingImage) {
+            processImage(processingImage);
+            processingImage = null;
+        }
+    }
+    
+    // ===== DOM 元素 =====
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    // ===== 滑块实时显示数值 =====
+    document.getElementById('contourThickness').addEventListener('input', function() {
+        document.getElementById('contourValue').textContent = this.value;
+    });
+    
+    document.getElementById('maxColors').addEventListener('input', function() {
+        document.getElementById('colorCountValue').textContent = this.value;
+    });
+    
+    // ===== 上传图片 =====
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
         
-        uploadBox.addEventListener('dragleave', () => {
-            uploadBox.style.borderColor = '#ccc';
-        });
+        if (!file.type.startsWith('image/')) {
+            alert('请上传图片文件！');
+            return;
+        }
         
-        uploadBox.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadBox.style.borderColor = '#ccc';
-            const file = e.dataTransfer.files[0];
-            if (file) handleFile(file);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) handleFile(file);
-        });
-
-        function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert('请上传图片文件！');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    uploadedImage = img;
-                    document.getElementById('settingsBox').style.display = 'block';
-                    document.getElementById('originalImg').src = e.target.result;
-                    document.getElementById('resultBox').style.display = 'block';
-                    generateBead(); // 自动生成
-                };
-                img.src = e.target.result;
+        fileInfo.textContent = '📄 ' + file.name;
+        
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const img = new Image();
+            img.onload = function() {
+                originalImage = img;
+                
+                // 显示原图
+                const previewImg = document.getElementById('originalImage');
+                previewImg.src = ev.target.result;
+                previewImg.style.display = 'block';
+                document.getElementById('placeholder').style.display = 'none';
+                
+                // 启用生成按钮（如果OpenCV已就绪）
+                if (opencvReady) {
+                    generateBtn.disabled = false;
+                }
             };
-            reader.readAsDataURL(file);
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    // ===== 生成按钮 =====
+    generateBtn.addEventListener('click', function() {
+        if (!originalImage) {
+            alert('请先上传图片！');
+            return;
+        }
+        
+        if (!opencvReady) {
+            alert('OpenCV.js 还在加载中，请稍候...');
+            return;
+        }
+        
+        processImage(originalImage);
+    });
+    
+    // ===== 核心处理流程 =====
+    function processImage(img) {
+        showLoading('正在处理图片...');
+        
+        // 使用 setTimeout 让 loading 显示出来
+        setTimeout(() => {
+            try {
+                // 读取参数
+                const canvasSize = parseInt(document.getElementById('canvasSize').value);
+                const contourThickness = parseInt(document.getElementById('contourThickness').value);
+                const maxColors = parseInt(document.getElementById('maxColors').value);
+                const showGrid = document.getElementById('showGrid').value === 'yes';
+                const gridColor = document.getElementById('gridColor').value;
+                
+                // ===== 步骤1：预处理 - 画到canvas获取RGBA =====
+                updateLoading('步骤1/5：预处理图片...');
+                const preprocessed = preprocessImage(img, canvasSize);
+                
+                // ===== 步骤2：轮廓检测 =====
+                updateLoading('步骤2/5：检测轮廓...');
+                const withContours = detectContours(preprocessed, contourThickness);
+                
+                // ===== 步骤3：颜色量化 =====
+                updateLoading('步骤3/5：颜色量化...');
+                const quantized = quantizeColors(withContours, maxColors);
+                
+                // ===== 步骤4：缩放到目标尺寸 =====
+                updateLoading('步骤4/5：缩放到网格...');
+                const resized = resizeToGrid(quantized, canvasSize);
+                
+                // ===== 步骤5：叠加网格 =====
+                updateLoading('步骤5/5：绘制网格图纸...');
+                const finalResult = drawGrid(resized, canvasSize, showGrid, gridColor);
+                
+                // 显示结果
+                displayResult(finalResult, canvasSize);
+                
+                // 启用下载
+                downloadBtn.disabled = false;
+                
+                hideLoading();
+                
+            } catch (error) {
+                console.error('处理失败:', error);
+                hideLoading();
+                alert('处理失败: ' + error.message);
+            }
+        }, 100);
+    }
+    
+    // ===== 步骤1：预处理 =====
+    function preprocessImage(img, targetSize) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 保持比例缩放到接近目标尺寸
+        const ratio = img.width / img.height;
+        let w, h;
+        if (ratio > 1) {
+            w = Math.min(img.width, targetSize * 4);
+            h = Math.round(w / ratio);
+        } else {
+            h = Math.min(img.height, targetSize * 4);
+            w = Math.round(h * ratio);
+        }
+        
+        canvas.width = w;
+        canvas.height = h;
+        
+        // 白色背景
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+        
+        // 绘制图片
+        ctx.drawImage(img, 0, 0, w, h);
+        
+        return canvas;
+    }
+    
+    // ===== 步骤2：轮廓检测 (OpenCV.js)【优化降噪版】 =====
+    function detectContours(sourceCanvas, thickness) {
+        if (thickness === 0) return sourceCanvas;
+
+        const src = cv.imread(sourceCanvas);
+        const dst = src.clone();
+
+        const gray = new cv.Mat();
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+        // ==========【新增降噪：高斯模糊，消除低清图噪点】==========
+        const blurGray = new cv.Mat();
+        cv.GaussianBlur(gray, blurGray, new cv.Size(3,3), 0);
+
+        // Canny阈值微调，门槛更高，忽略微弱噪点边缘
+        const edges = new cv.Mat();
+        cv.Canny(blurGray, edges, 70, 180);
+
+        if (thickness > 1) {
+            const kernel = cv.Mat.ones(thickness, thickness, cv.CV_8U);
+            cv.dilate(edges, edges, kernel);
+            kernel.delete();
         }
 
-        // ========== 滑块 ==========
-        document.getElementById('beadCount').addEventListener('input', (e) => {
-            document.getElementById('beadCountValue').textContent = e.target.value;
-        });
+        const contours = new cv.MatVector();
+        const hierarchy = new cv.Mat();
+        cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
 
-        // ========== 核心：生成拼豆图纸 ==========
-        function generateBead() {
-            if (!uploadedImage) return;
-            
-            const beadCount = parseInt(document.getElementById('beadCount').value);
-            
-            // 创建画布
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // 计算尺寸（保持原图比例）
-            const ratio = uploadedImage.width / uploadedImage.height;
-            let width, height;
-            
-            if (ratio > 1) {
-                width = beadCount;
-                height = Math.round(beadCount / ratio);
-            } else {
-                height = beadCount;
-                width = Math.round(beadCount * ratio);
+        // ==========【过滤极小碎轮廓！去掉噪点生成的细碎黑线】==========
+        const blackColor = new cv.Scalar(0, 0, 0, 255);
+        const minContourArea = 8; // 面积小于8像素的轮廓直接丢弃
+        for(let i = 0; i < contours.size(); i++){
+            const cnt = contours.get(i);
+            const area = cv.contourArea(cnt);
+            if(area > minContourArea){
+                cv.drawContours(dst, contours, i, blackColor, thickness);
             }
-            
-            canvas.width = width;
-            canvas.height = height;
-            
-            // 绘制缩小后的图片
-            ctx.imageSmoothingEnabled = false; // 关键：关闭平滑，获得像素效果
-            ctx.drawImage(uploadedImage, 0, 0, width, height);
-            
-            // 获取像素数据
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const pixels = imageData.data;
-            
-            // 统计颜色
-            const colorCount = {};
-            
-            // 遍历每个像素
-            for (let i = 0; i < pixels.length; i += 4) {
-                const r = pixels[i];
-                const g = pixels[i + 1];
-                const b = pixels[i + 2];
-                const a = pixels[i + 3];
-                
-                // 跳过透明像素
-                if (a < 128) continue;
-                
-                // 找到最接近的拼豆颜色
-                const closest = findClosestBead(r, g, b);
-                
-                // 替换像素颜色
-                pixels[i] = closest[0];
-                pixels[i + 1] = closest[1];
-                pixels[i + 2] = closest[2];
-                
-                // 统计
-                const colorKey = closest.join(',');
-                colorCount[colorKey] = (colorCount[colorKey] || 0) + 1;
-            }
-            
-            // 更新画布
-            ctx.putImageData(imageData, 0, 0);
-            
-            // 显示结果
-            const resultCanvas = document.getElementById('beadCanvas');
-            const resultCtx = resultCanvas.getContext('2d');
-            
-            // 放大显示（每个像素显示为20px）
-            const displaySize = 20;
-            resultCanvas.width = width * displaySize;
-            resultCanvas.height = height * displaySize;
-            resultCtx.imageSmoothingEnabled = false;
-            
-            // 绘制网格和颜色
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    const idx = (y * width + x) * 4;
-                    const r = pixels[idx];
-                    const g = pixels[idx + 1];
-                    const b = pixels[idx + 2];
-                    const a = pixels[idx + 3];
-                    
-                    if (a < 128) continue;
-                    
-                    resultCtx.fillStyle = `rgb(${r},${g},${b})`;
-                    resultCtx.fillRect(
-                        x * displaySize, 
-                        y * displaySize, 
-                        displaySize, 
-                        displaySize
-                    );
-                    
-                    // 网格线
-                    resultCtx.strokeStyle = '#eee';
-                    resultCtx.strokeRect(
-                        x * displaySize, 
-                        y * displaySize, 
-                        displaySize, 
-                        displaySize
-                    );
-                }
-            }
-            
-            // 显示颜色清单
-            displayColorList(colorCount);
         }
 
-        // ========== 查找最接近的拼豆颜色 ==========
-        function findClosestBead(r, g, b) {
-            let minDistance = Infinity;
-            let closest = [255, 255, 255];
-            
-            for (const [name, color] of Object.entries(BEAD_COLORS)) {
-                const distance = Math.sqrt(
-                    Math.pow(r - color[0], 2) +
-                    Math.pow(g - color[1], 2) +
-                    Math.pow(b - color[2], 2)
-                );
-                
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closest = color;
-                }
+        const resultCanvas = document.createElement('canvas');
+        cv.imshow(resultCanvas, dst);
+
+        // 内存释放
+        src.delete();
+        dst.delete();
+        gray.delete();
+        blurGray.delete();
+        edges.delete();
+        contours.delete();
+        hierarchy.delete();
+
+        return resultCanvas;
+    }
+    
+    // ===== 步骤3：颜色量化【优化低清图抗抖动版本】 =====
+    function quantizeColors(sourceCanvas, maxColors) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = sourceCanvas.width;
+        canvas.height = sourceCanvas.height;
+        ctx.drawImage(sourceCanvas, 0, 0);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+
+        const colorMap = {};
+        const colorList = [];
+
+        for (let i = 0; i < pixels.length; i += 4) {
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
+            const a = pixels[i + 3];
+            if (a < 128) continue;
+            // 更大步长预合并颜色，减少候选数量
+            const qr = Math.round(r / 20) * 20;
+            const qg = Math.round(g / 20) * 20;
+            const qb = Math.round(b / 20) * 20;
+            const key = qr + ',' + qg + ',' + qb;
+            if (!colorMap[key]) {
+                colorMap[key] = { r: qr, g: qg, b: qb, count: 0 };
+                colorList.push(colorMap[key]);
             }
-            
-            return closest;
+            colorMap[key].count++;
         }
 
-        // ========== 显示颜色清单 ==========
-        function displayColorList(colorCount) {
-            const listDiv = document.getElementById('beadList');
-            let total = 0;
-            let html = '';
-            
-            // 按数量排序
-            const sorted = Object.entries(colorCount).sort((a, b) => b[1] - a[1]);
-            
-            for (const [rgb, count] of sorted) {
-                const [r, g, b] = rgb.split(',').map(Number);
-                const colorName = getColorName(r, g, b);
-                
-                html += `
-                    <div class="color-item">
-                        <span>
-                            <span class="color-box" style="background: rgb(${rgb})"></span>
-                            ${colorName}
-                        </span>
-                        <span><strong>${count}</strong> 颗</span>
-                    </div>
-                `;
-                total += count;
-            }
-            
-            listDiv.innerHTML = html;
-            document.getElementById('totalCount').textContent = `总计需要：${total} 颗拼豆`;
-        }
+        colorList.sort((a, b) => b.count - a.count);
+        const topColors = colorList.slice(0, maxColors);
 
-        // ========== 获取颜色名称 ==========
-        function getColorName(r, g, b) {
-            let closest = '自定义色';
+        // 人眼加权色彩距离，比单纯平方距离更自然
+        for (let i = 0; i < pixels.length; i += 4) {
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
+            const a = pixels[i + 3];
+            if (a < 128) continue;
+
             let minDist = Infinity;
-            
-            for (const [name, color] of Object.entries(BEAD_COLORS)) {
-                const dist = Math.sqrt(
-                    Math.pow(r - color[0], 2) +
-                    Math.pow(g - color[1], 2) +
-                    Math.pow(b - color[2], 2)
-                );
+            let bestColor = topColors[0];
+            for (const color of topColors) {
+                // 人眼权重：绿色敏感度最高
+                const dist =
+                    2.0 * (r - color.r) ** 2 +
+                    4.0 * (g - color.g) ** 2 +
+                    3.0 * (b - color.b) ** 2;
                 if (dist < minDist) {
                     minDist = dist;
-                    closest = name;
+                    bestColor = color;
                 }
             }
+            pixels[i] = bestColor.r;
+            pixels[i + 1] = bestColor.g;
+            pixels[i + 2] = bestColor.b;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        return canvas;
+    }
+    
+    // ===== 步骤4：缩放到网格尺寸 =====
+    function resizeToGrid(sourceCanvas, gridSize) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = gridSize;
+        canvas.height = gridSize;
+        
+        // 关闭平滑，获得像素化效果
+        ctx.imageSmoothingEnabled = false;
+        
+        // 居中裁剪为正方形
+        const size = Math.min(sourceCanvas.width, sourceCanvas.height);
+        const sx = Math.floor((sourceCanvas.width - size) / 2);
+        const sy = Math.floor((sourceCanvas.height - size) / 2);
+        
+        ctx.drawImage(sourceCanvas, sx, sy, size, size, 0, 0, gridSize, gridSize);
+        
+        return canvas;
+    }
+    
+    // ===== 步骤5：叠加网格 =====
+    function drawGrid(sourceCanvas, gridSize, showGrid, gridColor) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const cellSize = 20; // 每个格子的显示像素
+        canvas.width = gridSize * cellSize;
+        canvas.height = gridSize * cellSize;
+        
+        // 绘制像素化内容
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(sourceCanvas, 0, 0, gridSize, gridSize, 0, 0, canvas.width, canvas.height);
+        
+        // 叠加网格线
+        if (showGrid) {
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 0.5;
             
-            return closest;
+            for (let i = 0; i <= gridSize; i++) {
+                const pos = i * cellSize;
+                ctx.beginPath();
+                ctx.moveTo(pos, 0);
+                ctx.lineTo(pos, canvas.height);
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(0, pos);
+                ctx.lineTo(canvas.width, pos);
+                ctx.stroke();
+            }
         }
-
-        // ========== 下载图纸 ==========
-        function downloadImage() {
-            const canvas = document.getElementById('beadCanvas');
-            const link = document.createElement('a');
-            link.download = '拼豆图纸.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
-
-        console.log('✅ 拼豆生成器已就绪！');
+        
+        return canvas;
+    }
+    
+    // ===== 显示结果 =====
+    function displayResult(resultCanvas, gridSize) {
+        const resultCanvasEl = document.getElementById('resultCanvas');
+        resultCanvasEl.width = resultCanvas.width;
+        resultCanvasEl.height = resultCanvas.height;
+        
+        const ctx = resultCanvasEl.getContext('2d');
+        ctx.drawImage(resultCanvas, 0, 0);
+        
+        document.getElementById('resultPlaceholder').style.display = 'none';
+        
+        // 存储当前结果用于下载
+        resultCanvasEl._resultData = resultCanvas;
+    }
+    
+    // ===== 下载 =====
+    function downloadResult() {
+        const resultCanvasEl = document.getElementById('resultCanvas');
+        const link = document.createElement('a');
+        link.download = '拼豆图纸_' + new Date().toISOString().slice(0,10) + '.png';
+        link.href = resultCanvasEl.toDataURL('image/png');
+        link.click();
+    }
+    
+    // ===== 加载提示 =====
+    function showLoading(text) {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        document.getElementById('loadingText').textContent = text;
+    }
+    
+    function updateLoading(text) {
+        document.getElementById('loadingText').textContent = text;
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+    
+    console.log('✅ 拼豆生成器 Pro 已就绪');
+    console.log('⏳ 等待 OpenCV.js 加载...');
     </script>
 </body>
 </html>
