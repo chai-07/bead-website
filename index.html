@@ -25,7 +25,6 @@
         input[type="text"]{width:100%;padding:6px;border-radius:5px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:12px}
         .btn{width:100%;padding:10px;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold}
         .btn-upload{background:#e94560}.btn-upload:hover{background:#ff6b81}
-        .btn-generate{background:#0f3460;border:2px solid #e94560}.btn-generate:hover{background:#e94560}
         .btn-download{background:#00b894}.btn-download:hover{background:#00d2a0}.btn-download:disabled{opacity:.4;cursor:not-allowed}
         .btn-download2{background:#0984e3}.btn-download2:hover{background:#1a94f7}.btn-download2:disabled{opacity:.4;cursor:not-allowed}
         .btn-reset{background:#636e72;margin-bottom:4px}.btn-reset:hover{background:#7f8c8d}
@@ -54,10 +53,6 @@
         .placeholder .icon{font-size:50px;display:block;margin-bottom:12px}
         .tool-info{font-size:11px;color:#e94560;text-align:center;margin-top:5px;min-height:18px}
         @media(max-width:1000px){.app-container{flex-direction:column}.control-panel{width:100%;min-width:auto;flex-direction:row;flex-wrap:wrap;gap:8px;padding:8px}.control-group{flex:1;min-width:160px}}
-        .loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000}
-        .loading-box{background:#16213e;padding:30px 50px;border-radius:15px;text-align:center}
-        .loading-box .spinner{width:40px;height:40px;border:4px solid #0f3460;border-top:4px solid #e94560;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px}
-        @keyframes spin{to{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
@@ -91,15 +86,13 @@
 <div class="mard-full-grid" id="mardFullGrid"></div>
 <div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
 <button class="btn btn-undo" onclick="undoBrush()">↩ 撤回上一步</button></div>
-<button class="btn btn-generate" id="generateBtn">🎨 生成图纸</button>
 <div class="checkbox-row"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div>
 <button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
 <button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
 </div>
 <div class="preview-panel"><h2>📷 原图</h2><div class="preview-box"><div class="placeholder" id="placeholder"><span class="icon">🖼️</span>请上传图片</div><img id="originalImage" style="display:none" alt="原图"></div></div>
-<div class="result-panel"><h2>🧩 图纸</h2><div class="result-box"><canvas id="resultCanvas"></canvas><div class="placeholder" id="resultPlaceholder"><span class="icon">🔮</span>生成后显示</div></div><p class="tool-info" id="pixelInfo"></p></div>
+<div class="result-panel"><h2>🧩 图纸</h2><div class="result-box"><canvas id="resultCanvas"></canvas><div class="placeholder" id="resultPlaceholder"><span class="icon">🔮</span>上传图片后自动生成</div></div><p class="tool-info" id="pixelInfo"></p></div>
 </div>
-<div class="loading-overlay" id="loadingOverlay" style="display:none"><div class="loading-box"><div class="spinner"></div><p id="loadingText">处理中...</p></div></div>
 
 <script>
 // MARD官方195色完整色谱
@@ -118,11 +111,15 @@ var MARD_COLORS=[
 var originalImage=null,gridW=0,gridH=0,gridData=null,displayScale=30;
 var undoStack=[],colorPalette=[],showCodes=false;
 var selectedBrushColor=[0,0,0],selectedBrushId='H19',eyedropperActive=false;
+var processTimer=null;
 
 function bind(id,disp,fmt){
     var el=document.getElementById(id);
     if(!el)return;
-    el.addEventListener('input',function(){document.getElementById(disp).textContent=fmt?fmt(this.value):this.value;});
+    el.addEventListener('input',function(){
+        document.getElementById(disp).textContent=fmt?fmt(this.value):this.value;
+        requestProcess();
+    });
 }
 bind('darkUnify','darkUnifyValue');bind('blackThreshold','blackValue');
 bind('gamma','gammaValue',function(v){return(v/100).toFixed(2);});bind('saturation','satValue',function(v){return v+'%';});
@@ -184,6 +181,7 @@ function resetParams(){
     setSlider('contrast',100,'contrastValue',function(v){return v+'%';});
     setSlider('brightness',0,'brightValue');setSlider('sharpen',0,'sharpValue');
     setSlider('denoise',0,'denoiseValue');setSlider('maxColors',48,'colorCountValue');
+    requestProcess();
 }
 function setSlider(id,val,disp,fmt){var el=document.getElementById(id);if(el)el.value=val;document.getElementById(disp).textContent=fmt?fmt(val):val;}
 function toggleColorCodes(){showCodes=document.getElementById('showColorCodes').checked;if(gridData)rerender();}
@@ -195,48 +193,48 @@ document.getElementById('fileInput').addEventListener('change',function(e){
     var r=new FileReader();
     r.onload=function(ev){
         var img=new Image();
-        img.onload=function(){originalImage=img;document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';document.getElementById('placeholder').style.display='none'};
+        img.onload=function(){originalImage=img;document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';document.getElementById('placeholder').style.display='none';requestProcess()};
         img.src=ev.target.result;
     };
     r.readAsDataURL(f);
 });
 
-document.getElementById('generateBtn').addEventListener('click',function(){
-    if(!originalImage){alert('请先上传图片');return}
-    processImage();
-});
+document.getElementById('canvasSize').addEventListener('change',requestProcess);
+document.getElementById('showGrid').addEventListener('change',function(){if(gridData)rerender()});
+document.getElementById('gridColor').addEventListener('input',function(){if(gridData)rerender()});
+
+function requestProcess(){
+    if(!originalImage)return;
+    clearTimeout(processTimer);
+    processTimer=setTimeout(processImage,180);
+}
 
 function processImage(){
-    showLoading('处理中...');
-    setTimeout(function(){
-        try{
-            var du=parseInt(document.getElementById('darkUnify').value);
-            var cs=parseInt(document.getElementById('canvasSize').value);
-            var bt=parseInt(document.getElementById('blackThreshold').value);
-            var gm=parseInt(document.getElementById('gamma').value)/100;
-            var sat=parseInt(document.getElementById('saturation').value)/100;
-            var con=parseInt(document.getElementById('contrast').value);
-            var bri=parseInt(document.getElementById('brightness').value);
-            var shp=parseInt(document.getElementById('sharpen').value);
-            var den=parseInt(document.getElementById('denoise').value);
-            var mc=parseInt(document.getElementById('maxColors').value);
-            var sg=document.getElementById('showGrid').value==='yes';
-            var gc=document.getElementById('gridColor').value;
-            var enhanced=applyEnhanceOnOriginal(originalImage,du,bt,gm,sat,con,bri,shp,den);
-            var scaled=nearestNeighborScale(enhanced,cs);
-            var result=mardQuantize(scaled,mc);
-            var quantized=result.canvas;
-            colorPalette=result.palette;
-            quantized=lineRepair(quantized,cs);
-            gridW=cs;gridH=cs;
-            gridData=getGridData(quantized,cs);
-            undoStack=[];
-            rerender();
-            document.getElementById('downloadBtn').disabled=false;
-            document.getElementById('downloadCodeBtn').disabled=false;
-            hideLoading();
-        }catch(e){console.error(e);hideLoading();alert('处理失败: '+e.message);}
-    },100);
+    if(!originalImage)return;
+    try{
+        var du=parseInt(document.getElementById('darkUnify').value);
+        var cs=parseInt(document.getElementById('canvasSize').value);
+        var bt=parseInt(document.getElementById('blackThreshold').value);
+        var gm=parseInt(document.getElementById('gamma').value)/100;
+        var sat=parseInt(document.getElementById('saturation').value)/100;
+        var con=parseInt(document.getElementById('contrast').value);
+        var bri=parseInt(document.getElementById('brightness').value);
+        var shp=parseInt(document.getElementById('sharpen').value);
+        var den=parseInt(document.getElementById('denoise').value);
+        var mc=parseInt(document.getElementById('maxColors').value);
+        var enhanced=applyEnhanceOnOriginal(originalImage,du,bt,gm,sat,con,bri,shp,den);
+        var scaled=nearestNeighborScale(enhanced,cs);
+        var result=mardQuantize(scaled,mc);
+        var quantized=result.canvas;
+        colorPalette=result.palette;
+        quantized=lineRepair(quantized,cs);
+        gridW=cs;gridH=cs;
+        gridData=getGridData(quantized,cs);
+        undoStack=[];
+        rerender();
+        document.getElementById('downloadBtn').disabled=false;
+        document.getElementById('downloadCodeBtn').disabled=false;
+    }catch(e){console.error(e);alert('处理失败: '+e.message);}
 }
 
 function mardQuantize(sc, maxColors){
@@ -414,8 +412,6 @@ document.getElementById('resultCanvas').addEventListener('click',function(e){
     for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH)gridData[ny][nx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];}
     rerender();document.getElementById('pixelInfo').textContent='修改: ('+gx+','+gy+') → '+selectedBrushId;
 });
-function showLoading(t){document.getElementById('loadingOverlay').style.display='flex';document.getElementById('loadingText').textContent=t}
-function hideLoading(){document.getElementById('loadingOverlay').style.display='none'}
 console.log('✅ MARD 195色完整版就绪 by 三金超人_SuperTrigen');
 </script>
 </body>
