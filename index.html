@@ -62,7 +62,8 @@
 <p class="author" style="font-size:18px;margin-top:12px;">by <a href="https://github.com/chai-07" target="_blank">三金超人_SuperTrigen</a></p>
 <div class="control-group"><h3>📁 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
 <div class="control-group"><h3>📐 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option></select><span class="hint">生成的拼豆图纸尺寸</span></div></div>
-<div class="control-group"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">48</span></label><input type="range" id="maxColors" min="4" max="195" value="48" step="1"><span class="hint">限制使用的MARD颜色数量（共195色）</span></div></div>
+<div class="control-group"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">48</span></label><input type="range" id="maxColors" min="4" max="195" value="48" step="1"><span class="hint">限制使用的MARD颜色数量（共195色）</span></div>
+<div class="setting-row"><label>相似颜色合并 <span class="value-display" id="mergeSimilarValue">0</span></label><input type="range" id="mergeSimilar" min="0" max="100" value="0" step="1"><span class="hint">颜色雷同时用同一种豆子替代，减少颜色数量（0=不合并）</span></div></div>
 <div class="control-group"><h3>🔧 图像增强（量化前执行）</h3>
 <div class="setting-row"><label>深色归一阈值 <span class="value-display" id="darkUnifyValue">0</span></label><input type="range" id="darkUnify" min="0" max="40" value="0" step="1"><span class="hint">亮度低于此值的像素强制变纯黑</span></div>
 <div class="setting-row"><label>黑色阈值 <span class="value-display" id="blackValue">0</span></label><input type="range" id="blackThreshold" min="0" max="30" value="0" step="1"><span class="hint">压暗部去灰雾，让画面更通透</span></div>
@@ -85,7 +86,10 @@
 <p style="font-size:10px;color:#666;margin-bottom:4px;">全色板取色（点击选色，195色可滚动）</p>
 <div class="mard-full-grid" id="mardFullGrid"></div>
 <div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
-<button class="btn btn-undo" onclick="undoBrush()">↩ 撤回上一步</button></div>
+<button class="btn btn-undo" onclick="undoBrush()">↩ 后退一步</button>
+<button class="btn btn-undo" onclick="redoBrush()" style="margin-bottom:0">↷ 前进一步</button>
+<button class="btn btn-download2" onclick="saveDraft()" style="margin-bottom:4px;margin-top:4px">📂 暂存草稿</button>
+<button class="btn btn-download2" onclick="loadDraft()" style="margin-bottom:4px">📥 读取草稿</button></div>
 <div class="checkbox-row"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div>
 <button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
 <button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
@@ -109,7 +113,7 @@ var MARD_COLORS=[
 ];
 
 var originalImage=null,gridW=0,gridH=0,gridData=null,displayScale=30;
-var undoStack=[],colorPalette=[],showCodes=false;
+var undoStack=[],redoStack=[],colorPalette=[],showCodes=false;
 var selectedBrushColor=[0,0,0],selectedBrushId='H19',eyedropperActive=false;
 var processTimer=null;
 
@@ -125,36 +129,10 @@ bind('darkUnify','darkUnifyValue');bind('blackThreshold','blackValue');
 bind('gamma','gammaValue',function(v){return(v/100).toFixed(2);});bind('saturation','satValue',function(v){return v+'%';});
 bind('contrast','contrastValue',function(v){return v+'%';});bind('brightness','brightValue');
 bind('sharpen','sharpValue');bind('denoise','denoiseValue');bind('maxColors','colorCountValue');
+bind('mergeSimilar','mergeSimilarValue');
 document.getElementById('brushSize').addEventListener('input',function(){document.getElementById('brushSizeValue').textContent=this.value;});
 
-function initMardFullGrid(){
-    var grid=document.getElementById('mardFullGrid');
-    grid.innerHTML='';
-    for(var i=0;i<MARD_COLORS.length;i++){
-        var mc=MARD_COLORS[i];
-        var item=document.createElement('div');
-        item.className='mard-full-item';
-        item.title=mc.id+' '+mc.name;
-        item.innerHTML='<div class="mard-full-swatch" style="background:rgb('+mc.rgb.join(',')+')"></div><div class="mard-full-label">'+mc.id+'</div>';
-        item.dataset.index=i;
-        item.addEventListener('click',function(e){
-            if(eyedropperActive){toggleEyedropper();return}
-            var idx=parseInt(this.dataset.index);
-            selectBrush(idx);
-        });
-        grid.appendChild(item);
-    }
-    // 默认选H19黑色
-    var blackIdx=-1;
-    for(var i=0;i<MARD_COLORS.length;i++){if(MARD_COLORS[i].id==='H19'){blackIdx=i;break;}}
-    selectBrush(blackIdx>=0?blackIdx:0);
-}
-function selectBrush(idx){
-    selectedBrushColor=MARD_COLORS[idx].rgb.slice();
-    selectedBrushId=MARD_COLORS[idx].id;
-    document.getElementById('brushColorDisplay').textContent=MARD_COLORS[idx].id+' '+MARD_COLORS[idx].name;
-    document.getElementById('mardCodeInput').value=MARD_COLORS[idx].id;
-    document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
+var brushIsNull
     var items=document.getElementById('mardFullGrid').children;
     if(items[idx]){items[idx].classList.add('active');items[idx].scrollIntoView({block:'nearest'});}
 }
