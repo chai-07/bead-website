@@ -31,6 +31,7 @@
         .btn-clear{background:#e17055;margin-bottom:4px}.btn-clear:hover{background:#f19075}
         .btn-undo{background:#6c5ce7;margin-bottom:4px}.btn-undo:hover{background:#7c6cf7}
         .btn-eyedrop{background:#fdcb6e;color:#333;margin-bottom:4px}.btn-eyedrop:hover{background:#ffeaa7}.btn-eyedrop.active{background:#e94560;color:#fff}
+        .btn-null{background:#00b894}.btn-null:hover{background:#00d2a0}.btn-null.active{background:#e94560;color:#fff;box-shadow:0 0 8px #e94560}
         .file-info{font-size:11px;color:#888;text-align:center}
         .checkbox-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#aaa;margin-bottom:8px}
         .checkbox-row input[type="checkbox"]{width:16px;height:16px;cursor:pointer}
@@ -85,11 +86,24 @@
 </div>
 <p style="font-size:10px;color:#666;margin-bottom:4px;">全色板取色（点击选色，195色可滚动）</p>
 <div class="mard-full-grid" id="mardFullGrid"></div>
+<button class="btn btn-null" id="nullBrushBtn" onclick="selectNullBrush()" style="margin-top:6px;margin-bottom:4px;">⬜ 镂空笔(null) · 不填充</button>
 <div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
-<button class="btn btn-undo" onclick="undoBrush()">↩ 后退一步</button>
-<button class="btn btn-undo" onclick="redoBrush()" style="margin-bottom:0">↷ 前进一步</button>
-<button class="btn btn-download2" onclick="saveDraft()" style="margin-bottom:4px;margin-top:4px">📂 暂存草稿</button>
-<button class="btn btn-download2" onclick="loadDraft()" style="margin-bottom:4px">📥 读取草稿</button></div>
+<div style="display:flex;gap:4px;margin-bottom:4px;">
+    <button class="btn btn-undo" onclick="undoBrush()" style="margin-bottom:0">↩ 后退</button>
+    <button class="btn btn-undo" onclick="redoBrush()" style="margin-bottom:0">↷ 前进</button>
+</div></div>
+<div class="control-group"><h3>📦 草稿</h3>
+<input type="text" id="draftName" placeholder="草稿名称，如：皮卡丘-29板" style="margin-bottom:4px">
+<button class="btn btn-download2" onclick="saveDraft()" style="margin-bottom:4px;">📂 暂存草稿</button>
+<select id="draftSelect" style="margin-bottom:4px"><option value="">— 选择要读取的草稿 —</option></select>
+<button class="btn btn-download2" onclick="loadDraft()" style="margin-bottom:4px;">📥 读取草稿</button>
+<div style="display:flex;gap:4px;">
+    <button onclick="deleteDraft()" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:7px 0;">🗑 删除选中</button>
+    <button onclick="exportDraft()" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:7px 0;">💾 导出文件</button>
+    <button onclick="document.getElementById('draftFileInput').click()" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:7px 0;">📁 导入文件</button>
+</div>
+<input type="file" id="draftFileInput" accept=".json,application/json" style="display:none">
+<p class="file-info" id="draftInfo"></p></div>
 <div class="checkbox-row"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div>
 <button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
 <button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
@@ -114,7 +128,7 @@ var MARD_COLORS=[
 
 var originalImage=null,gridW=0,gridH=0,gridData=null,displayScale=30;
 var undoStack=[],redoStack=[],colorPalette=[],showCodes=false;
-var selectedBrushColor=[0,0,0],selectedBrushId='H19',eyedropperActive=false;
+var selectedBrushColor=[0,0,0],selectedBrushId='H19',selectedBrushIsNull=false,eyedropperActive=false;
 var processTimer=null;
 
 function bind(id,disp,fmt){
@@ -128,16 +142,53 @@ function bind(id,disp,fmt){
 bind('darkUnify','darkUnifyValue');bind('blackThreshold','blackValue');
 bind('gamma','gammaValue',function(v){return(v/100).toFixed(2);});bind('saturation','satValue',function(v){return v+'%';});
 bind('contrast','contrastValue',function(v){return v+'%';});bind('brightness','brightValue');
-bind('sharpen','sharpValue');bind('denoise','denoiseValue');bind('maxColors','colorCountValue');
-bind('mergeSimilar','mergeSimilarValue');
+bind('sharpen','sharpValue');bind('denoise','denoiseValue');bind('maxColors','colorCountValue');bind('mergeSimilar','mergeSimilarValue');
 document.getElementById('brushSize').addEventListener('input',function(){document.getElementById('brushSizeValue').textContent=this.value;});
 
-var brushIsNull
+function initMardFullGrid(){
+    var grid=document.getElementById('mardFullGrid');
+    grid.innerHTML='';
+    for(var i=0;i<MARD_COLORS.length;i++){
+        var mc=MARD_COLORS[i];
+        var item=document.createElement('div');
+        item.className='mard-full-item';
+        item.title=mc.id+' '+mc.name;
+        item.innerHTML='<div class="mard-full-swatch" style="background:rgb('+mc.rgb.join(',')+')"></div><div class="mard-full-label">'+mc.id+'</div>';
+        item.dataset.index=i;
+        item.addEventListener('click',function(e){
+            if(eyedropperActive){toggleEyedropper();return}
+            var idx=parseInt(this.dataset.index);
+            selectBrush(idx);
+        });
+        grid.appendChild(item);
+    }
+    // 默认选H19黑色
+    var blackIdx=-1;
+    for(var i=0;i<MARD_COLORS.length;i++){if(MARD_COLORS[i].id==='H19'){blackIdx=i;break;}}
+    selectBrush(blackIdx>=0?blackIdx:0);
+}
+function selectBrush(idx){
+    selectedBrushIsNull=false;
+    selectedBrushColor=MARD_COLORS[idx].rgb.slice();
+    selectedBrushId=MARD_COLORS[idx].id;
+    document.getElementById('brushColorDisplay').textContent=MARD_COLORS[idx].id+' '+MARD_COLORS[idx].name;
+    document.getElementById('mardCodeInput').value=MARD_COLORS[idx].id;
+    document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
     var items=document.getElementById('mardFullGrid').children;
     if(items[idx]){items[idx].classList.add('active');items[idx].scrollIntoView({block:'nearest'});}
+    var nb=document.getElementById('nullBrushBtn');if(nb)nb.classList.remove('active');
+}
+function selectNullBrush(){
+    selectedBrushIsNull=true;
+    selectedBrushId='NULL';
+    document.getElementById('brushColorDisplay').textContent='镂空 NULL · 不填充';
+    document.getElementById('mardCodeInput').value='NULL';
+    document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
+    var nb=document.getElementById('nullBrushBtn');if(nb)nb.classList.add('active');
 }
 function setBrushByCode(){
     var code=document.getElementById('mardCodeInput').value.trim().toUpperCase();
+    if(code==='NULL'){selectNullBrush();return;}
     for(var i=0;i<MARD_COLORS.length;i++){
         if(MARD_COLORS[i].id===code){selectBrush(i);return;}
     }
@@ -158,7 +209,7 @@ function resetParams(){
     setSlider('saturation',100,'satValue',function(v){return v+'%';});
     setSlider('contrast',100,'contrastValue',function(v){return v+'%';});
     setSlider('brightness',0,'brightValue');setSlider('sharpen',0,'sharpValue');
-    setSlider('denoise',0,'denoiseValue');setSlider('maxColors',48,'colorCountValue');
+    setSlider('denoise',0,'denoiseValue');setSlider('maxColors',48,'colorCountValue');setSlider('mergeSimilar',0,'mergeSimilarValue');
     requestProcess();
 }
 function setSlider(id,val,disp,fmt){var el=document.getElementById(id);if(el)el.value=val;document.getElementById(disp).textContent=fmt?fmt(val):val;}
@@ -200,22 +251,24 @@ function processImage(){
         var shp=parseInt(document.getElementById('sharpen').value);
         var den=parseInt(document.getElementById('denoise').value);
         var mc=parseInt(document.getElementById('maxColors').value);
+        var ms=parseInt(document.getElementById('mergeSimilar').value);
+        var mergeThreshold=ms*0.42;
         var enhanced=applyEnhanceOnOriginal(originalImage,du,bt,gm,sat,con,bri,shp,den);
         var scaled=nearestNeighborScale(enhanced,cs);
-        var result=mardQuantize(scaled,mc);
+        var result=mardQuantize(scaled,mc,mergeThreshold);
         var quantized=result.canvas;
         colorPalette=result.palette;
         quantized=lineRepair(quantized,cs);
         gridW=cs;gridH=cs;
         gridData=getGridData(quantized,cs);
-        undoStack=[];
+        undoStack=[];redoStack=[];
         rerender();
         document.getElementById('downloadBtn').disabled=false;
         document.getElementById('downloadCodeBtn').disabled=false;
     }catch(e){console.error(e);alert('处理失败: '+e.message);}
 }
 
-function mardQuantize(sc, maxColors){
+function mardQuantize(sc, maxColors, mergeThreshold){
     var c=document.createElement('canvas'),ctx=c.getContext('2d');
     c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
     var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
@@ -228,6 +281,22 @@ function mardQuantize(sc, maxColors){
     }
     var sorted=Object.entries(freq).sort(function(a,b){return b[1]-a[1];});
     var limited=sorted.slice(0,Math.min(maxColors,sorted.length)).map(function(e){return parseInt(e[0]);});
+    // 合并相似颜色：把 Lab 距离 ≤ 阈值的色卡并入同一簇，取出现最多的色卡作代表
+    var remap={};
+    if(mergeThreshold>0 && limited.length>1){
+        var parent=[];for(var i=0;i<limited.length;i++)parent[i]=i;
+        function find(a){while(parent[a]!==a){parent[a]=parent[parent[a]];a=parent[a];}return a;}
+        function union(a,b){parent[find(a)]=find(b);}
+        for(var i=0;i<limited.length;i++){for(var j=i+1;j<limited.length;j++){
+            var d=weightedLabDist(MARD_COLORS[limited[i]].rgb,MARD_COLORS[limited[j]].rgb);
+            if(d<=mergeThreshold)union(i,j);
+        }}
+        var rep={};
+        for(var i=0;i<limited.length;i++){var r=find(i);var f=freq[limited[i]]||0;if(!rep[r]||f>(rep[r].cnt))rep[r]={idx:limited[i],cnt:f};}
+        for(var i=0;i<limited.length;i++){remap[limited[i]]=rep[find(i)].idx;}
+    }else{
+        for(var i=0;i<limited.length;i++)remap[limited[i]]=limited[i];
+    }
     for(var i=0;i<p.length;i+=4){
         if(p[i+3]<128)continue;
         var best=0,bd=Infinity;
@@ -235,11 +304,12 @@ function mardQuantize(sc, maxColors){
             var d=weightedLabDist([p[i],p[i+1],p[i+2]],MARD_COLORS[limited[j]].rgb);
             if(d<bd){bd=d;best=limited[j];}
         }
+        best=remap[best];
         p[i]=MARD_COLORS[best].rgb[0];p[i+1]=MARD_COLORS[best].rgb[1];p[i+2]=MARD_COLORS[best].rgb[2];
     }
     ctx.putImageData(id,0,0);
-    var paletteRgb=[];
-    for(var i=0;i<limited.length;i++){paletteRgb.push(MARD_COLORS[limited[i]].rgb);}
+    var paletteRgb=[],seen={};
+    for(var i=0;i<limited.length;i++){var ri=remap[limited[i]];if(!seen[ri]){seen[ri]=1;paletteRgb.push(MARD_COLORS[ri].rgb);}}
     return{canvas:c,palette:paletteRgb};
 }
 
@@ -267,10 +337,14 @@ function applyEnhanceOnOriginal(img,du,bt,gm,sat,con,bri,shp,den){
 function blackLift(v,t){return v<t?v*v/t:(v-t)/(1-t)}
 function c01(v){return Math.max(0,Math.min(1,v))}
 function nearestNeighborScale(sc,ts){
+    // 等比缩放放进正方形底板：不裁剪、不变形，长边贴边、居中，四周留空(透明=不填充)
     var c=document.createElement('canvas'),ctx=c.getContext('2d');
-    c.width=ts;c.height=ts;ctx.imageSmoothingEnabled=false;
-    var size=Math.min(sc.width,sc.height),sx=Math.floor((sc.width-size)/2),sy=Math.floor((sc.height-size)/2);
-    ctx.drawImage(sc,sx,sy,size,size,0,0,ts,ts);return c;
+    c.width=ts;c.height=ts;
+    var scale=ts/Math.max(sc.width,sc.height);
+    var tw=Math.max(1,Math.round(sc.width*scale)),th=Math.max(1,Math.round(sc.height*scale));
+    var ox=Math.floor((ts-tw)/2),oy=Math.floor((ts-th)/2);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(sc,0,0,sc.width,sc.height,ox,oy,tw,th);return c;
 }
 function denoise(sc,str){
     var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
@@ -320,14 +394,17 @@ function lineRepair(sc,gs){
     var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=gs;c.height=gs;ctx.drawImage(sc,0,0);
     var id=ctx.getImageData(0,0,gs,gs),p=id.data;
     for(var y=1;y<gs-1;y++){for(var x=1;x<gs-1;x++){
-        var idx=(y*gs+x)*4;var r=p[idx],g=p[idx+1],b=p[idx+2];if(r===0&&g===0&&b===0)continue;
+        var idx=(y*gs+x)*4;var r=p[idx],g=p[idx+1],b=p[idx+2];
+        if(p[idx+3]<128)continue; // 留空/镂空格不参与修复
+        if(r===0&&g===0&&b===0)continue;
         var bc=0,wc=0;
         for(var dy=-1;dy<=1;dy++){for(var dx=-1;dx<=1;dx++){
             if(dx===0&&dy===0)continue;var nidx=((y+dy)*gs+(x+dx))*4;
+            if(p[nidx+3]<128)continue; // 透明邻居不计入黑色统计
             var nr=p[nidx],ng=p[nidx+1],nb=p[nidx+2];
             if(nr===0&&ng===0&&nb===0)bc++;if(nr===255&&ng===255&&nb===255)wc++;
         }}
-        if(bc>=5&&wc<=1){p[idx]=0;p[idx+1]=0;p[idx+2]=0;}
+        if(bc>=5&&wc<=1){p[idx]=0;p[idx+1]=0;p[idx+2]=0;p[idx+3]=255;}
     }}
     ctx.putImageData(id,0,0);return c;
 }
@@ -354,19 +431,32 @@ function removeSingles(){
     }}
     if(changed>0)rerender();document.getElementById('pixelInfo').textContent='清除 '+changed+' 个孤立点';
 }
+function deepCopyGrid(g){
+    if(!g)return null;var c=[];
+    for(var y=0;y<g.length;y++){c[y]=[];for(var x=0;x<g[y].length;x++){c[y][x]=g[y][x].slice();}}
+    return c;
+}
 function saveUndo(){
-    if(!gridData)return;var copy=[];
-    for(var y=0;y<gridData.length;y++){copy[y]=[];for(var x=0;x<gridData[y].length;x++){copy[y][x]=gridData[y][x].slice()}}
-    undoStack.push(copy);if(undoStack.length>20)undoStack.shift();
+    if(!gridData)return;
+    undoStack.push(deepCopyGrid(gridData));if(undoStack.length>20)undoStack.shift();
+    redoStack=[];
 }
 function undoBrush(){
-    if(undoStack.length===0){document.getElementById('pixelInfo').textContent='无可撤回';return}
-    gridData=undoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已撤回('+undoStack.length+'步)';
+    if(undoStack.length===0){document.getElementById('pixelInfo').textContent='无可后退';return}
+    redoStack.push(deepCopyGrid(gridData));
+    gridData=undoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已后退('+undoStack.length+'步)';
+}
+function redoBrush(){
+    if(redoStack.length===0){document.getElementById('pixelInfo').textContent='无可前进';return}
+    undoStack.push(deepCopyGrid(gridData));
+    gridData=redoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已前进('+redoStack.length+'步)';
 }
 function getColorListText(){
     var counts={},idMap={};
     for(var y=0;y<gridData.length;y++){for(var x=0;x<gridData[y].length;x++){
-        var c=gridData[y][x];var key=c[0]+','+c[1]+','+c[2];counts[key]=(counts[key]||0)+1;if(!idMap[key])idMap[key]=findMardId(c);
+        var c=gridData[y][x];
+        if(c[3]<128)continue; // 镂空/留空不计入色号
+        var key=c[0]+','+c[1]+','+c[2];counts[key]=(counts[key]||0)+1;if(!idMap[key])idMap[key]=findMardId(c);
     }}
     var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1];});
     var lines=[];for(var i=0;i<sorted.length;i++){var rgb=sorted[i][0].split(',').map(Number);var count=sorted[i][1];lines.push({id:idMap[sorted[i][0]],count:count,rgb:rgb});}
@@ -408,8 +498,19 @@ function drawGridFromData(gs,sg,gc){
     var tw=gs*cs+margin*2;
     var th=margin+gs*cs+legendAreaH+watermarkH;
     c.width=tw;c.height=th;ctx.fillStyle='#fff';ctx.fillRect(0,0,tw,th);ctx.imageSmoothingEnabled=false;
+    var nullCount=0;
     for(var y=0;y<gs;y++){for(var x=0;x<gs;x++){
-        var clr=gridData[y][x];ctx.fillStyle='rgb('+clr[0]+','+clr[1]+','+clr[2]+')';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);
+        var clr=gridData[y][x];
+        if(clr[3]<128){ // 镂空/留空：白底 + 灰色叉号，不显示色号
+            nullCount++;
+            ctx.fillStyle='#fff';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);
+            ctx.strokeStyle='#bbb';ctx.lineWidth=1;ctx.beginPath();
+            ctx.moveTo(margin+x*cs,margin+y*cs);ctx.lineTo(margin+(x+1)*cs,margin+(y+1)*cs);
+            ctx.moveTo(margin+(x+1)*cs,margin+y*cs);ctx.lineTo(margin+x*cs,margin+(y+1)*cs);ctx.stroke();
+            if(sg){ctx.strokeStyle=gc;ctx.lineWidth=0.5;ctx.strokeRect(margin+x*cs,margin+y*cs,cs,cs);}
+            continue;
+        }
+        ctx.fillStyle='rgb('+clr[0]+','+clr[1]+','+clr[2]+')';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);
         if(sg){ctx.strokeStyle=gc;ctx.lineWidth=0.5;ctx.strokeRect(margin+x*cs,margin+y*cs,cs,cs);}
         if(showCodes){var mid=findMardId(clr);var lum=0.299*clr[0]+0.587*clr[1]+0.114*clr[2];ctx.fillStyle=lum>128?'#000':'#fff';ctx.font='9px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(mid,margin+x*cs+cs/2,margin+y*cs+cs/2);}
     }}
@@ -420,7 +521,7 @@ function drawGridFromData(gs,sg,gc){
     ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(margin,margin,gs*cs,gs*cs);
     var ly=margin+gs*cs+legendTopGap;
     ctx.font='bold 13px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
-    ctx.fillText('色号对照表 (共 '+cl.length+' 色 / 总计 '+gs*gs+' 颗)',margin,ly);
+    ctx.fillText('色号对照表 (共 '+cl.length+' 色 / 总计 '+(gs*gs-nullCount)+' 颗)',margin,ly);
     ly+=titleH;
     for(var i=0;i<cl.length;i++){
         var col=i%perRow,rowi=Math.floor(i/perRow);
@@ -440,16 +541,182 @@ function rerender(){var sg=document.getElementById('showGrid').value==='yes',gc=
 function displayResult(rc){var el=document.getElementById('resultCanvas');el.width=rc.width;el.height=rc.height;el.getContext('2d').drawImage(rc,0,0);document.getElementById('resultPlaceholder').style.display='none';displayScale=30;}
 function downloadResult(){showCodes=false;rerender();var l=document.createElement('a');l.download='bead_effect_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();showCodes=document.getElementById('showColorCodes').checked;rerender();}
 function downloadCodeResult(){showCodes=true;rerender();setTimeout(function(){var l=document.createElement('a');l.download='bead_codes_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();showCodes=document.getElementById('showColorCodes').checked;rerender();},200);}
+// ===== 草稿系统（多草稿 + 自命名；沙盒环境自动降级到内存存储，并支持文件导出/导入兜底） =====
+var memDrafts={}; // localStorage 不可用时的会话内存兜底
+var storageIsMemory=false;
+function draftStorageAvailable(){
+    try{localStorage.setItem('__bead_t','1');localStorage.removeItem('__bead_t');return true;}
+    catch(e){return false;}
+}
+function readAllDrafts(){
+    if(draftStorageAvailable()){
+        try{return JSON.parse(localStorage.getItem('beadDrafts')||'{}');}catch(e){return {};}
+    }
+    storageIsMemory=true;return memDrafts;
+}
+function writeAllDrafts(obj){
+    if(draftStorageAvailable()){
+        try{localStorage.setItem('beadDrafts',JSON.stringify(obj));return true;}
+        catch(e){ // 写入失败（如超出配额）→ 降级内存
+            storageIsMemory=true;memDrafts=obj;return false;
+        }
+    }
+    storageIsMemory=true;memDrafts=obj;return false;
+}
+function refreshDraftSelect(){
+    var sel=document.getElementById('draftSelect');
+    var drafts=readAllDrafts();
+    var names=Object.keys(drafts).sort();
+    var cur=sel.value;
+    sel.innerHTML='<option value="">— 选择要读取的草稿 —</option>';
+    for(var i=0;i<names.length;i++){
+        var opt=document.createElement('option');opt.value=names[i];opt.textContent=names[i];sel.appendChild(opt);
+    }
+    if(names.indexOf(cur)>=0)sel.value=cur;
+    var info=document.getElementById('draftInfo');
+    if(storageIsMemory)info.textContent='⚠ 当前预览环境不支持本地存储，草稿仅本次会话有效；要永久保存请用「导出文件」或直接用浏览器打开本 HTML';
+    else info.textContent=names.length?('已存 '+names.length+' 份草稿'):'';
+}
+function buildDraftObj(){
+    return {
+        v:2,name:'',
+        gridData:gridData,gridW:gridW,gridH:gridH,
+        img:originalImage?originalImage.src:null,
+        params:{
+            canvasSize:document.getElementById('canvasSize').value,
+            darkUnify:document.getElementById('darkUnify').value,
+            blackThreshold:document.getElementById('blackThreshold').value,
+            gamma:document.getElementById('gamma').value,
+            saturation:document.getElementById('saturation').value,
+            contrast:document.getElementById('contrast').value,
+            brightness:document.getElementById('brightness').value,
+            sharpen:document.getElementById('sharpen').value,
+            denoise:document.getElementById('denoise').value,
+            maxColors:document.getElementById('maxColors').value,
+            mergeSimilar:document.getElementById('mergeSimilar').value,
+            showGrid:document.getElementById('showGrid').value,
+            gridColor:document.getElementById('gridColor').value,
+            showColorCodes:document.getElementById('showColorCodes').checked
+        }
+    };
+}
+function saveDraft(){
+    if(!gridData){alert('还没有可暂存的图纸');return;}
+    var defName=document.getElementById('draftName').value.trim();
+    if(!defName){
+        var cs=document.getElementById('canvasSize').value;
+        defName='草稿-'+cs+'x'+cs+'-'+new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    }
+    var name=prompt('给这份草稿起个名字：',defName);
+    if(name===null)return; // 用户取消
+    name=name.trim();if(!name)name=defName;
+    var draft=buildDraftObj();draft.name=name;
+    var drafts=readAllDrafts();
+    if(drafts[name]&&!confirm('草稿「'+name+'」已存在，覆盖吗？'))return;
+    drafts[name]=draft;
+    var ok=writeAllDrafts(drafts);
+    document.getElementById('draftName').value=name;
+    refreshDraftSelect();
+    document.getElementById('draftSelect').value=name;
+    document.getElementById('pixelInfo').textContent=ok?('✅ 草稿「'+name+'」已暂存到浏览器本地'):('✅ 草稿「'+name+'」已暂存（仅本次会话有效，建议导出文件备份）');
+}
+function applyDraftData(d){
+    var p=d.params||{};
+    function setVal(id,val){var el=document.getElementById(id);if(el&&val!==undefined){el.value=val;}}
+    setVal('canvasSize',p.canvasSize);setVal('darkUnify',p.darkUnify);setVal('blackThreshold',p.blackThreshold);
+    setVal('gamma',p.gamma);setVal('saturation',p.saturation);setVal('contrast',p.contrast);
+    setVal('brightness',p.brightness);setVal('sharpen',p.sharpen);setVal('denoise',p.denoise);
+    setVal('maxColors',p.maxColors);setVal('mergeSimilar',p.mergeSimilar);setVal('showGrid',p.showGrid);setVal('gridColor',p.gridColor);
+    if(document.getElementById('showColorCodes'))document.getElementById('showColorCodes').checked=!!p.showColorCodes;
+    document.getElementById('darkUnifyValue').textContent=p.darkUnify||0;
+    document.getElementById('blackValue').textContent=p.blackThreshold||0;
+    document.getElementById('gammaValue').textContent=((p.gamma||100)/100).toFixed(2);
+    document.getElementById('satValue').textContent=(p.saturation||100)+'%';
+    document.getElementById('contrastValue').textContent=(p.contrast||100)+'%';
+    document.getElementById('brightValue').textContent=p.brightness||0;
+    document.getElementById('sharpValue').textContent=p.sharpen||0;
+    document.getElementById('denoiseValue').textContent=p.denoise||0;
+    document.getElementById('colorCountValue').textContent=p.maxColors||48;
+    document.getElementById('mergeSimilarValue').textContent=p.mergeSimilar||0;
+    function applyGrid(){
+        gridData=d.gridData;gridW=d.gridW;gridH=d.gridH;undoStack=[];redoStack=[];
+        rerender();document.getElementById('downloadBtn').disabled=false;document.getElementById('downloadCodeBtn').disabled=false;
+    }
+    if(d.img){
+        originalImage=new Image();
+        originalImage.onload=function(){
+            document.getElementById('originalImage').src=d.img;
+            document.getElementById('originalImage').style.display='block';
+            document.getElementById('placeholder').style.display='none';
+            applyGrid();document.getElementById('pixelInfo').textContent='✅ 已读取草稿「'+(d.name||'')+'」（原图 + 图纸）';
+        };
+        originalImage.src=d.img;
+    }else if(d.gridData){
+        applyGrid();document.getElementById('pixelInfo').textContent='✅ 已读取草稿「'+(d.name||'')+'」（无原图）';
+    }else{alert('草稿内容为空');}
+}
+function loadDraft(){
+    var name=document.getElementById('draftSelect').value;
+    if(!name){alert('请先在下拉框选择要读取的草稿');return;}
+    var drafts=readAllDrafts();
+    var d=drafts[name];
+    if(!d){alert('草稿「'+name+'」不存在');refreshDraftSelect();return;}
+    try{applyDraftData(d);document.getElementById('draftName').value=name;}
+    catch(e){alert('读取失败：'+e.message);}
+}
+function deleteDraft(){
+    var name=document.getElementById('draftSelect').value;
+    if(!name){alert('请先在下拉框选择要删除的草稿');return;}
+    if(!confirm('确定删除草稿「'+name+'」吗？'))return;
+    var drafts=readAllDrafts();delete drafts[name];
+    writeAllDrafts(drafts);refreshDraftSelect();
+    document.getElementById('pixelInfo').textContent='🗑 已删除草稿「'+name+'」';
+}
+function exportDraft(){
+    if(!gridData){alert('还没有可导出的图纸');return;}
+    var name=document.getElementById('draftName').value.trim()||('bead-draft-'+Date.now());
+    var draft=buildDraftObj();draft.name=name;
+    var blob=new Blob([JSON.stringify(draft)],{type:'application/json'});
+    var l=document.createElement('a');l.download=name+'.bead.json';
+    l.href=URL.createObjectURL(blob);l.click();
+    setTimeout(function(){URL.revokeObjectURL(l.href);},1000);
+    document.getElementById('pixelInfo').textContent='💾 已导出草稿文件 '+name+'.bead.json';
+}
+document.getElementById('draftFileInput').addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(ev){
+        try{
+            var d=JSON.parse(ev.target.result);
+            if(!d.gridData)throw new Error('不是有效的拼豆草稿文件');
+            applyDraftData(d);
+            if(d.name)document.getElementById('draftName').value=d.name;
+            document.getElementById('pixelInfo').textContent='✅ 已导入草稿文件「'+(d.name||f.name)+'」';
+        }catch(err){alert('导入失败：'+err.message);}
+    };
+    r.readAsText(f);
+    e.target.value='';
+});
+refreshDraftSelect();
+
 
 document.getElementById('resultCanvas').addEventListener('click',function(e){
     if(!gridData)return;var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
     var mx=e.clientX-rect.left,my=e.clientY-rect.top;var margin=40,cs=30;
     var gx=Math.floor((mx*sx-margin)/cs),gy=Math.floor((my*sx-margin)/cs);
     if(gx<0||gx>=gridW||gy<0||gy>=gridH)return;
-    if(eyedropperActive){var clr=gridData[gy][gx];var best=0,bd=Infinity;for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(clr,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}selectBrush(best);toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → '+MARD_COLORS[best].id;return;}
+    if(eyedropperActive){
+        var clr=gridData[gy][gx];
+        if(clr[3]<128){selectNullBrush();toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → 镂空NULL';return;}
+        var best=0,bd=Infinity;for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(clr,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}
+        selectBrush(best);toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → '+MARD_COLORS[best].id;return;
+    }
     saveUndo();var bs=parseInt(document.getElementById('brushSize').value);
-    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH)gridData[ny][nx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];}
-    rerender();document.getElementById('pixelInfo').textContent='修改: ('+gx+','+gy+') → '+selectedBrushId;
+    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH){
+        if(selectedBrushIsNull){gridData[ny][nx]=[0,0,0,0];}
+        else{gridData[ny][nx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];}
+    }}
+    rerender();document.getElementById('pixelInfo').textContent=(selectedBrushIsNull?'镂空: ':'修改: ')+'('+gx+','+gy+') → '+selectedBrushId;
 });
 console.log('✅ MARD 195色完整版就绪 by 三金超人_SuperTrigen');
 </script>
