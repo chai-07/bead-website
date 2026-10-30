@@ -183,12 +183,12 @@
 <div class="setting-row"><label>碎块阈值(≤N颗) <span id="speckSizeValue" class="value-display">2</span></label><input type="range" id="speckSize" min="1" max="8" value="2" step="1"></div>
 <button class="btn btn-clear" id="cleanSpecksBtn">✨ 一键清杂点</button>
 <span class="hint">移除≤阈值的孤立同色碎块，自动并入周边主色</span></div>
+<div class="setting-row" style="margin-bottom:6px;"><label>导出文件命名前缀</label><input type="text" id="exportName" placeholder="留空自动：随机命名1 / 随机命名2 …"></div>
 <button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
 <button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
 <button class="btn btn-download" id="colorPdfBtn" style="margin-top:6px" disabled onclick="downloadColorPdf()">📕 彩色PDF</button>
-<button class="btn btn-download2" id="outlinePdfBtn" disabled onclick="downloadOutlinePdf()">📄 黑白轮廓PDF</button>
 <button class="btn btn-download2" id="csvBtn" disabled onclick="downloadCsv()">📊 CSV耗材清单</button>
-<button class="btn" id="packageBtn"  disabled onclick="packageExport()">📦 一键打包导出（5种）</button>
+<button class="btn" id="packageBtn"  disabled onclick="packageExport()">📦 一键打包导出（4种）</button>
 <span class="hint" id="pkgHint">打包将优先让你选择文件夹保存；浏览器不支持时自动下载ZIP（解压即得文件夹）</span>
 </div>
 <div class="center-column">
@@ -258,6 +258,8 @@ var MARD_COLORS=[
 ];
 
 var originalImage=null,gridW=0,gridH=0,gridData=null,displayScale=30,editMask=null,pendingReapply=null,_gridInit=false;
+var currentViewRect=null; // 当前原图在原图(原始未裁)像素坐标系中的可视区域，用于裁剪时映射笔刷点坐标
+var exportCounter=0; // 未填命名时自动编号：随机命名1、随机命名2…
 var undoStack=[],redoStack=[],colorPalette=[],showCodes=false;
 var selectedBrushColor=[0,0,0],selectedBrushId='H19',selectedBrushIsNull=false,eyedropperActive=false;
 var processTimer=null;
@@ -359,7 +361,7 @@ document.getElementById('fileInput').addEventListener('change',function(e){
     var r=new FileReader();
     r.onload=function(ev){
         var img=new Image();
-        img.onload=function(){originalImage=img;document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';setFloatVisible(true);requestProcess()};
+        img.onload=function(){originalImage=img;rawOriginalImage=null;cropState=null;currentViewRect={x:0,y:0,w:img.naturalWidth,h:img.naturalHeight};document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';setFloatVisible(true);requestProcess()};
         img.src=ev.target.result;
     };
     r.readAsDataURL(f);
@@ -395,6 +397,18 @@ function applyBrushEdits(edits){
     for(var i=0;i<edits.length;i++){var e=edits[i];
         if(e.x>=0&&e.x<gw&&e.y>=0&&e.y<gh){gridData[e.y][e.x]=[e.c[0],e.c[1],e.c[2],e.c[3]]; if(editMask)editMask[e.y][e.x]=true;}
     }
+}
+// 把笔刷点从「当前可视区域」坐标映射到「新可视区域」坐标，使笔刷点跟随裁剪走（成为图纸一部分）
+function transformEdits(fx,fy,fw,fh, tx,ty,tw,th, edits){
+    if(!edits)return null;
+    var out=[];
+    for(var i=0;i<edits.length;i++){
+        var e=edits[i];
+        var rx=fx+(e.x+0.5)/gridW*fw, ry=fy+(e.y+0.5)/gridH*fh; // 落到原图(原始未裁)像素
+        var nx=Math.round((rx-tx)/tw*gridW-0.5), ny=Math.round((ry-ty)/th*gridH-0.5);
+        if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH)out.push({x:nx,y:ny,c:e.c});
+    }
+    return out.length?out:null;
 }
 function requestProcess(){
     if(!originalImage)return;
@@ -445,7 +459,6 @@ function processImage(){
         document.getElementById('downloadBtn').disabled=false;
         document.getElementById('downloadCodeBtn').disabled=false;
         document.getElementById('colorPdfBtn').disabled=false;
-        document.getElementById('outlinePdfBtn').disabled=false;
         document.getElementById('csvBtn').disabled=false;
         document.getElementById('packageBtn').disabled=false;
     }catch(e){console.error(e);alert('处理失败: '+e.message);}
@@ -795,8 +808,8 @@ function applyWandFill(rgba){
     wandSelection=null;rerender();
     document.getElementById('pixelInfo').textContent='✅ 魔棒选区已用「'+(selectedBrushIsNull?'镂空null':selectedBrushId)+'」填充';
 }
-function downloadResult(){showCodes=false;var s=wandSelection;wandSelection=null;rerender();var l=document.createElement('a');l.download='bead_effect_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();}
-function downloadCodeResult(){showCodes=true;var s=wandSelection;wandSelection=null;rerender();setTimeout(function(){var l=document.createElement('a');l.download='bead_codes_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();},200);}
+function downloadResult(){showCodes=false;var s=wandSelection;wandSelection=null;rerender();var l=document.createElement('a');l.download=getExportPrefix()+'_效果图.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();}
+function downloadCodeResult(){showCodes=true;var s=wandSelection;wandSelection=null;rerender();setTimeout(function(){var l=document.createElement('a');l.download=getExportPrefix()+'_色号图纸.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();},200);}
 // ===== 草稿系统（多草稿 + 自命名；沙盒环境自动降级到内存存储，并支持文件导出/导入兜底） =====
 var memDrafts={}; // localStorage 不可用时的会话内存兜底
 var storageIsMemory=false;
@@ -874,6 +887,7 @@ function saveDraft(){
     drafts[name]=draft;
     var ok=writeAllDrafts(drafts);
     document.getElementById('draftName').value=name;
+    document.getElementById('exportName').value=name;
     refreshDraftSelect();
     document.getElementById('draftSelect').value=name;
     document.getElementById('pixelInfo').textContent=ok?('✅ 草稿「'+name+'」已暂存到浏览器本地'):('✅ 草稿「'+name+'」已暂存（仅本次会话有效，建议导出文件备份）');
@@ -906,6 +920,7 @@ function applyDraftData(d){
             document.getElementById('originalImage').src=d.img;
             document.getElementById('originalImage').style.display='block';
             setFloatVisible(true);
+            currentViewRect={x:0,y:0,w:originalImage.naturalWidth,h:originalImage.naturalHeight};
             applyGrid();document.getElementById('pixelInfo').textContent='✅ 已读取草稿「'+(d.name||'')+'」（原图 + 图纸）';
         };
         originalImage.src=d.img;
@@ -919,7 +934,7 @@ function loadDraft(){
     var drafts=readAllDrafts();
     var d=drafts[name];
     if(!d){alert('草稿「'+name+'」不存在');refreshDraftSelect();return;}
-    try{applyDraftData(d);document.getElementById('draftName').value=name;}
+    try{applyDraftData(d);document.getElementById('draftName').value=name;document.getElementById('exportName').value=name;}
     catch(e){alert('读取失败：'+e.message);}
 }
 function deleteDraft(){
@@ -949,6 +964,7 @@ document.getElementById('draftFileInput').addEventListener('change',function(e){
             if(!d.gridData)throw new Error('不是有效的拼豆草稿文件');
             applyDraftData(d);
             if(d.name)document.getElementById('draftName').value=d.name;
+            if(d.name)document.getElementById('exportName').value=d.name;
             document.getElementById('pixelInfo').textContent='✅ 已导入草稿文件「'+(d.name||f.name)+'」';
         }catch(err){alert('导入失败：'+err.message);}
     };
@@ -1384,13 +1400,23 @@ function applyCrop(){
     var c=document.createElement('canvas'); c.width=Math.max(1,Math.round(sw)); c.height=Math.max(1,Math.round(sh));
     c.getContext('2d').drawImage(originalImage,sx,sy,sw,sh,0,0,c.width,c.height);
     var ni=new Image();
-    ni.onload=function(){ originalImage=ni; var oi=document.getElementById('originalImage'); oi.src=ni.src; oi.style.display='block'; closeCrop(); pendingReapply=captureBrushEdits(); requestProcess(); document.getElementById('pixelInfo').textContent='✂ 已应用前置裁剪'; };
+    ni.onload=function(){
+        var edits=captureBrushEdits();
+        var nv={x:(currentViewRect?currentViewRect.x:0)+sx, y:(currentViewRect?currentViewRect.y:0)+sy, w:sw, h:sh};
+        pendingReapply=transformEdits((currentViewRect?currentViewRect.x:0),(currentViewRect?currentViewRect.y:0),(currentViewRect?currentViewRect.w:originalImage.naturalWidth),(currentViewRect?currentViewRect.h:originalImage.naturalHeight), nv.x,nv.y,nv.w,nv.h, edits);
+        currentViewRect=nv;
+        originalImage=ni; var oi=document.getElementById('originalImage'); oi.src=ni.src; oi.style.display='block'; closeCrop(); requestProcess(); document.getElementById('pixelInfo').textContent='✂ 已应用前置裁剪';
+    };
     ni.src=c.toDataURL('image/png');
 }
 function restoreCrop(){
     if(!rawOriginalImage)return;
+    var edits=captureBrushEdits();
+    var rw=rawOriginalImage.naturalWidth, rh=rawOriginalImage.naturalHeight;
+    pendingReapply=transformEdits((currentViewRect?currentViewRect.x:0),(currentViewRect?currentViewRect.y:0),(currentViewRect?currentViewRect.w:rw),(currentViewRect?currentViewRect.h:rh), 0,0,rw,rh, edits);
+    currentViewRect={x:0,y:0,w:rw,h:rh};
     originalImage=rawOriginalImage; var oi=document.getElementById('originalImage'); oi.src=rawOriginalImage.src; oi.style.display='block';
-    closeCrop(); pendingReapply=captureBrushEdits(); requestProcess(); document.getElementById('pixelInfo').textContent='↺ 已恢复原图（取消裁剪）';
+    closeCrop(); requestProcess(); document.getElementById('pixelInfo').textContent='↺ 已恢复原图（取消裁剪）';
 }
 (function(){
     var ov=document.getElementById('cropOverlay'); var drag=null;
@@ -1848,43 +1874,19 @@ function fixHookHazard(){
 
 /* ---------- 9. 导出：彩色PDF / 黑白轮廓PDF / CSV / 一键打包 ---------- */
 function stamp(){return new Date().toISOString().slice(0,10);}
+function getExportPrefix(){
+    var el=document.getElementById('exportName');
+    var n=el?el.value.trim():'';
+    if(n)return n;
+    exportCounter++;
+    return '随机命名'+exportCounter;
+}
 function renderVariant(variant){
     var prev=showCodes;
     if(variant==='codes')showCodes=true; else showCodes=false;
     var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;
     var c=drawGridFromData(gridW,gridH,sg,gc);
     showCodes=prev; return c;
-}
-function drawOutlineFromData(gw,gh,sg,gc){
-    var c=document.createElement('canvas'),ctx=c.getContext('2d'),margin=40,cs=30;
-    var cl=getColorListText();
-    var perRow=13,rowH=54,swSize=36,usableW=gw*cs,minColW=swSize+12+58;
-    var autoPerRow=Math.floor(usableW/minColW); if(autoPerRow<perRow)perRow=Math.max(3,autoPerRow);
-    var colW=usableW/perRow,legendRows=cl.length>0?Math.ceil(cl.length/perRow):0;
-    var legendTopGap=46,titleH=36,legendAreaH=legendTopGap+titleH+legendRows*rowH+12,watermarkH=44;
-    var tw=gw*cs+margin*2,th=margin+gh*cs+legendAreaH+watermarkH;
-    c.width=tw;c.height=th;ctx.fillStyle='#fff';ctx.fillRect(0,0,tw,th);ctx.imageSmoothingEnabled=false;
-    for(var y=0;y<gh;y++)for(var x=0;x<gw;x++){
-        var clr=gridData[y][x],tx=margin+x*cs,ty=margin+y*cs;
-        if(clr[3]<128){ctx.strokeStyle='#ddd';ctx.lineWidth=1;ctx.strokeRect(tx,ty,cs,cs);continue;}
-        ctx.fillStyle='#fff';ctx.fillRect(tx,ty,cs,cs);
-        ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(tx,ty,cs,cs);
-    }
-    ctx.fillStyle='#222';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
-    for(var x=0;x<gw;x++){ctx.fillText(x+1,margin+x*cs+cs/2,margin/2);ctx.fillText(x+1,margin+x*cs+cs/2,margin+gh*cs+18);}
-    ctx.textAlign='right';for(var y=0;y<gh;y++)ctx.fillText(y+1,margin-5,margin+y*cs+cs/2);
-    ctx.textAlign='left';for(var y=0;y<gh;y++)ctx.fillText(y+1,tw-margin+5,margin+y*cs+cs/2);
-    ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(margin,margin,gw*cs,gh*cs);
-    var ly=margin+gh*cs+legendTopGap;
-    ctx.font='bold 22px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
-    ctx.fillText('耗材清单 (共 '+cl.length+' 色)',margin,ly); ly+=titleH;
-    for(var i=0;i<cl.length;i++){var col=i%perRow,rowi=Math.floor(i/perRow),ix=margin+col*colW,iy=ly+rowi*rowH,item=cl[i];
-        ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.strokeRect(ix,iy,swSize,swSize);
-        ctx.font='bold 16px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
-        ctx.fillText(item.id,ix+swSize+7,iy+4);
-        ctx.font='15px monospace';ctx.fillText('×'+item.count,ix+swSize+7,iy+25);
-    }
-    drawWatermark(ctx,tw,th); return c;
 }
 function findMardName(rgb){for(var j=0;j<MARD_COLORS.length;j++){if(MARD_COLORS[j].rgb[0]===rgb[0]&&MARD_COLORS[j].rgb[1]===rgb[1]&&MARD_COLORS[j].rgb[2]===rgb[2])return MARD_COLORS[j].name;}return '';}
 function buildCsv(){
@@ -1948,19 +1950,18 @@ function buildZipSync(files){
     var out=new Uint8Array(total),p=0;for(var k=0;k<chunks.length;k++){out.set(chunks[k],p);p+=chunks[k].length;}
     return out;
 }
-function downloadColorPdf(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(pdfFromCanvas(renderVariant('effect'),0.92),'bead_color_'+stamp()+'.pdf');}
-function downloadOutlinePdf(){if(!gridData){alert('请先生成图纸');return;}var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;downloadBlob(pdfFromCanvas(drawOutlineFromData(gridW,gridH,sg,gc),0.95),'bead_outline_'+stamp()+'.pdf');}
-function downloadCsv(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(new Blob([buildCsv()],{type:'text/csv;charset=utf-8'}),'bead_materials_'+stamp()+'.csv');}
+function downloadColorPdf(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(pdfFromCanvas(renderVariant('effect'),0.92),getExportPrefix()+'_彩色.pdf');}
+function downloadCsv(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(new Blob([buildCsv()],{type:'text/csv;charset=utf-8'}),getExportPrefix()+'_耗材清单.csv');}
 async function packageExport(){
     if(!gridData){alert('请先生成图纸');return;}
     var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;
-    var effectC=renderVariant('effect'),codesC=renderVariant('codes'),outlineC=drawOutlineFromData(gridW,gridH,sg,gc);
+    var prefix=getExportPrefix();
+    var effectC=renderVariant('effect'),codesC=renderVariant('codes');
     var files=[
-        {name:'bead_effect.png',blob:await canvasToBlob(effectC,'image/png')},
-        {name:'bead_codes.png',blob:await canvasToBlob(codesC,'image/png')},
-        {name:'bead_color.pdf',blob:pdfFromCanvas(effectC,0.92)},
-        {name:'bead_outline.pdf',blob:pdfFromCanvas(outlineC,0.95)},
-        {name:'bead_materials.csv',blob:new Blob([buildCsv()],{type:'text/csv;charset=utf-8'})}
+        {name:prefix+'_效果图.png',blob:await canvasToBlob(effectC,'image/png')},
+        {name:prefix+'_色号图纸.png',blob:await canvasToBlob(codesC,'image/png')},
+        {name:prefix+'_彩色.pdf',blob:pdfFromCanvas(effectC,0.92)},
+        {name:prefix+'_耗材清单.csv',blob:new Blob([buildCsv()],{type:'text/csv;charset=utf-8'})}
     ];
     if(window.showDirectoryPicker){
         try{
@@ -1971,7 +1972,7 @@ async function packageExport(){
         }catch(err){ if(err&&err.name==='AbortError')return; }
     }
     var arr=[];for(var i=0;i<files.length;i++){var ab=new Uint8Array(await files[i].blob.arrayBuffer());arr.push({name:files[i].name,data:ab});}
-    downloadBlob(new Blob([buildZipSync(arr)],{type:'application/zip'}),'bead_package_'+stamp()+'.zip');
+    downloadBlob(new Blob([buildZipSync(arr)],{type:'application/zip'}),prefix+'_打包.zip');
     document.getElementById('pixelInfo').textContent='📦 浏览器不支持选文件夹，已打包ZIP下载（解压即得文件夹）';
 }
 
