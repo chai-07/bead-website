@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免费拼豆图纸生成器 Pro - by 三金超人_SuperTrigen</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        html,body{height:100%}
+        body{font-family:'Segoe UI',Arial,sans-serif;background:#1a1a2e;color:#eee}
+        .app-container{display:flex;height:100vh;overflow:hidden}
+        .control-panel{width:260px;min-width:240px;background:#16213e;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border-right:2px solid #0f3460;position:relative;z-index:68}
+        .control-panel h1{font-size:18px;color:#e94560;text-align:center}
+        .control-panel .author{font-size:10px;color:#555;text-align:center;margin-bottom:6px}
+        .control-panel .author a{color:#6c5ce7;text-decoration:none}
+        .control-panel .author a:hover{color:#e94560}
+        .control-group{background:#1a1a2e;border-radius:10px;padding:12px}
+        .control-group h3{font-size:13px;color:#e94560;margin-bottom:8px;border-bottom:1px solid #0f3460;padding-bottom:6px}
+        .setting-row{margin-bottom:8px}
+        .setting-row label{display:block;font-size:12px;color:#aaa;margin-bottom:2px}
+        .hint{font-size:10px;color:#666;display:block;margin-top:1px}
+        .value-display{float:right;color:#e94560;font-weight:bold;font-size:12px}
+        input[type="range"]{width:100%;height:5px;border-radius:3px;background:#0f3460;-webkit-appearance:none;cursor:pointer}
+        input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#e94560;cursor:pointer}
+        select,input[type="color"]{width:100%;padding:6px;border-radius:5px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:12px}
+        input[type="text"]{width:100%;padding:6px;border-radius:5px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:12px}
+        .btn{width:100%;padding:10px;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:bold}
+        .btn-upload{background:#e94560}.btn-upload:hover{background:#ff6b81}
+        .btn-download{background:#00b894}.btn-download:hover{background:#00d2a0}.btn-download:disabled{opacity:.4;cursor:not-allowed}
+        .btn-download2{background:#0984e3}.btn-download2:hover{background:#1a94f7}.btn-download2:disabled{opacity:.4;cursor:not-allowed}
+        .btn-reset{background:#636e72;margin-bottom:4px}.btn-reset:hover{background:#7f8c8d}
+        .btn-clear{background:#e17055;margin-bottom:4px}.btn-clear:hover{background:#f19075}
+        .btn-undo{background:#6c5ce7;margin-bottom:4px}.btn-undo:hover{background:#7c6cf7}
+        .btn-eyedrop{background:#fdcb6e;color:#333;margin-bottom:4px}.btn-eyedrop:hover{background:#ffeaa7}.btn-eyedrop.active{background:#e94560;color:#fff}
+        .btn-null{background:#00b894}.btn-null:hover{background:#00d2a0}.btn-null.active{background:#e94560;color:#fff;box-shadow:0 0 8px #e94560}#packageBtn {background:#e94560;margin-top:4px;}
+        #packageBtn:disabled {opacity:.4;cursor:not-allowed;}
+        .file-info{font-size:11px;color:#888;text-align:center}
+        .checkbox-row{display:flex;align-items:center;gap:8px;font-size:12px;color:#aaa;margin-bottom:8px}
+        .checkbox-row input[type="checkbox"]{width:16px;height:16px;cursor:pointer}
+        .mard-full-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;max-height:250px;overflow-y:auto;padding:4px;background:#0f3460;border-radius:6px;margin-top:6px}
+        .mard-full-item{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:2px 1px;border-radius:3px;border:1px solid transparent;transition:0.15s}
+        .mard-full-item:hover{border-color:#fff;background:#1a3a6e}
+        .mard-full-item.active{border-color:#e94560;background:#1a1a2e;box-shadow:0 0 8px #e94560}
+        .mard-full-swatch{width:22px;height:22px;border-radius:2px;border:1px solid #555}
+        .mard-full-label{font-size:8px;color:#ccc;margin-top:1px;text-align:center}
+        .eyedrop-cursor{cursor:crosshair}
+        .preview-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a2e;padding:20px;border-right:2px solid #0f3460;min-width:280px}
+        .preview-panel h2{font-size:14px;color:#888;margin-bottom:15px}
+        .preview-box{max-width:100%;max-height:65vh;border-radius:10px;overflow:auto;background:#111;display:flex;align-items:center;justify-content:center}
+        .preview-box img{max-width:100%;max-height:65vh;object-fit:contain}
+        .result-panel{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a2e;padding:20px;min-width:280px;overflow:auto}
+        .result-panel h2{font-size:14px;color:#888;margin-bottom:15px}
+        .result-box{overflow:auto;width:100%;max-width:100%;max-height:70vh}
+        .result-box canvas{display:block;margin:0 auto;max-width:none;image-rendering:pixelated;cursor:crosshair}
+        .placeholder{color:#444;font-size:13px;text-align:center;padding:40px}
+        .placeholder .icon{font-size:50px;display:block;margin-bottom:12px}
+        .tool-info{font-size:11px;color:#e94560;text-align:center;margin-top:5px;min-height:18px}
+        @media(max-width:1200px){
+        .app-container{flex-direction:column;height:auto;min-height:100vh;padding-top:56px}
+        .control-panel{position:fixed;top:0;left:0;height:100vh;width:320px;max-width:85vw;z-index:70;transform:translateX(-105%);transition:transform .3s ease;box-shadow:8px 0 24px rgba(0,0,0,.5);padding-top:60px}
+        .control-panel.open{transform:translateX(0)}
+        .mobile-bar{display:flex}
+        .review-panel{position:fixed;top:0;right:0;height:100vh;width:330px;max-width:92vw;transform:translateX(105%);transition:transform .3s ease;z-index:75;box-shadow:-8px 0 24px rgba(0,0,0,.5)}
+        .review-panel.open{transform:translateX(0)}
+        .result-box canvas{touch-action:none}
+        .preview-panel,.result-panel{min-width:auto;width:100%}
+    }
+    .group-toggle{cursor:pointer;user-select:none}
+    .group-toggle::after{content:' ▼';font-size:10px;color:#e94560}
+    .control-group.collapsed .group-body{display:none}
+    .control-group.collapsed .group-toggle::after{content:' ▶'}
+    .group-body{margin-top:8px}
+    .mobile-bar{display:none;align-items:center;gap:8px;padding:10px;background:#16213e;border-bottom:2px solid #0f3460;position:fixed;top:0;left:0;right:0;z-index:72}
+    .mobile-bar .mbtn{flex:1;background:#0f3460;color:#eee;border:1px solid #1a3a6e;border-radius:8px;padding:12px;font-size:15px;font-weight:bold}
+    .center-column{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;max-width:1000px;margin:0 auto;overflow-y:auto}
+    .center-column .result-panel{flex:none;border-right:none;background:transparent;min-height:0}
+    .result-area{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+.center-column .result-box{width:100%;max-width:100%;max-height:100%;overflow:auto}
+    .float-original{position:fixed;top:12px;left:auto;right:12px;bottom:auto;width:160px;max-width:32%;background:#16213e;border:1px solid #e94560;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.5);z-index:120;overflow:hidden}
+    .float-head{display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#0f3460;color:#e94560;font-size:12px;cursor:move;user-select:none}
+    .float-x{cursor:pointer;color:#eee;font-size:14px;padding:0 4px}
+    .float-body{position:relative}
+    .float-body img{display:block;width:100%;height:auto}
+    @media (max-width:1199px){ .float-original{top:auto;bottom:84px;right:12px} }
+    .mid-bottom{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:5px 12px;background:#16213e;border-top:2px solid #0f3460;overflow:visible;white-space:normal}
+.center-column .mid-bottom>*{margin:0}
+.center-column .mid-bottom .control-group{display:flex;flex-direction:row;align-items:center;flex-wrap:nowrap;gap:6px;padding:4px 8px;margin:0!important;border-radius:6px}
+.center-column .mid-bottom .control-group h3{margin:0!important;font-size:12px;white-space:nowrap}
+.center-column .mid-bottom .setting-row{margin:0!important}
+.center-column .mid-bottom .control-group input,.center-column .mid-bottom .control-group select,.center-column .mid-bottom .control-group button{margin:0!important}
+.center-column .mid-bottom #draftName{width:96px}
+.center-column .mid-bottom #draftSelect{width:100px}
+.center-column .mid-bottom .draft-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
+.center-column .mid-bottom .mini{background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:6px 7px;white-space:nowrap}
+.center-column .mid-bottom .btn{padding:5px 8px;font-size:12px}
+.center-column .mid-bottom #toggleOriginalBtn{margin:0!important}
+.center-column .mid-bottom #zoomInfo,.center-column .mid-bottom #draftInfo{margin:0!important}
+    .zoom-bar{margin:0!important}
+    .center-column .mid-bottom .zoom-col{flex-direction:column;align-items:flex-start;gap:3px}
+    .center-column .mid-bottom .zoom-col .zoom-btns{display:flex;gap:4px;align-items:center;margin:0!important}
+    .center-column .mid-bottom .mini-cap{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1}
+    .center-column .mid-bottom .mini-cap .cap{font-size:9px;color:#bbb}
+    .review-panel{width:260px;min-width:240px;background:#16213e;border-left:2px solid #e94560;display:flex;flex-direction:column;overflow:hidden}
+    .rp-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#0f3460;color:#e94560;font-weight:bold;font-size:15px}
+    .rp-close{background:none;border:none;color:#eee;font-size:22px;cursor:pointer;line-height:1}
+    .rp-body{padding:14px 16px;overflow-y:auto;flex:1;font-size:13px;color:#ddd}
+    .rp-section{background:#1a1a2e;border-radius:8px;padding:10px;margin-bottom:12px}
+    .rp-section h4{color:#e94560;font-size:13px;margin-bottom:8px;border-bottom:1px solid #0f3460;padding-bottom:4px}
+    .rp-stat{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+    .rp-frag{font-size:11px;color:#ffb3b3;margin:2px 0}
+    .rp-suggest{font-size:12px;color:#aef;margin:3px 0}
+    .rp-badge{display:inline-block;background:#e94560;color:#fff;border-radius:10px;padding:3px 12px;font-weight:bold;font-size:14px}
+    .scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:65;opacity:0;visibility:hidden;transition:.3s}
+    .scrim.show{opacity:1;visibility:visible}
+    .crop-overlay{position:fixed;background:rgba(0,0,0,.5);touch-action:none;z-index:85;display:none}
+    .crop-rect{position:absolute;border:2px dashed #e94560;background:rgba(233,69,96,.18);box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
+    .hl-btn:active{background:#e94560!important}
+    .btn-review{background:#6c5ce7!important;margin-bottom:6px}
+    .btn-review:hover{background:#7c6cf7!important}
+    .rp-tab{cursor:pointer;transition:filter .15s}
+    .rp-tab:hover{filter:brightness(1.15)}
+    .risk-item{cursor:pointer;transition:background .15s,border-color .15s}
+    .risk-item:hover{background:#1a3a6e!important;border-color:#e94560!important}
+    </style>
+</head>
+<body>
+<div class="app-container">
+<div class="control-panel" id="control-panel" style="width:400px;flex-shrink:0;">
+<h1 class="title" style="font-size:18px;margin-top:10px;white-space:nowrap;">🎨 超级拼豆图纸生成器</h1>
+<p class="author" style="font-size:16px;margin-top:8px;white-space:nowrap;">by <a href="https://github.com/chai-07" target="_blank">三金超人_SuperTrigen</a></p>
+<div class="control-group"><h3>📁 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
+<div class="control-group"><h3>✂ 前置裁剪</h3>
+<button class="btn btn-clear" id="cropOpenBtn" style="margin-bottom:4px">✂ 开启裁剪</button>
+<div style="display:flex;gap:4px;">
+    <button id="cropApplyBtn" disabled style="flex:1;background:#00b894;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer">✅ 应用裁剪</button>
+    <button id="cropRestoreBtn" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer">↺ 恢复原图</button>
+</div>
+<span class="hint">在原图上拖拽选取区域，应用后仅该区域参与拼豆生成</span></div>
+<div class="control-group"><h3>📐 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="20">20×20 超小底板</option><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option><option value="custom">自定义尺寸…</option></select><span class="hint">生成的拼豆图纸尺寸</span></div><div class="setting-row" id="customSizeRow" style="display:none"><label>自定义 (宽×高)</label><span style="display:flex;gap:6px;align-items:stretch"><input type="text" id="customSize" placeholder="例如 35x35 或 60x40" style="flex:1;width:100%;min-width:0;padding:8px;border-radius:6px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:13px"><button class="btn" id="customSizeConfirm" style="width:auto;flex-shrink:0;padding:8px 16px;font-size:13px;border-radius:6px;background:#e94560;color:#fff">确认</button></span><span class="hint">输入格式：宽x高（5~150，如 35x35），填好后点「确认」生成</span></div></div>
+<div class="control-group"><h3>🌈 多品牌色板</h3>
+<div class="setting-row"><label>色板品牌</label><select id="brandSel"><option value="MARD" selected>MARD 195色</option><option value="PERLER">Perler 117色</option><option value="HAMA">Hama 33色</option><option value="ARTKAL">Artkal 176色</option></select></div>
+<span class="hint">切换取色色板（不影响自动量化配色）</span></div>
+<div class="control-group"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">48</span></label><input type="range" id="maxColors" min="4" max="195" value="48" step="1"><span class="hint">限制使用的MARD颜色数量</span></div>
+<div class="setting-row"><label>相似颜色合并 <span class="value-display" id="mergeSimilarValue">0</span></label><input type="range" id="mergeSimilar" min="0" max="100" value="0" step="1"><span class="hint">颜色雷同时用同一种豆子替代，减少颜色数量（0=不合并）</span></div></div>
+<div class="control-group"><h3>🔧 图像增强（量化前执行）</h3>
+<div class="setting-row"><label>深色归一阈值 <span class="value-display" id="darkUnifyValue">0</span></label><input type="range" id="darkUnify" min="0" max="40" value="0" step="1"><span class="hint">亮度低于此值的像素强制变纯黑</span></div>
+<div class="setting-row"><label>黑色阈值 <span class="value-display" id="blackValue">0</span></label><input type="range" id="blackThreshold" min="0" max="30" value="0" step="1"><span class="hint">压暗部去灰雾，让画面更通透</span></div>
+<div class="setting-row"><label>伽马校正 <span class="value-display" id="gammaValue">1.00</span></label><input type="range" id="gamma" min="70" max="130" value="100" step="1"><span class="hint">校正整体亮度曲线</span></div>
+<div class="setting-row"><label>饱和度 <span class="value-display" id="satValue">100</span>%</label><input type="range" id="saturation" min="80" max="120" value="100" step="1"><span class="hint">增强色彩鲜艳度</span></div>
+<div class="setting-row"><label>对比度 <span class="value-display" id="contrastValue">100</span>%</label><input type="range" id="contrast" min="80" max="120" value="100" step="1"><span class="hint">100为原图基准，左右微调明暗层次</span></div>
+<div class="setting-row"><label>亮度 <span class="value-display" id="brightValue">0</span></label><input type="range" id="brightness" min="-20" max="20" value="0" step="1"><span class="hint">整体提亮或压暗</span></div>
+<div class="setting-row"><label>锐化 <span class="value-display" id="sharpValue">0</span></label><input type="range" id="sharpen" min="-10" max="10" value="0" step="1"><span class="hint">正值锐化 / 负值柔化，0为原图</span></div>
+<div class="setting-row"><label>降噪 <span class="value-display" id="denoiseValue">0</span></label><input type="range" id="denoise" min="0" max="5" value="0" step="1"><span class="hint">减少杂色碎点</span></div>
+<button class="btn btn-reset" onclick="resetParams()">↺ 重置所有参数</button></div>
+<div class="control-group"><h3>🧹 清理</h3><button class="btn btn-clear" onclick="removeSingles()">🧹 清除1×1孤立点</button></div>
+<!-- 画布缩放控件已移至中栏底部 .mid-bottom -->
+<div class="control-group"><h3>🪞 对称绘图</h3>
+<div class="setting-row"><label>对称模式</label><select id="symMode"><option value="off" selected>关闭</option><option value="vertical">左右对称</option><option value="horizontal">上下对称</option><option value="quad">四向对称</option></select></div>
+<span class="hint">开启后画笔自动镜像，适合制作对称图案</span></div>
+<div class="control-group"><h3>🖌️ 手动修图</h3>
+<div style="display:flex;gap:4px;margin-bottom:6px;">
+    <button class="btn btn-wand" id="wandBtn" onclick="toggleWand()" style="flex:1;background:#9b59b6;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;padding:8px 0;">🪄 魔棒选区</button>
+</div>
+<p style="font-size:11px;color:#aaa;margin-bottom:4px;">画笔: <span id="brushColorDisplay" style="color:#e94560;">H19 黑色</span></p>
+<div style="display:flex;gap:4px;margin-bottom:6px;">
+    <button class="btn btn-eyedrop" id="eyedropBtn" onclick="toggleEyedropper()" style="flex:1;">💉 取色管</button>
+    <input type="text" id="mardCodeInput" placeholder="输入色号如A1" style="flex:2;" onkeydown="if(event.key==='Enter')setBrushByCode()">
+    <button onclick="setBrushByCode()" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;">确定</button>
+</div>
+<p style="font-size:10px;color:#666;margin-bottom:4px;">全色板取色（点击选色，色板可滚动）</p>
+<div class="mard-full-grid" id="mardFullGrid"></div>
+<button class="btn btn-null" id="nullBrushBtn" onclick="selectNullBrush()" style="margin-top:6px;margin-bottom:4px;">⬜ 镂空笔(null) · 不填充</button>
+<div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
+<div style="display:flex;gap:4px;margin-bottom:4px;">
+    <button class="btn btn-undo" onclick="undoBrush()" style="margin-bottom:0">↩ 后退</button>
+    <button class="btn btn-undo" onclick="redoBrush()" style="margin-bottom:0">↷ 前进</button>
+</div></div>
+<div class="control-group"><h3>🔯 挂件工艺模板</h3>
+<div class="setting-row"><label>模板形状</label><select id="templateSel"><option value="none" selected>无 / 清除</option><option value="disc">圆形挂件</option><option value="heart">心形挂件</option><option value="rsquare">圆角方挂件</option></select></div>
+<button class="btn btn-download2" id="applyTemplateBtn">🔯 应用模板</button>
+<span class="hint">将板外区域设为镂空并自动加挂孔</span></div>
+<div class="control-group"><h3>✨ 智能清理</h3>
+<div class="setting-row"><label>碎块阈值(≤N颗) <span id="speckSizeValue" class="value-display">2</span></label><input type="range" id="speckSize" min="1" max="8" value="2" step="1"></div>
+<button class="btn btn-clear" id="cleanSpecksBtn">✨ 一键清杂点</button>
+<span class="hint">移除≤阈值的孤立同色碎块，自动并入周边主色</span></div>
+<button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
+<button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
+<button class="btn btn-download" id="colorPdfBtn" style="margin-top:6px" disabled onclick="downloadColorPdf()">📕 彩色PDF</button>
+<button class="btn btn-download2" id="outlinePdfBtn" disabled onclick="downloadOutlinePdf()">📄 黑白轮廓PDF</button>
+<button class="btn btn-download2" id="csvBtn" disabled onclick="downloadCsv()">📊 CSV耗材清单</button>
+<button class="btn" id="packageBtn"  disabled onclick="packageExport()">📦 一键打包导出（5种）</button>
+<span class="hint" id="pkgHint">打包将优先让你选择文件夹保存；浏览器不支持时自动下载ZIP（解压即得文件夹）</span>
+</div>
+<div class="center-column">
+<div class="result-area" id="resultArea">
+<div class="result-box"><canvas id="resultCanvas"></canvas><div class="placeholder" id="resultPlaceholder"><span class="icon">🔮</span>上传图片后自动生成</div></div>
+<p class="tool-info" id="pixelInfo"></p>
+<div class="float-original" id="floatOriginal" style="display:none">
+<div class="float-head" id="floatHead"><span>📷 原图（拖动此处移动）</span><span class="float-x" id="floatClose" title="隐藏原图">✕</span></div>
+<div class="float-body"><img id="originalImage" style="display:none" alt="原图">
+<div class="crop-overlay" id="cropOverlay"><div class="crop-rect" id="cropRect"></div></div>
+</div>
+</div>
+</div>
+<div class="mid-bottom">
+<button class="btn btn-download2" id="toggleOriginalBtn">👁 显示原图浮窗</button>
+<div class="control-group zoom-bar zoom-col"><h3>🔍 画布缩放</h3>
+<div class="zoom-btns">
+<button onclick="zoomCanvas(0.8)" class="mini">－ 缩小</button>
+<button onclick="fitZoom()" class="mini">适应</button>
+<button onclick="zoomCanvas(1.25)" class="mini">＋ 放大</button>
+</div>
+<p class="file-info" id="zoomInfo" style="text-align:center;margin-top:2px;">100%</p>
+</div>
+<div class="control-group"><h3>🔲 网格</h3>
+<div class="setting-row"><label>显示网格线</label><select id="showGrid"><option value="yes" selected>是</option><option value="no">否</option></select></div>
+<div class="setting-row"><label>网格线颜色</label><input type="color" id="gridColor" value="#cccccc"></div>
+</div>
+<div class="control-group" style="flex-direction:row;align-items:center"><div class="checkbox-row" style="margin:0"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div></div>
+<div class="control-group"><h3>📦 草稿</h3>
+<div class="draft-row">
+<input type="text" id="draftName" placeholder="草稿名称">
+<button class="btn btn-download2" onclick="saveDraft()">📂 暂存</button>
+<select id="draftSelect"><option value="">— 读取 —</option></select>
+<button class="btn btn-download2" onclick="loadDraft()">📥 读取</button>
+<span class="mini-cap"><span class="cap">删除</span><button class="mini" onclick="deleteDraft()" title="删除选中">🗑</button></span>
+<span class="mini-cap"><span class="cap">导出</span><button class="mini" onclick="exportDraft()" title="导出文件">💾</button></span>
+<span class="mini-cap"><span class="cap">导入</span><button class="mini" onclick="document.getElementById('draftFileInput').click()" title="导入文件">📁</button></span>
+</div>
+<input type="file" id="draftFileInput" accept=".json,application/json" style="display:none">
+<p class="file-info" id="draftInfo"></p></div>
+</div>
+<p class="file-info storage-warn" id="storageWarn" style="display:none;padding:3px 12px;color:#e9b949;font-size:11px;background:#16213e;border-top:1px solid #0f3460;"></p>
+</div>
+<aside class="review-panel" id="reviewPanel">
+    <div class="rp-header"><span>📋 工艺评审报告</span></div>
+    <div class="rp-body" id="reviewBody"></div>
+</aside>
+</div>
+<div class="mobile-bar" id="mobileBar">
+    <button class="mbtn" id="openSettings">☰ 设置</button>
+    <button class="mbtn" id="openReview">📋 评审</button>
+</div>
+<div class="scrim" id="scrim"></div>
+
+<script>
+// MARD官方195色完整色谱
+var MARD_COLORS=[
+    {id:"A1",name:"浅黄1",rgb:[250,244,200]},{id:"A2",name:"浅黄2",rgb:[255,255,213]},{id:"A3",name:"浅黄3",rgb:[255,248,208]},{id:"A4",name:"浅橙1",rgb:[255,232,194]},{id:"A5",name:"浅橙2",rgb:[255,211,163]},{id:"A6",name:"橙1",rgb:[254,172,76]},{id:"A7",name:"橙2",rgb:[254,139,76]},{id:"A8",name:"黄1",rgb:[255,218,69]},{id:"A9",name:"橙3",rgb:[255,153,91]},{id:"A10",name:"橙4",rgb:[247,124,49]},{id:"A11",name:"浅橙3",rgb:[255,194,133]},{id:"A12",name:"浅橙4",rgb:[249,187,105]},{id:"A13",name:"黄2",rgb:[254,198,103]},{id:"A14",name:"黄3",rgb:[255,188,66]},{id:"A15",name:"黄4",rgb:[251,246,94]},{id:"A16",name:"浅黄4",rgb:[254,255,151]},{id:"A17",name:"黄5",rgb:[253,225,115]},{id:"A18",name:"浅橙5",rgb:[254,190,125]},{id:"A19",name:"浅橙6",rgb:[255,208,140]},{id:"A20",name:"黄6",rgb:[255,213,104]},{id:"A21",name:"浅黄5",rgb:[255,227,149]},{id:"A22",name:"黄绿1",rgb:[244,245,125]},{id:"A23",name:"肤色1",rgb:[230,201,183]},{id:"A24",name:"浅黄6",rgb:[247,248,162]},{id:"A25",name:"黄7",rgb:[255,214,125]},{id:"A26",name:"黄8",rgb:[255,200,48]},
+    {id:"B1",name:"黄绿2",rgb:[230,238,49]},{id:"B2",name:"荧光绿1",rgb:[99,243,71]},{id:"B3",name:"浅绿1",rgb:[158,247,128]},{id:"B4",name:"绿1",rgb:[93,224,53]},{id:"B5",name:"绿2",rgb:[53,227,82]},{id:"B6",name:"薄荷绿1",rgb:[101,226,166]},{id:"B7",name:"绿3",rgb:[61,175,128]},{id:"B8",name:"绿4",rgb:[28,156,79]},{id:"B9",name:"深绿1",rgb:[39,82,58]},{id:"B10",name:"薄荷绿2",rgb:[149,211,194]},{id:"B11",name:"橄榄绿1",rgb:[93,114,42]},{id:"B12",name:"绿5",rgb:[22,111,65]},{id:"B13",name:"浅绿2",rgb:[202,235,123]},{id:"B14",name:"绿6",rgb:[173,233,70]},{id:"B15",name:"深绿2",rgb:[46,81,50]},{id:"B16",name:"浅绿3",rgb:[197,237,156]},{id:"B17",name:"橄榄绿2",rgb:[155,177,58]},{id:"B18",name:"黄绿3",rgb:[230,238,73]},{id:"B19",name:"绿7",rgb:[114,184,120]},{id:"B20",name:"绿8",rgb:[74,143,82]},{id:"B21",name:"绿9",rgb:[135,194,152]},{id:"B22",name:"绿10",rgb:[87,158,118]},{id:"B23",name:"绿11",rgb:[50,115,83]},{id:"B24",name:"浅绿4",rgb:[238,252,165]},{id:"B25",name:"绿12",rgb:[115,153,97]},{id:"B26",name:"卡其绿",rgb:[141,122,53]},{id:"B27",name:"绿13",rgb:[107,140,97]},{id:"B28",name:"深绿3",rgb:[69,107,68]},{id:"B29",name:"绿14",rgb:[197,226,84]},{id:"B30",name:"绿15",rgb:[146,196,112]},{id:"B31",name:"绿16",rgb:[98,145,80]},{id:"B32",name:"橄榄绿3",rgb:[156,171,90]},
+    {id:"C1",name:"浅蓝1",rgb:[182,232,247]},{id:"C2",name:"浅蓝2",rgb:[134,216,242]},{id:"C3",name:"蓝1",rgb:[73,184,232]},{id:"C4",name:"蓝2",rgb:[38,152,216]},{id:"C5",name:"蓝3",rgb:[25,127,201]},{id:"C6",name:"蓝4",rgb:[20,103,173]},{id:"C7",name:"蓝5",rgb:[15,78,138]},{id:"C8",name:"深蓝1",rgb:[12,55,102]},{id:"C9",name:"浅蓝3",rgb:[214,232,244]},{id:"C10",name:"浅蓝4",rgb:[166,212,237]},{id:"C11",name:"蓝6",rgb:[115,185,224]},{id:"C12",name:"蓝7",rgb:[63,150,205]},{id:"C13",name:"蓝8",rgb:[36,122,191]},{id:"C14",name:"蓝9",rgb:[26,97,158]},{id:"C15",name:"蓝10",rgb:[18,74,124]},{id:"C16",name:"深蓝2",rgb:[13,52,92]},{id:"C17",name:"浅蓝5",rgb:[224,240,248]},{id:"C18",name:"浅蓝6",rgb:[178,216,234]},{id:"C19",name:"蓝11",rgb:[128,185,216]},{id:"C20",name:"蓝12",rgb:[74,153,196]},{id:"C21",name:"蓝13",rgb:[44,126,178]},{id:"C22",name:"蓝14",rgb:[32,102,148]},{id:"C23",name:"蓝15",rgb:[21,79,118]},{id:"C24",name:"深蓝3",rgb:[15,58,90]},{id:"C25",name:"青1",rgb:[169,229,229]},{id:"C26",name:"青2",rgb:[114,209,209]},{id:"C27",name:"青3",rgb:[56,181,181]},{id:"C28",name:"青4",rgb:[32,148,148]},{id:"C29",name:"青5",rgb:[20,111,111]},
+    {id:"D1",name:"浅紫1",rgb:[233,227,247]},{id:"D2",name:"浅紫2",rgb:[217,207,242]},{id:"D3",name:"紫1",rgb:[195,178,233]},{id:"D4",name:"紫2",rgb:[170,144,224]},{id:"D5",name:"紫3",rgb:[143,108,214]},{id:"D6",name:"紫4",rgb:[117,77,204]},{id:"D7",name:"紫5",rgb:[93,52,189]},{id:"D8",name:"紫6",rgb:[70,35,160]},{id:"D9",name:"深紫1",rgb:[49,24,122]},{id:"D10",name:"浅紫3",rgb:[240,231,249]},{id:"D11",name:"浅紫4",rgb:[226,211,244]},{id:"D12",name:"紫7",rgb:[206,184,235]},{id:"D13",name:"紫8",rgb:[181,152,226]},{id:"D14",name:"紫9",rgb:[139,39,155]},{id:"D15",name:"紫10",rgb:[47,31,144]},{id:"D16",name:"浅紫5",rgb:[227,225,238]},{id:"D17",name:"蓝紫1",rgb:[196,212,246]},{id:"D18",name:"紫11",rgb:[164,94,199]},{id:"D19",name:"浅紫6",rgb:[216,195,215]},{id:"D20",name:"紫12",rgb:[156,50,178]},{id:"D21",name:"紫13",rgb:[154,0,155]},{id:"D22",name:"浅紫7",rgb:[221,191,224]},{id:"D23",name:"紫14",rgb:[189,143,200]},{id:"D24",name:"紫15",rgb:[156,86,170]},{id:"D25",name:"紫16",rgb:[122,54,136]},{id:"D26",name:"深紫2",rgb:[86,36,99]},
+    {id:"E1",name:"浅粉1",rgb:[255,214,232]},{id:"E2",name:"浅粉2",rgb:[255,196,221]},{id:"E3",name:"粉1",rgb:[255,183,231]},{id:"E4",name:"粉2",rgb:[255,159,216]},{id:"E5",name:"粉3",rgb:[255,132,200]},{id:"E6",name:"粉4",rgb:[255,102,184]},{id:"E7",name:"粉5",rgb:[249,72,163]},{id:"E8",name:"粉6",rgb:[233,40,140]},{id:"E9",name:"深粉1",rgb:[210,23,120]},{id:"E10",name:"粉7",rgb:[209,59,149]},{id:"E11",name:"浅粉3",rgb:[247,169,198]},{id:"E12",name:"粉8",rgb:[247,143,195]},{id:"E13",name:"深粉2",rgb:[181,0,109]},{id:"E14",name:"肤色2",rgb:[255,209,186]},{id:"E15",name:"肤色3",rgb:[248,199,201]},{id:"E16",name:"肤色4",rgb:[255,243,235]},{id:"E17",name:"肤色5",rgb:[249,226,214]},{id:"E18",name:"肤色6",rgb:[243,210,193]},{id:"E19",name:"暗红1",rgb:[145,25,50]},{id:"E20",name:"红1",rgb:[216,69,69]},{id:"E21",name:"红2",rgb:[230,103,103]},{id:"E22",name:"浅红1",rgb:[242,146,146]},{id:"E23",name:"浅红2",rgb:[248,178,178]},{id:"E24",name:"浅红3",rgb:[252,210,210]},
+    {id:"F1",name:"浅橘1",rgb:[255,229,217]},{id:"F2",name:"浅橘2",rgb:[255,215,199]},{id:"F3",name:"橘1",rgb:[255,201,181]},{id:"F4",name:"橘2",rgb:[255,186,159]},{id:"F5",name:"橘3",rgb:[255,168,133]},{id:"F6",name:"橘4",rgb:[255,147,102]},{id:"F7",name:"橘5",rgb:[255,124,71]},{id:"F8",name:"橘6",rgb:[247,97,39]},{id:"F9",name:"深橘1",rgb:[228,72,16]},{id:"F10",name:"浅橘3",rgb:[255,233,216]},{id:"F11",name:"浅橘4",rgb:[255,219,195]},{id:"F12",name:"橘7",rgb:[255,204,171]},{id:"F13",name:"橘8",rgb:[255,187,143]},{id:"F14",name:"橘9",rgb:[255,166,112]},{id:"F15",name:"橘10",rgb:[255,142,78]},{id:"F16",name:"橘11",rgb:[255,114,41]},{id:"F17",name:"橘12",rgb:[244,87,14]},{id:"F18",name:"深橘2",rgb:[214,64,6]},{id:"F19",name:"浅橘5",rgb:[255,225,205]},{id:"F20",name:"橘13",rgb:[255,208,179]},{id:"F21",name:"橘14",rgb:[255,188,148]},{id:"F22",name:"橘15",rgb:[255,164,111]},{id:"F23",name:"橘16",rgb:[255,135,70]},{id:"F24",name:"橘17",rgb:[255,106,29]},{id:"F25",name:"橘18",rgb:[224,78,9]},
+    {id:"G1",name:"浅棕1",rgb:[255,241,228]},{id:"G2",name:"浅棕2",rgb:[252,198,172]},{id:"G3",name:"浅棕3",rgb:[241,196,165]},{id:"G4",name:"棕1",rgb:[220,179,135]},{id:"G5",name:"棕2",rgb:[231,179,78]},{id:"G6",name:"棕3",rgb:[227,160,20]},{id:"G7",name:"棕4",rgb:[209,132,33]},{id:"G8",name:"棕5",rgb:[185,106,30]},{id:"G9",name:"棕6",rgb:[156,84,26]},{id:"G10",name:"棕7",rgb:[122,65,21]},{id:"G11",name:"棕8",rgb:[90,48,16]},{id:"G12",name:"深棕1",rgb:[61,32,11]},{id:"G13",name:"浅棕4",rgb:[242,217,196]},{id:"G14",name:"浅棕5",rgb:[226,190,164]},{id:"G15",name:"米黄1",rgb:[252,249,224]},{id:"G16",name:"棕9",rgb:[208,168,130]},{id:"G17",name:"棕10",rgb:[187,140,96]},{id:"G18",name:"棕11",rgb:[158,112,66]},{id:"G19",name:"棕12",rgb:[127,88,50]},{id:"G20",name:"棕13",rgb:[94,64,36]},{id:"G21",name:"深棕2",rgb:[68,46,26]},
+    {id:"H1",name:"白色",rgb:[255,255,255]},{id:"H2",name:"灰1",rgb:[242,242,242]},{id:"H3",name:"灰2",rgb:[229,229,229]},{id:"H4",name:"灰3",rgb:[216,216,216]},{id:"H5",name:"灰4",rgb:[203,203,203]},{id:"H6",name:"灰5",rgb:[190,190,190]},{id:"H7",name:"灰6",rgb:[177,177,177]},{id:"H8",name:"灰7",rgb:[164,164,164]},{id:"H9",name:"灰8",rgb:[151,151,151]},{id:"H10",name:"灰9",rgb:[138,138,138]},{id:"H11",name:"灰10",rgb:[125,125,125]},{id:"H12",name:"灰11",rgb:[112,112,112]},{id:"H13",name:"灰12",rgb:[99,99,99]},{id:"H14",name:"灰13",rgb:[86,86,86]},{id:"H15",name:"灰14",rgb:[73,73,73]},{id:"H16",name:"灰15",rgb:[60,60,60]},{id:"H17",name:"灰16",rgb:[47,47,47]},{id:"H18",name:"深灰1",rgb:[15,15,15]},{id:"H19",name:"黑色",rgb:[0,0,0]},{id:"H20",name:"灰17",rgb:[245,245,245]},{id:"H21",name:"灰18",rgb:[234,234,234]},{id:"H22",name:"灰蓝",rgb:[202,202,212]},{id:"H23",name:"灰绿",rgb:[154,157,148]},
+    {id:"M1",name:"莫兰迪绿",rgb:[188,198,184]},{id:"M2",name:"莫兰迪绿2",rgb:[138,163,134]},{id:"M3",name:"莫兰迪蓝灰",rgb:[105,125,128]},{id:"M4",name:"莫兰迪米",rgb:[227,210,188]},{id:"M5",name:"莫兰迪黄绿",rgb:[208,204,170]},{id:"M6",name:"莫兰迪棕",rgb:[176,167,130]},{id:"M7",name:"莫兰迪灰棕",rgb:[180,164,151]},{id:"M8",name:"莫兰迪粉棕",rgb:[179,130,129]},{id:"M9",name:"莫兰迪棕2",rgb:[165,135,103]},{id:"M10",name:"莫兰迪紫灰",rgb:[197,178,188]},{id:"M11",name:"莫兰迪紫",rgb:[159,117,148]},{id:"M12",name:"莫兰迪暗红",rgb:[100,71,73]},{id:"M13",name:"莫兰迪橘",rgb:[209,144,102]},{id:"M14",name:"莫兰迪红",rgb:[199,115,98]},{id:"M15",name:"莫兰迪灰",rgb:[116,125,122]}
+];
+
+var originalImage=null,gridW=0,gridH=0,gridData=null,displayScale=30,editMask=null,pendingReapply=null,_gridInit=false;
+var undoStack=[],redoStack=[],colorPalette=[],showCodes=false;
+var selectedBrushColor=[0,0,0],selectedBrushId='H19',selectedBrushIsNull=false,eyedropperActive=false;
+var processTimer=null;
+var wandActive=false,wandSelection=null,viewZoom=1,lastFitGs=-1;
+var riskResultCache=null,reviewTab="overview",selectedRiskIndex=-1,showRiskOverlay=false;
+var fixParams={thinExpandSize:1,bridgeMaxDist:2,speckThreshold:2,chessAggress:1};
+
+function bind(id,disp,fmt){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener('input',function(){
+        document.getElementById(disp).textContent=fmt?fmt(this.value):this.value;
+        requestProcess();
+    });
+}
+bind('darkUnify','darkUnifyValue');bind('blackThreshold','blackValue');
+bind('gamma','gammaValue',function(v){return(v/100).toFixed(2);});bind('saturation','satValue',function(v){return v+'%';});
+bind('contrast','contrastValue',function(v){return v+'%';});bind('brightness','brightValue');
+bind('sharpen','sharpValue');bind('denoise','denoiseValue');bind('maxColors','colorCountValue');bind('mergeSimilar','mergeSimilarValue');
+document.getElementById('brushSize').addEventListener('input',function(){document.getElementById('brushSizeValue').textContent=this.value;});
+
+function initMardFullGrid(){
+    var grid=document.getElementById('mardFullGrid');
+    grid.innerHTML='';
+    for(var i=0;i<MARD_COLORS.length;i++){
+        var mc=MARD_COLORS[i];
+        var item=document.createElement('div');
+        item.className='mard-full-item';
+        item.title=mc.id+' '+mc.name;
+        item.innerHTML='<div class="mard-full-swatch" style="background:rgb('+mc.rgb.join(',')+')"></div><div class="mard-full-label">'+mc.id+'</div>';
+        item.dataset.index=i;
+        item.addEventListener('click',function(e){
+            if(eyedropperActive){toggleEyedropper();return}
+            var idx=parseInt(this.dataset.index);
+            selectBrush(idx);
+        });
+        grid.appendChild(item);
+    }
+    // 默认选H19黑色
+    var blackIdx=-1;
+    for(var i=0;i<MARD_COLORS.length;i++){if(MARD_COLORS[i].id==='H19'){blackIdx=i;break;}}
+    selectBrush(blackIdx>=0?blackIdx:0);
+    _gridInit=true;
+}
+function selectBrush(idx){
+    selectedBrushIsNull=false;
+    selectedBrushColor=MARD_COLORS[idx].rgb.slice();
+    selectedBrushId=MARD_COLORS[idx].id;
+    document.getElementById('brushColorDisplay').textContent=MARD_COLORS[idx].id+' '+MARD_COLORS[idx].name;
+    document.getElementById('mardCodeInput').value=MARD_COLORS[idx].id;
+    document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
+    var items=document.getElementById('mardFullGrid').children;
+    if(items[idx]){items[idx].classList.add('active');if(_gridInit)items[idx].scrollIntoView({block:'nearest'});}
+    var nb=document.getElementById('nullBrushBtn');if(nb)nb.classList.remove('active');
+    if(wandActive&&wandSelection)applyWandFill([selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255]);
+}
+function selectNullBrush(){
+    selectedBrushIsNull=true;
+    selectedBrushId='NULL';
+    document.getElementById('brushColorDisplay').textContent='镂空 NULL · 不填充';
+    document.getElementById('mardCodeInput').value='NULL';
+    document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
+    var nb=document.getElementById('nullBrushBtn');if(nb)nb.classList.add('active');
+    if(wandActive&&wandSelection)applyWandFill([0,0,0,0]);
+}
+function setBrushByCode(){
+    var code=document.getElementById('mardCodeInput').value.trim().toUpperCase();
+    if(code==='NULL'){selectNullBrush();return;}
+    for(var i=0;i<MARD_COLORS.length;i++){
+        if(MARD_COLORS[i].id===code){selectBrush(i);return;}
+    }
+    alert('未找到色号: '+code);
+}
+function toggleEyedropper(){
+    eyedropperActive=!eyedropperActive;
+    var btn=document.getElementById('eyedropBtn');
+    var canvas=document.getElementById('resultCanvas');
+    if(eyedropperActive){btn.classList.add('active');btn.textContent='💉 取色中...';canvas.classList.add('eyedrop-cursor');}
+    else{btn.classList.remove('active');btn.textContent='💉 取色管';canvas.classList.remove('eyedrop-cursor');}
+}
+initMardFullGrid();
+
+function resetParams(){
+    setSlider('darkUnify',0,'darkUnifyValue');setSlider('blackThreshold',0,'blackValue');
+    setSlider('gamma',100,'gammaValue',function(v){return(v/100).toFixed(2);});
+    setSlider('saturation',100,'satValue',function(v){return v+'%';});
+    setSlider('contrast',100,'contrastValue',function(v){return v+'%';});
+    setSlider('brightness',0,'brightValue');setSlider('sharpen',0,'sharpValue');
+    setSlider('denoise',0,'denoiseValue');setSlider('maxColors',48,'colorCountValue');setSlider('mergeSimilar',0,'mergeSimilarValue');
+    requestProcess();
+}
+function setSlider(id,val,disp,fmt){var el=document.getElementById(id);if(el)el.value=val;document.getElementById(disp).textContent=fmt?fmt(val):val;}
+function toggleColorCodes(){showCodes=document.getElementById('showColorCodes').checked;if(gridData)rerender();}
+
+document.getElementById('fileInput').addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    if(!f.type.startsWith('image/')){alert('请上传图片');return}
+    document.getElementById('fileInfo').textContent='📄 '+f.name;
+    var r=new FileReader();
+    r.onload=function(ev){
+        var img=new Image();
+        img.onload=function(){originalImage=img;document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';setFloatVisible(true);requestProcess()};
+        img.src=ev.target.result;
+    };
+    r.readAsDataURL(f);
+});
+
+document.getElementById('canvasSize').addEventListener('change',function(){
+    var v=document.getElementById('canvasSize').value;
+    document.getElementById('customSizeRow').style.display=(v==='custom')?'block':'none';
+    // 切到自定义时不立即生成，等点「确认」再处理（空内容会直接跳过）
+    requestProcess();
+});
+// 自定义尺寸：仅在点「确认」或按回车时生成，避免输入过程中反复重绘
+document.getElementById('customSizeConfirm').addEventListener('click',function(){
+    if(document.getElementById('canvasSize').value!=='custom')return;
+    requestProcess();
+});
+document.getElementById('customSize').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('customSizeConfirm').click();});
+document.getElementById('showGrid').addEventListener('change',function(){if(gridData)rerender()});
+document.getElementById('gridColor').addEventListener('input',function(){if(gridData)rerender()});
+
+function makeEditMask(w,h){var m=[];for(var y=0;y<h;y++){var row=[];for(var x=0;x<w;x++)row.push(false);m.push(row);}return m;}
+function captureBrushEdits(){
+    if(!gridData||!editMask)return null;
+    var edits=[];
+    for(var y=0;y<gridData.length;y++)for(var x=0;x<gridData[y].length;x++){
+        if(editMask[y][x])edits.push({x:x,y:y,c:[gridData[y][x][0],gridData[y][x][1],gridData[y][x][2],gridData[y][x][3]]});
+    }
+    return edits.length?edits:null;
+}
+function applyBrushEdits(edits){
+    if(!gridData||!edits)return;
+    var gw=gridData[0].length,gh=gridData.length;
+    for(var i=0;i<edits.length;i++){var e=edits[i];
+        if(e.x>=0&&e.x<gw&&e.y>=0&&e.y<gh){gridData[e.y][e.x]=[e.c[0],e.c[1],e.c[2],e.c[3]]; if(editMask)editMask[e.y][e.x]=true;}
+    }
+}
+function requestProcess(){
+    if(!originalImage)return;
+    clearTimeout(processTimer);
+    processTimer=setTimeout(processImage,180);
+}
+
+function processImage(){
+    if(!originalImage)return;
+    try{
+        var du=parseInt(document.getElementById('darkUnify').value);
+        var sizeSel=document.getElementById('canvasSize').value;
+        var gw,gh;
+        if(sizeSel==='custom'){
+            var cv=document.getElementById('customSize').value.trim();
+            if(cv==='')return;
+            var mm=cv.match(/^(\d{1,3})\s*[xX×]\s*(\d{1,3})$/);
+            if(!mm){alert('请输入自定义尺寸，格式如 35x35（宽x高，范围5~150）');return;}
+            gw=parseInt(mm[1]);gh=parseInt(mm[2]);
+            if(gw<5||gw>150||gh<5||gh>150){alert('自定义尺寸需在 5~150 之间');return;}
+        }else{
+            gw=gh=parseInt(sizeSel);
+        }
+        if(!(gw>0&&gh>0))return;
+        var bt=parseInt(document.getElementById('blackThreshold').value);
+        var gm=parseInt(document.getElementById('gamma').value)/100;
+        var sat=parseInt(document.getElementById('saturation').value)/100;
+        var con=parseInt(document.getElementById('contrast').value);
+        var bri=parseInt(document.getElementById('brightness').value);
+        var shp=parseInt(document.getElementById('sharpen').value);
+        var den=parseInt(document.getElementById('denoise').value);
+        var mc=parseInt(document.getElementById('maxColors').value);
+        var ms=parseInt(document.getElementById('mergeSimilar').value);
+        var mergeThreshold=ms*0.42;
+        var enhanced=applyEnhanceOnOriginal(originalImage,du,bt,gm,sat,con,bri,shp,den);
+        var scaled=nearestNeighborScale(enhanced,gw,gh);
+        var result=mardQuantize(scaled,mc,mergeThreshold);
+        var quantized=result.canvas;
+        colorPalette=result.palette;
+        quantized=lineRepair(quantized,gw,gh);
+        gridW=gw;gridH=gh;
+        gridData=getGridData(quantized,gw,gh);
+        editMask=makeEditMask(gw,gh);
+        if(pendingReapply){applyBrushEdits(pendingReapply);pendingReapply=null;}
+        undoStack=[];redoStack=[];wandSelection=null;
+        rerender();
+        if(gridW!==lastFitGs){fitZoom();lastFitGs=gridW;}
+        document.getElementById('downloadBtn').disabled=false;
+        document.getElementById('downloadCodeBtn').disabled=false;
+        document.getElementById('colorPdfBtn').disabled=false;
+        document.getElementById('outlinePdfBtn').disabled=false;
+        document.getElementById('csvBtn').disabled=false;
+        document.getElementById('packageBtn').disabled=false;
+    }catch(e){console.error(e);alert('处理失败: '+e.message);}
+}
+
+function mardQuantize(sc, maxColors, mergeThreshold){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');
+    c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
+    var freq={};
+    for(var i=0;i<p.length;i+=4){
+        if(p[i+3]<128)continue;
+        var best=0,bd=Infinity;
+        for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist([p[i],p[i+1],p[i+2]],MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}
+        freq[best]=(freq[best]||0)+1;
+    }
+    var sorted=Object.entries(freq).sort(function(a,b){return b[1]-a[1];});
+    var limited=sorted.slice(0,Math.min(maxColors,sorted.length)).map(function(e){return parseInt(e[0]);});
+    // 合并相似颜色：把 Lab 距离 ≤ 阈值的色卡并入同一簇，取出现最多的色卡作代表
+    var remap={};
+    if(mergeThreshold>0 && limited.length>1){
+        var parent=[];for(var i=0;i<limited.length;i++)parent[i]=i;
+        function find(a){while(parent[a]!==a){parent[a]=parent[parent[a]];a=parent[a];}return a;}
+        function union(a,b){parent[find(a)]=find(b);}
+        for(var i=0;i<limited.length;i++){for(var j=i+1;j<limited.length;j++){
+            var d=weightedLabDist(MARD_COLORS[limited[i]].rgb,MARD_COLORS[limited[j]].rgb);
+            if(d<=mergeThreshold)union(i,j);
+        }}
+        var rep={};
+        for(var i=0;i<limited.length;i++){var r=find(i);var f=freq[limited[i]]||0;if(!rep[r]||f>(rep[r].cnt))rep[r]={idx:limited[i],cnt:f};}
+        for(var i=0;i<limited.length;i++){remap[limited[i]]=rep[find(i)].idx;}
+    }else{
+        for(var i=0;i<limited.length;i++)remap[limited[i]]=limited[i];
+    }
+    for(var i=0;i<p.length;i+=4){
+        if(p[i+3]<128)continue;
+        var best=0,bd=Infinity;
+        for(var j=0;j<limited.length;j++){
+            var d=weightedLabDist([p[i],p[i+1],p[i+2]],MARD_COLORS[limited[j]].rgb);
+            if(d<bd){bd=d;best=limited[j];}
+        }
+        best=remap[best];
+        p[i]=MARD_COLORS[best].rgb[0];p[i+1]=MARD_COLORS[best].rgb[1];p[i+2]=MARD_COLORS[best].rgb[2];
+    }
+    ctx.putImageData(id,0,0);
+    var paletteRgb=[],seen={};
+    for(var i=0;i<limited.length;i++){var ri=remap[limited[i]];if(!seen[ri]){seen[ri]=1;paletteRgb.push(MARD_COLORS[ri].rgb);}}
+    return{canvas:c,palette:paletteRgb};
+}
+
+function applyEnhanceOnOriginal(img,du,bt,gm,sat,con,bri,shp,den){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');
+    c.width=img.width;c.height=img.height;ctx.drawImage(img,0,0);
+    if(den>0){c=denoise(c,den);ctx=c.getContext('2d')}
+    var id=ctx.getImageData(0,0,c.width,c.height),p=id.data;
+    var satEff=1+(sat-1)*0.6;            // 饱和度：100为中性，两端各缩放0.6倍 → 变化更细腻
+    var conC=(con-100)*1;                // 对比度：原公式里100并非中性，这里以100为中性(=0)修正
+    var conF=(259*(conC+255))/(255*(259-conC));
+    for(var i=0;i<p.length;i+=4){
+        var r=p[i],g=p[i+1],b=p[i+2];if(p[i+3]<128)continue;
+        if(du>0){var lum=0.299*r+0.587*g+0.114*b;if(lum<du){p[i]=0;p[i+1]=0;p[i+2]=0;continue}}
+        var rf=r/255,gf=g/255,bf=b/255;
+        if(bt>0){var t=bt/120;rf=blackLift(rf,t);gf=blackLift(gf,t);bf=blackLift(bf,t)}
+        if(gm!==1){rf=Math.pow(rf,1/gm);gf=Math.pow(gf,1/gm);bf=Math.pow(bf,1/gm)}
+        if(satEff!==1){var gy=0.299*rf+0.587*gf+0.114*bf;rf=c01(gy+satEff*(rf-gy));gf=c01(gy+satEff*(gf-gy));bf=c01(gy+satEff*(bf-gy))}
+        if(conC!==0){rf=c01(conF*(rf-0.5)+0.5);gf=c01(conF*(gf-0.5)+0.5);bf=c01(conF*(bf-0.5)+0.5)}
+        if(bri!==0){var bv=bri/100;rf=c01(rf+bv);gf=c01(gf+bv);bf=c01(bf+bv)}
+        p[i]=Math.round(c01(rf)*255);p[i+1]=Math.round(c01(gf)*255);p[i+2]=Math.round(c01(bf)*255);
+    }
+    ctx.putImageData(id,0,0);if(shp!==0)c=sharpen(c,shp);return c;
+}
+function blackLift(v,t){return v<t?v*v/t:(v-t)/(1-t)}
+function c01(v){return Math.max(0,Math.min(1,v))}
+function nearestNeighborScale(sc,tw,th){
+    // 等比缩放放进底板：不裁剪、不变形，完整居中放入(长边贴边)，四周留空(透明=不填充)
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');
+    c.width=tw;c.height=th;
+    var scale=Math.min(tw/sc.width,th/sc.height);
+    var dw=Math.max(1,Math.round(sc.width*scale)),dh=Math.max(1,Math.round(sc.height*scale));
+    var ox=Math.floor((tw-dw)/2),oy=Math.floor((th-dh)/2);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(sc,0,0,sc.width,sc.height,ox,oy,dw,dh);return c;
+}
+function denoise(sc,str){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,c.width,c.height),w=c.width,h=c.height,src=id.data,dst=new Uint8ClampedArray(src),r=Math.min(Math.ceil(str/2),2);
+    for(var y=r;y<h-r;y++)for(var x=r;x<w-r;x++)for(var ch=0;ch<3;ch++){
+        var vals=[];for(var dy=-r;dy<=r;dy++)for(var dx=-r;dx<=r;dx++)vals.push(src[((y+dy)*w+(x+dx))*4+ch]);
+        vals.sort(function(a,b){return a-b});dst[(y*w+x)*4+ch]=vals[Math.floor(vals.length/2)];
+    }
+    for(var i=0;i<src.length;i++)src[i]=dst[i];ctx.putImageData(id,0,0);return c;
+}
+function sharpen(sc,str){
+    if(str===0)return sc;
+    if(str>0){
+        var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+        var id=ctx.getImageData(0,0,c.width,c.height),w=c.width,h=c.height,src=id.data,dst=new Uint8ClampedArray(src),f=str/10,k=[0,-f,0,-f,1+4*f,-f,0,-f,0];
+        for(var y=1;y<h-1;y++)for(var x=1;x<w-1;x++)for(var ch=0;ch<3;ch++){
+            var idx=(y*w+x)*4+ch,sum=0;for(var ky=-1;ky<=1;ky++)for(var kx=-1;kx<=1;kx++)sum+=k[(ky+1)*3+(kx+1)]*src[((y+ky)*w+(x+kx))*4+ch];
+            dst[idx]=Math.max(0,Math.min(255,Math.round(sum)));
+        }
+        for(var i=0;i<src.length;i++)src[i]=dst[i];ctx.putImageData(id,0,0);return c;
+    }
+    return boxBlur(sc,Math.max(1,Math.min(3,Math.round(Math.abs(str)/3))));
+}
+function boxBlur(sc,rad){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=sc.width;c.height=sc.height;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,c.width,c.height),w=c.width,h=c.height,src=id.data,dst=new Uint8ClampedArray(src);
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++)for(var ch=0;ch<3;ch++){
+        var sum=0,cnt=0;
+        for(var dy=-rad;dy<=rad;dy++){var ny=y+dy;if(ny<0||ny>=h)continue;for(var dx=-rad;dx<=rad;dx++){var nx=x+dx;if(nx<0||nx>=w)continue;sum+=src[(ny*w+nx)*4+ch];cnt++;}}
+        dst[(y*w+x)*4+ch]=Math.round(sum/cnt);
+    }
+    for(var i=3;i<src.length;i+=4)dst[i]=src[i];
+    for(var i=0;i<src.length;i++)src[i]=dst[i];ctx.putImageData(id,0,0);return c;
+}
+function rgb2lab(rgb){
+    var r=rgb[0]/255,g=rgb[1]/255,b=rgb[2]/255;
+    r=r>0.04045?Math.pow((r+0.055)/1.055,2.4):r/12.92;g=g>0.04045?Math.pow((g+0.055)/1.055,2.4):g/12.92;b=b>0.04045?Math.pow((b+0.055)/1.055,2.4):b/12.92;
+    var x=(r*0.4124+g*0.3576+b*0.1805)/0.95047,y=(r*0.2126+g*0.7152+b*0.0722)/1.0,z=(r*0.0193+g*0.1192+b*0.9505)/1.08883;
+    var fx=x>0.008856?Math.cbrt(x):(903.3*x+16)/116,fy=y>0.008856?Math.cbrt(y):(903.3*y+16)/116,fz=z>0.008856?Math.cbrt(z):(903.3*z+16)/116;
+    return[116*fy-16,500*(fx-fy),200*(fy-fz)];
+}
+function weightedLabDist(rgb1,rgb2){
+    var l1=rgb2lab(rgb1),l2=rgb2lab(rgb2);var dl=l1[0]-l2[0],da=l1[1]-l2[1],db=l1[2]-l2[2];
+    return Math.sqrt(dl*dl+2.2*da*da+2.2*db*db);
+}
+function lineRepair(sc,gw,gh){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');c.width=gw;c.height=gh;ctx.drawImage(sc,0,0);
+    var id=ctx.getImageData(0,0,gw,gh),p=id.data;
+    for(var y=1;y<gh-1;y++){for(var x=1;x<gw-1;x++){
+        var idx=(y*gw+x)*4;var r=p[idx],g=p[idx+1],b=p[idx+2];
+        if(p[idx+3]<128)continue; // 留空/镂空格不参与修复
+        if(r===0&&g===0&&b===0)continue;
+        var bc=0,wc=0;
+        for(var dy=-1;dy<=1;dy++){for(var dx=-1;dx<=1;dx++){
+            if(dx===0&&dy===0)continue;var nidx=((y+dy)*gw+(x+dx))*4;
+            if(p[nidx+3]<128)continue; // 透明邻居不计入黑色统计
+            var nr=p[nidx],ng=p[nidx+1],nb=p[nidx+2];
+            if(nr===0&&ng===0&&nb===0)bc++;if(nr===255&&ng===255&&nb===255)wc++;
+        }}
+        if(bc>=5&&wc<=1){p[idx]=0;p[idx+1]=0;p[idx+2]=0;p[idx+3]=255;}
+    }}
+    ctx.putImageData(id,0,0);return c;
+}
+function getGridData(sc,gw,gh){
+    var ctx=sc.getContext('2d');var id=ctx.getImageData(0,0,gw,gh),p=id.data;
+    var data=[];for(var y=0;y<gh;y++){data[y]=[];for(var x=0;x<gw;x++){var idx=(y*gw+x)*4;data[y][x]=[p[idx],p[idx+1],p[idx+2],p[idx+3]]}}
+    return data;
+}
+function findMardId(rgb){
+    var best=null,bd=Infinity;
+    for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(rgb,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=MARD_COLORS[j];}}
+    return best?best.id:'??';
+}
+function removeSingles(){
+    if(!gridData)return;saveUndo();
+    var w=gridData[0].length,h=gridData.length,changed=0;
+    for(var y=0;y<h;y++){for(var x=0;x<w;x++){
+        var color=gridData[y][x];var sn=0,dc=null;
+        for(var dy=-1;dy<=1;dy++){for(var dx=-1;dx<=1;dx++){
+            if(dx===0&&dy===0)continue;var nx=x+dx,ny=y+dy;if(nx<0||nx>=w||ny<0||ny>=h)continue;
+            var nc=gridData[ny][nx];if(nc[0]===color[0]&&nc[1]===color[1]&&nc[2]===color[2])sn++;else dc=nc;
+        }}
+        if(sn===0&&dc){gridData[y][x]=[dc[0],dc[1],dc[2],255];changed++;}
+    }}
+    if(changed>0)rerender();document.getElementById('pixelInfo').textContent='清除 '+changed+' 个孤立点';
+}
+function deepCopyGrid(g){
+    if(!g)return null;var c=[];
+    for(var y=0;y<g.length;y++){c[y]=[];for(var x=0;x<g[y].length;x++){c[y][x]=g[y][x].slice();}}
+    return c;
+}
+function saveUndo(){
+    if(!gridData)return;
+    undoStack.push(deepCopyGrid(gridData));if(undoStack.length>20)undoStack.shift();
+    redoStack=[];
+}
+function undoBrush(){
+    if(undoStack.length===0){document.getElementById('pixelInfo').textContent='无可后退';return}
+    redoStack.push(deepCopyGrid(gridData));
+    gridData=undoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已后退('+undoStack.length+'步)';
+}
+function redoBrush(){
+    if(redoStack.length===0){document.getElementById('pixelInfo').textContent='无可前进';return}
+    undoStack.push(deepCopyGrid(gridData));
+    gridData=redoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已前进('+redoStack.length+'步)';
+}
+function getColorListText(){
+    var counts={},idMap={};
+    for(var y=0;y<gridData.length;y++){for(var x=0;x<gridData[y].length;x++){
+        var c=gridData[y][x];
+        if(c[3]<128)continue; // 镂空/留空不计入色号
+        var key=c[0]+','+c[1]+','+c[2];counts[key]=(counts[key]||0)+1;if(!idMap[key])idMap[key]=findMardId(c);
+    }}
+    var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1];});
+    var lines=[];for(var i=0;i<sorted.length;i++){var rgb=sorted[i][0].split(',').map(Number);var count=sorted[i][1];lines.push({id:idMap[sorted[i][0]],count:count,rgb:rgb});}
+    return lines;
+}
+function roundRectPath(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+}
+function drawWatermark(ctx,tw,th){
+    var txt='在这里生成同款：https://chai-07.github.io/bead-website/';
+    ctx.save();
+    ctx.font='15px "Segoe UI",Arial,sans-serif';
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    var w=ctx.measureText(txt).width;
+    var padX=10,padY=7,boxH=15+padY*2,boxW=w+padX*2;
+    var bx=tw-14-boxW, by=th-14-boxH;
+    ctx.fillStyle='rgba(255,255,255,0.82)';
+    roundRectPath(ctx,bx,by,boxW,boxH,7);ctx.fill();
+    ctx.fillStyle='rgba(50,50,50,0.98)';
+    ctx.fillText(txt,tw-14-padX,th-14-boxH/2);
+    ctx.restore();
+}
+function drawGridFromData(gw,gh,sg,gc){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d');var margin=40,cs=30;
+    var cl=getColorListText();
+    var perRow=13,rowH=54,swSize=36;
+    var usableW=gw*cs;
+    var minColW=swSize+12+58;
+    var autoPerRow=Math.floor(usableW/minColW);
+    if(autoPerRow<perRow)perRow=Math.max(3,autoPerRow);
+    var colW=usableW/perRow;
+    var legendRows=cl.length>0?Math.ceil(cl.length/perRow):0;
+    var legendTopGap=46,titleH=36;
+    var legendAreaH=legendTopGap+titleH+legendRows*rowH+12;
+    var watermarkH=44;
+    var tw=gw*cs+margin*2;
+    var th=margin+gh*cs+legendAreaH+watermarkH;
+    c.width=tw;c.height=th;ctx.fillStyle='#fff';ctx.fillRect(0,0,tw,th);ctx.imageSmoothingEnabled=false;
+    var nullCount=0;
+    for(var y=0;y<gh;y++){for(var x=0;x<gw;x++){
+        var clr=gridData[y][x];
+        if(clr[3]<128){ // 镂空/留空：白底 + 灰色叉号，不显示色号
+            nullCount++;
+            ctx.fillStyle='#fff';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);
+            ctx.strokeStyle='#bbb';ctx.lineWidth=1;ctx.beginPath();
+            ctx.moveTo(margin+x*cs,margin+y*cs);ctx.lineTo(margin+(x+1)*cs,margin+(y+1)*cs);
+            ctx.moveTo(margin+(x+1)*cs,margin+y*cs);ctx.lineTo(margin+x*cs,margin+(y+1)*cs);ctx.stroke();
+            if(sg){ctx.strokeStyle=gc;ctx.lineWidth=0.5;ctx.strokeRect(margin+x*cs,margin+y*cs,cs,cs);}
+            continue;
+        }
+        ctx.fillStyle='rgb('+clr[0]+','+clr[1]+','+clr[2]+')';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);
+        if(sg){ctx.strokeStyle=gc;ctx.lineWidth=0.5;ctx.strokeRect(margin+x*cs,margin+y*cs,cs,cs);}
+        if(showCodes){var mid=findMardId(clr);var lum=0.299*clr[0]+0.587*clr[1]+0.114*clr[2];ctx.fillStyle=lum>128?'#000':'#fff';ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(mid,margin+x*cs+cs/2,margin+y*cs+cs/2);}
+    }}
+    if(wandSelection){
+        ctx.save();
+        ctx.strokeStyle='#e94560';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+        ctx.beginPath();
+        for(var y=0;y<gh;y++){for(var x=0;x<gw;x++){
+            if(!wandSelection[y][x])continue;
+            var X=margin+x*cs,Y=margin+y*cs;
+            if(y===0||!wandSelection[y-1][x]){ctx.moveTo(X,Y);ctx.lineTo(X+cs,Y);}
+            if(y===gh-1||!wandSelection[y+1][x]){ctx.moveTo(X,Y+cs);ctx.lineTo(X+cs,Y+cs);}
+            if(x===0||!wandSelection[y][x-1]){ctx.moveTo(X,Y);ctx.lineTo(X,Y+cs);}
+            if(x===gw-1||!wandSelection[y][x+1]){ctx.moveTo(X+cs,Y);ctx.lineTo(X+cs,Y+cs);}
+        }}
+        ctx.stroke();ctx.restore();
+    }
+    ctx.fillStyle='#222';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(var x=0;x<gw;x++){ctx.fillText(x+1,margin+x*cs+cs/2,margin/2);ctx.fillText(x+1,margin+x*cs+cs/2,margin+gh*cs+18);}
+    ctx.textAlign='right';for(var y=0;y<gh;y++){ctx.fillText(y+1,margin-5,margin+y*cs+cs/2);}
+    ctx.textAlign='left';for(var y=0;y<gh;y++){ctx.fillText(y+1,tw-margin+5,margin+y*cs+cs/2);}
+    ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(margin,margin,gw*cs,gh*cs);
+    var ly=margin+gh*cs+legendTopGap;
+    ctx.font='bold 22px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText('色号对照表 (共 '+cl.length+' 色 / 总计 '+(gw*gh-nullCount)+' 颗)',margin,ly);
+    ly+=titleH;
+    for(var i=0;i<cl.length;i++){
+        var col=i%perRow,rowi=Math.floor(i/perRow);
+        var ix=margin+col*colW;
+        var iy=ly+rowi*rowH;
+        var item=cl[i];
+        ctx.fillStyle='rgb('+item.rgb.join(',')+')';ctx.fillRect(ix,iy,swSize,swSize);
+        ctx.strokeStyle='#999';ctx.lineWidth=1.5;ctx.strokeRect(ix,iy,swSize,swSize);
+        ctx.font='bold 16px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
+        ctx.fillText(item.id,ix+swSize+7,iy+4);
+        ctx.font='15px monospace';ctx.fillStyle='#333';ctx.fillText('×'+item.count,ix+swSize+7,iy+25);
+    }
+    drawWatermark(ctx,tw,th);
+    return c;
+}
+function rerender(){var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;var fin=drawGridFromData(gridW,gridH,sg,gc);displayResult(fin);}
+function displayResult(rc){
+    var el=document.getElementById('resultCanvas');
+    el.width=rc.width;el.height=rc.height;el.getContext('2d').drawImage(rc,0,0);
+    document.getElementById('resultPlaceholder').style.display='none';
+    applyZoom();displayScale=30;
+}
+function applyZoom(){
+    var el=document.getElementById('resultCanvas');
+    el.style.width=(el.width*viewZoom)+'px';
+    el.style.height=(el.height*viewZoom)+'px';
+    document.getElementById('zoomInfo').textContent=Math.round(viewZoom*100)+'%';
+}
+function fitZoom(){
+    var area=document.querySelector('.result-area');
+    if(!area||!gridData)return;
+    var el=document.getElementById('resultCanvas');
+    var availW=area.clientWidth-16, availH=area.clientHeight-16;
+    var z=Math.min(availW/el.width, availH/el.height);
+    viewZoom=Math.max(0.1,Math.min(1,z));applyZoom();
+}
+function zoomCanvas(f){
+    viewZoom=Math.max(0.1,Math.min(8,viewZoom*f));applyZoom();
+}
+function toggleWand(){
+    wandActive=!wandActive;
+    var btn=document.getElementById('wandBtn');
+    if(wandActive){btn.classList.add('active');btn.style.background='#e94560';btn.textContent='🪄 魔棒(已开)';}
+    else{btn.classList.remove('active');btn.style.background='#9b59b6';btn.textContent='🪄 魔棒选区';clearWandSelection();}
+}
+function clearWandSelection(){wandSelection=null;if(gridData)rerender();document.getElementById('pixelInfo').textContent='';}
+function doWandSelect(gx,gy){
+    if(!gridData)return;
+    var w=gridW,h=gridH;
+    var target=gridData[gy][gx];
+    var match=function(a,b){return a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2]&&a[3]===b[3];};
+    var sel=[],visited={};
+    for(var y=0;y<h;y++){sel[y]=[];for(var x=0;x<w;x++)sel[y][x]=false;}
+    var stack=[[gx,gy]];
+    while(stack.length){
+        var p=stack.pop(),x=p[0],y=p[1];
+        if(x<0||x>=w||y<0||y>=h)continue;
+        if(sel[y][x])continue;
+        if(!match(gridData[y][x],target))continue;
+        sel[y][x]=true;
+        stack.push([x+1,y]);stack.push([x-1,y]);stack.push([x,y+1]);stack.push([x,y-1]);
+    }
+    var n=0;for(var yy=0;yy<h;yy++)for(var xx=0;xx<w;xx++)if(sel[yy][xx])n++;
+    wandSelection=sel;rerender();
+    document.getElementById('pixelInfo').textContent='🪄 已选中 '+n+' 块相连色块 → 选颜色/null 覆盖，或再次点击🪄魔棒取消选区';
+}
+function applyWandFill(rgba){
+    if(!wandSelection){return;}
+    saveUndo();
+    for(var y=0;y<gridH;y++)for(var x=0;x<gridW;x++){if(wandSelection[y][x])gridData[y][x]=[rgba[0],rgba[1],rgba[2],rgba[3]];}
+    wandSelection=null;rerender();
+    document.getElementById('pixelInfo').textContent='✅ 魔棒选区已用「'+(selectedBrushIsNull?'镂空null':selectedBrushId)+'」填充';
+}
+function downloadResult(){showCodes=false;var s=wandSelection;wandSelection=null;rerender();var l=document.createElement('a');l.download='bead_effect_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();}
+function downloadCodeResult(){showCodes=true;var s=wandSelection;wandSelection=null;rerender();setTimeout(function(){var l=document.createElement('a');l.download='bead_codes_'+new Date().toISOString().slice(0,10)+'.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();},200);}
+// ===== 草稿系统（多草稿 + 自命名；沙盒环境自动降级到内存存储，并支持文件导出/导入兜底） =====
+var memDrafts={}; // localStorage 不可用时的会话内存兜底
+var storageIsMemory=false;
+function draftStorageAvailable(){
+    try{localStorage.setItem('__bead_t','1');localStorage.removeItem('__bead_t');return true;}
+    catch(e){return false;}
+}
+function readAllDrafts(){
+    if(draftStorageAvailable()){
+        try{return JSON.parse(localStorage.getItem('beadDrafts')||'{}');}catch(e){return {};}
+    }
+    storageIsMemory=true;return memDrafts;
+}
+function writeAllDrafts(obj){
+    if(draftStorageAvailable()){
+        try{localStorage.setItem('beadDrafts',JSON.stringify(obj));return true;}
+        catch(e){ // 写入失败（如超出配额）→ 降级内存
+            storageIsMemory=true;memDrafts=obj;return false;
+        }
+    }
+    storageIsMemory=true;memDrafts=obj;return false;
+}
+function refreshDraftSelect(){
+    var sel=document.getElementById('draftSelect');
+    var drafts=readAllDrafts();
+    var names=Object.keys(drafts).sort();
+    var cur=sel.value;
+    sel.innerHTML='<option value="">— 选择要读取的草稿 —</option>';
+    for(var i=0;i<names.length;i++){
+        var opt=document.createElement('option');opt.value=names[i];opt.textContent=names[i];sel.appendChild(opt);
+    }
+    if(names.indexOf(cur)>=0)sel.value=cur;
+    var info=document.getElementById('draftInfo');
+    info.textContent=names.length?('已存 '+names.length+' 份草稿'):'';
+    var sw=document.getElementById('storageWarn');
+    if(storageIsMemory){sw.textContent='⚠ 当前预览环境不支持本地存储，草稿仅本次会话有效；要永久保存请用「导出文件」或直接用浏览器打开本 HTML';sw.style.display='block';}
+    else sw.style.display='none';
+}
+function buildDraftObj(){
+    return {
+        v:2,name:'',
+        gridData:gridData,gridW:gridW,gridH:gridH,
+        img:originalImage?originalImage.src:null,
+        params:{
+            canvasSize:document.getElementById('canvasSize').value,
+            darkUnify:document.getElementById('darkUnify').value,
+            blackThreshold:document.getElementById('blackThreshold').value,
+            gamma:document.getElementById('gamma').value,
+            saturation:document.getElementById('saturation').value,
+            contrast:document.getElementById('contrast').value,
+            brightness:document.getElementById('brightness').value,
+            sharpen:document.getElementById('sharpen').value,
+            denoise:document.getElementById('denoise').value,
+            maxColors:document.getElementById('maxColors').value,
+            mergeSimilar:document.getElementById('mergeSimilar').value,
+            showGrid:document.getElementById('showGrid').value,
+            gridColor:document.getElementById('gridColor').value,
+            showColorCodes:document.getElementById('showColorCodes').checked
+        }
+    };
+}
+function saveDraft(){
+    if(!gridData){alert('还没有可暂存的图纸');return;}
+    var defName=document.getElementById('draftName').value.trim();
+    if(!defName){
+        var cs=document.getElementById('canvasSize').value;
+        defName='草稿-'+cs+'x'+cs+'-'+new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    }
+    var name=prompt('给这份草稿起个名字：',defName);
+    if(name===null)return; // 用户取消
+    name=name.trim();if(!name)name=defName;
+    var draft=buildDraftObj();draft.name=name;
+    var drafts=readAllDrafts();
+    if(drafts[name]&&!confirm('草稿「'+name+'」已存在，覆盖吗？'))return;
+    drafts[name]=draft;
+    var ok=writeAllDrafts(drafts);
+    document.getElementById('draftName').value=name;
+    refreshDraftSelect();
+    document.getElementById('draftSelect').value=name;
+    document.getElementById('pixelInfo').textContent=ok?('✅ 草稿「'+name+'」已暂存到浏览器本地'):('✅ 草稿「'+name+'」已暂存（仅本次会话有效，建议导出文件备份）');
+}
+function applyDraftData(d){
+    var p=d.params||{};
+    function setVal(id,val){var el=document.getElementById(id);if(el&&val!==undefined){el.value=val;}}
+    setVal('canvasSize',p.canvasSize);setVal('darkUnify',p.darkUnify);setVal('blackThreshold',p.blackThreshold);
+    setVal('gamma',p.gamma);setVal('saturation',p.saturation);setVal('contrast',p.contrast);
+    setVal('brightness',p.brightness);setVal('sharpen',p.sharpen);setVal('denoise',p.denoise);
+    setVal('maxColors',p.maxColors);setVal('mergeSimilar',p.mergeSimilar);setVal('showGrid',p.showGrid);setVal('gridColor',p.gridColor);
+    if(document.getElementById('showColorCodes'))document.getElementById('showColorCodes').checked=!!p.showColorCodes;
+    document.getElementById('darkUnifyValue').textContent=p.darkUnify||0;
+    document.getElementById('blackValue').textContent=p.blackThreshold||0;
+    document.getElementById('gammaValue').textContent=((p.gamma||100)/100).toFixed(2);
+    document.getElementById('satValue').textContent=(p.saturation||100)+'%';
+    document.getElementById('contrastValue').textContent=(p.contrast||100)+'%';
+    document.getElementById('brightValue').textContent=p.brightness||0;
+    document.getElementById('sharpValue').textContent=p.sharpen||0;
+    document.getElementById('denoiseValue').textContent=p.denoise||0;
+    document.getElementById('colorCountValue').textContent=p.maxColors||48;
+    document.getElementById('mergeSimilarValue').textContent=p.mergeSimilar||0;
+    function applyGrid(){
+        gridData=d.gridData;gridW=d.gridW;gridH=d.gridH;undoStack=[];redoStack=[];wandSelection=null;editMask=makeEditMask(gridW,gridH);
+        rerender();fitZoom();document.getElementById('downloadBtn').disabled=false;document.getElementById('downloadCodeBtn').disabled=false;
+    }
+    if(d.img){
+        originalImage=new Image();
+        originalImage.onload=function(){
+            document.getElementById('originalImage').src=d.img;
+            document.getElementById('originalImage').style.display='block';
+            setFloatVisible(true);
+            applyGrid();document.getElementById('pixelInfo').textContent='✅ 已读取草稿「'+(d.name||'')+'」（原图 + 图纸）';
+        };
+        originalImage.src=d.img;
+    }else if(d.gridData){
+        applyGrid();document.getElementById('pixelInfo').textContent='✅ 已读取草稿「'+(d.name||'')+'」（无原图）';
+    }else{alert('草稿内容为空');}
+}
+function loadDraft(){
+    var name=document.getElementById('draftSelect').value;
+    if(!name){alert('请先在下拉框选择要读取的草稿');return;}
+    var drafts=readAllDrafts();
+    var d=drafts[name];
+    if(!d){alert('草稿「'+name+'」不存在');refreshDraftSelect();return;}
+    try{applyDraftData(d);document.getElementById('draftName').value=name;}
+    catch(e){alert('读取失败：'+e.message);}
+}
+function deleteDraft(){
+    var name=document.getElementById('draftSelect').value;
+    if(!name){alert('请先在下拉框选择要删除的草稿');return;}
+    if(!confirm('确定删除草稿「'+name+'」吗？'))return;
+    var drafts=readAllDrafts();delete drafts[name];
+    writeAllDrafts(drafts);refreshDraftSelect();
+    document.getElementById('pixelInfo').textContent='🗑 已删除草稿「'+name+'」';
+}
+function exportDraft(){
+    if(!gridData){alert('还没有可导出的图纸');return;}
+    var name=document.getElementById('draftName').value.trim()||('bead-draft-'+Date.now());
+    var draft=buildDraftObj();draft.name=name;
+    var blob=new Blob([JSON.stringify(draft)],{type:'application/json'});
+    var l=document.createElement('a');l.download=name+'.bead.json';
+    l.href=URL.createObjectURL(blob);l.click();
+    setTimeout(function(){URL.revokeObjectURL(l.href);},1000);
+    document.getElementById('pixelInfo').textContent='💾 已导出草稿文件 '+name+'.bead.json';
+}
+document.getElementById('draftFileInput').addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(ev){
+        try{
+            var d=JSON.parse(ev.target.result);
+            if(!d.gridData)throw new Error('不是有效的拼豆草稿文件');
+            applyDraftData(d);
+            if(d.name)document.getElementById('draftName').value=d.name;
+            document.getElementById('pixelInfo').textContent='✅ 已导入草稿文件「'+(d.name||f.name)+'」';
+        }catch(err){alert('导入失败：'+err.message);}
+    };
+    r.readAsText(f);
+    e.target.value='';
+});
+refreshDraftSelect();
+
+
+document.getElementById('resultCanvas').addEventListener('click',function(e){
+    if(!gridData)return;var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
+    var mx=e.clientX-rect.left,my=e.clientY-rect.top;var margin=40,cs=30;
+    var gx=Math.floor((mx*sx-margin)/cs),gy=Math.floor((my*sx-margin)/cs);
+    if(gx<0||gx>=gridW||gy<0||gy>=gridH)return;
+    if(wandActive){doWandSelect(gx,gy);return;}
+    if(eyedropperActive){
+        var clr=gridData[gy][gx];
+        if(clr[3]<128){selectNullBrush();toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → 镂空NULL';return;}
+        var best=0,bd=Infinity;for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(clr,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}
+        selectBrush(best);toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → '+MARD_COLORS[best].id;return;
+    }
+    saveUndo();var bs=parseInt(document.getElementById('brushSize').value);
+    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;        if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH){
+        if(selectedBrushIsNull){gridData[ny][nx]=[0,0,0,0];}
+        else{gridData[ny][nx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];}
+        if(editMask)editMask[ny][nx]=true;
+    }}
+    rerender();document.getElementById('pixelInfo').textContent=(selectedBrushIsNull?'镂空: ':'修改: ')+'('+gx+','+gy+') → '+selectedBrushId;
+});
+// ================= 新增功能（不改动画笔/色卡/图像转换/草稿核心代码） =================
+
+/* ---------- 1. 控制面板分组可折叠 ---------- */
+(function(){
+    var groups=document.querySelectorAll('.control-panel .control-group');
+    groups.forEach(function(g){
+        var h3=g.querySelector('h3'); if(!h3)return;
+        h3.classList.add('group-toggle');
+        var body=document.createElement('div'); body.className='group-body';
+        while(h3.nextSibling){ body.appendChild(h3.nextSibling); }
+        g.appendChild(body);
+        h3.addEventListener('click',function(){ g.classList.toggle('collapsed'); });
+    });
+})();
+
+var PERLER_COLORS=[
+{id:"P01",name:"White / 白色",rgb:[241,241,241]},
+{id:"P02",name:"Cream (Creme) / 奶油色",rgb:[224,222,169]},
+{id:"P17",name:"Grey / 灰色",rgb:[138,141,145]},
+{id:"P18",name:"Black / 黑色",rgb:[46,47,50]},
+{id:"P81",name:"Light Gray / 浅灰色",rgb:[238,227,207]},
+{id:"P92",name:"Dark Grey / 深灰色",rgb:[77,81,86]},
+{id:"P105",name:"Silver (Pearl Silver) / 银色",rgb:[119,123,129]},
+{id:"P181",name:"Light Grey / 浅灰色",rgb:[179,186,184]},
+{id:"P206",name:"Pewter / 锡灰色",rgb:[148,161,157]},
+{id:"P207",name:"Charcoal / 炭灰色",rgb:[79,89,90]},
+{id:"P208",name:"Toasted Marshmallow / 烤棉花糖色",rgb:[222,218,206]},
+{id:"P259",name:"Stone / 石色",rgb:[152,140,140]},
+{id:"P03",name:"Yellow / 黄色",rgb:[236,216,0]},
+{id:"P47",name:"Neon Yellow / 荧光黄",rgb:[220,224,2]},
+{id:"P56",name:"Pastel Yellow / 淡彩黄",rgb:[254,248,117]},
+{id:"P57",name:"Cheddar / 切达橙黄",rgb:[241,170,12]},
+{id:"P97",name:"Prickly Pear / 仙人掌绿",rgb:[189,218,1]},
+{id:"P103",name:"Pearl Yellow / 珠光黄",rgb:[202,192,51]},
+{id:"P214",name:"Sherbet / 雪葩色",rgb:[216,228,124]},
+{id:"P220",name:"Olive / 橄榄绿",rgb:[105,110,49]},
+{id:"P258",name:"Slime / 史莱姆绿",rgb:[200,200,92]},
+{id:"P268",name:"Sunflower / 向日葵黄",rgb:[222,186,11]},
+{id:"P269",name:"Lemon / 柠檬黄",rgb:[246,217,1]},
+{id:"P04",name:"Orange / 橙色",rgb:[237,97,32]},
+{id:"P48",name:"Neon Orange / 荧光橙",rgb:[255,119,0]},
+{id:"P85",name:"Gold (Metallic Gold) / 金属金",rgb:[187,118,52]},
+{id:"P90",name:"Butterscotch / 奶油糖色",rgb:[212,132,55]},
+{id:"P98",name:"Sand / 沙色",rgb:[228,182,144]},
+{id:"P212",name:"Spice / 香料色",rgb:[217,89,58]},
+{id:"P213",name:"Apricot / 杏色",rgb:[245,161,104]},
+{id:"P246",name:"Tangerine / 橘子色",rgb:[253,89,24]},
+{id:"P249",name:"Honey / 蜂蜜色",rgb:[218,140,44]},
+{id:"P254",name:"Orange Cream / 橙奶油色",rgb:[239,183,155]},
+{id:"P273",name:"Brick / 砖红色",rgb:[252,149,116]},
+{id:"P274",name:"Rich Butter / 浓黄油色",rgb:[246,202,105]},
+{id:"P05",name:"Red / 红色",rgb:[240,24,32]},
+{id:"P20",name:"Rust / 锈红色",rgb:[140,55,44]},
+{id:"P33",name:"Peach / 桃色",rgb:[238,186,178]},
+{id:"P59",name:"Hot Coral / 热珊瑚色",rgb:[255,56,81]},
+{id:"P63",name:"Blush / 腮红色",rgb:[255,130,133]},
+{id:"P96",name:"Cranapple / 蔓越莓色",rgb:[128,25,34]},
+{id:"P100",name:"Pearl Coral / 珠光珊瑚色",rgb:[249,126,121]},
+{id:"P203",name:"Flamingo / 火烈鸟色",rgb:[242,175,183]},
+{id:"P204",name:"Salmon / 鲑鱼色",rgb:[225,116,122]},
+{id:"P211",name:"Tomato / 番茄色",rgb:[209,67,55]},
+{id:"P244",name:"Rose / 玫瑰色",rgb:[210,93,114]},
+{id:"P255",name:"Fruit Punch / 水果宾治色",rgb:[202,59,101]},
+{id:"P261",name:"Cocoa / 可可色",rgb:[57,41,40]},
+{id:"P272",name:"Coral / 珊瑚色",rgb:[255,154,139]},
+{id:"P276",name:"Carnation Pink / 康乃馨粉",rgb:[248,199,201]},
+{id:"P961",name:"Cherry / 樱桃色",rgb:[157,43,58]},
+{id:"P06",name:"Bubblegum / 泡泡糖粉",rgb:[221,102,155]},
+{id:"P38",name:"Magenta / 品红色",rgb:[242,42,123]},
+{id:"P50",name:"Neon Pink / 荧光粉",rgb:[255,57,145]},
+{id:"P60",name:"Plum / 李子紫",rgb:[162,75,156]},
+{id:"P79",name:"Light Pink / 浅粉色",rgb:[246,179,221]},
+{id:"P83",name:"Pink / 粉色",rgb:[228,72,146]},
+{id:"P88",name:"Raspberry / 树莓色",rgb:[165,48,97]},
+{id:"P104",name:"Pearl Light Pink / 珠光浅粉",rgb:[215,168,162]},
+{id:"P210",name:"Orchid / 兰花紫",rgb:[177,98,142]},
+{id:"P242",name:"Cotton Candy / 棉花糖粉",rgb:[244,121,176]},
+{id:"P248",name:"Eggplant / 茄子紫",rgb:[111,50,85]},
+{id:"P256",name:"Fuchsia / 紫红色",rgb:[203,89,185]},
+{id:"P257",name:"Mulberry / 桑果色",rgb:[113,72,117]},
+{id:"P265",name:"Twilight Plum / 暮光梅紫",rgb:[198,133,177]},
+{id:"P267",name:"Frosted Lilac / 霜丁香色",rgb:[205,183,195]},
+{id:"P07",name:"Purple / 紫色",rgb:[96,64,137]},
+{id:"P54",name:"Pastel Lavender / 淡彩薰衣草",rgb:[138,114,193]},
+{id:"P82",name:"Light Lavender / 浅薰衣草",rgb:[173,152,212]},
+{id:"P182",name:"Lavender / 薰衣草紫",rgb:[175,159,206]},
+{id:"P243",name:"Grape / 葡萄紫",rgb:[80,59,156]},
+{id:"P245",name:"Iris / 鸢尾紫",rgb:[78,86,163]},
+{id:"P251",name:"Thistle / 蓟花色",rgb:[140,140,167]},
+{id:"P08",name:"Dark Blue / 深蓝色",rgb:[43,63,135]},
+{id:"P09",name:"Light Blue / 浅蓝色",rgb:[51,112,192]},
+{id:"P52",name:"Pastel Blue / 淡彩蓝",rgb:[83,144,209]},
+{id:"P58",name:"Toothpaste / 牙膏蓝",rgb:[147,200,212]},
+{id:"P62",name:"Turquoise / 青绿色",rgb:[43,137,198]},
+{id:"P70",name:"Periwinkle Blue / 长春花蓝",rgb:[100,124,190]},
+{id:"P89",name:"Neon Blue / 荧光蓝",rgb:[64,106,225]},
+{id:"P91",name:"Parrot Green / 鹦鹉绿（青）",rgb:[6,124,129]},
+{id:"P93",name:"Blueberry Cream / 蓝莓奶油",rgb:[130,151,217]},
+{id:"P101",name:"Pearl Light Blue / 珠光浅蓝",rgb:[122,174,162]},
+{id:"P200",name:"Cobalt / 钴蓝色",rgb:[0,101,177]},
+{id:"P201",name:"Midnight / 午夜蓝",rgb:[47,60,85]},
+{id:"P202",name:"Robin's Egg / 知更鸟蛋蓝",rgb:[169,205,213]},
+{id:"P215",name:"Mist / 雾蓝",rgb:[147,176,189]},
+{id:"P216",name:"Sky / 天蓝色",rgb:[74,192,216]},
+{id:"P217",name:"Lagoon / 泻湖蓝",rgb:[0,164,172]},
+{id:"P218",name:"Teal / 蓝绿色",rgb:[4,127,138]},
+{id:"P252",name:"Denim / 牛仔蓝",rgb:[76,99,136]},
+{id:"P260",name:"Dark Spruce / 深云杉蓝",rgb:[20,49,59]},
+{id:"P262",name:"Slate Blue / 石板蓝",rgb:[94,109,123]},
+{id:"P266",name:"Caribbean Sea / 加勒比海色",rgb:[108,200,173]},
+{id:"P275",name:"Peacock / 孔雀蓝",rgb:[0,144,172]},
+{id:"P10",name:"Dark Green / 深绿色",rgb:[28,117,62]},
+{id:"P11",name:"Light Green / 浅绿色",rgb:[86,186,159]},
+{id:"P49",name:"Neon Green / 荧光绿",rgb:[1,158,67]},
+{id:"P53",name:"Pastel Green / 淡彩绿",rgb:[118,200,130]},
+{id:"P61",name:"Kiwi Lime / 奇异果绿",rgb:[108,190,19]},
+{id:"P75",name:"Glow Green / 夜光绿",rgb:[190,198,150]},
+{id:"P80",name:"Bright Green / 亮绿色",rgb:[79,173,66]},
+{id:"P102",name:"Pearl Green / 珠光绿",rgb:[132,183,145]},
+{id:"P179",name:"Evergreen / 常青绿",rgb:[17,73,56]},
+{id:"P199",name:"Shamrock / 三叶草绿",rgb:[0,143,83]},
+{id:"P219",name:"Fern / 蕨绿",rgb:[127,151,26]},
+{id:"P240",name:"Mint / 薄荷绿",rgb:[179,238,213]},
+{id:"P241",name:"Sour Apple / 酸苹果绿",rgb:[163,222,111]},
+{id:"P247",name:"Forest / 森林绿",rgb:[0,93,87]},
+{id:"P253",name:"Sage / 鼠尾草绿",rgb:[154,169,142]},
+{id:"P263",name:"Celery / 芹菜绿",rgb:[190,212,166]},
+{id:"P12",name:"Brown / 棕色",rgb:[81,57,49]},
+{id:"P21",name:"Light Brown / 浅棕色",rgb:[129,93,52]},
+{id:"P35",name:"Tan / 棕褐色",rgb:[188,147,113]},
+{id:"P205",name:"Fawn / 小鹿棕",rgb:[201,163,133]},
+{id:"P239",name:"Mocha / 摩卡棕",rgb:[200,182,147]},
+{id:"P250",name:"Gingerbread / 姜饼棕",rgb:[126,84,70]}
+];
+var HAMA_COLORS=[
+{id:"H01",name:"White",rgb:[255,255,255]},
+{id:"H02",name:"Cream",rgb:[246,231,193]},
+{id:"H03",name:"Yellow",rgb:[251,225,34]},
+{id:"H05",name:"Red",rgb:[225,20,28]},
+{id:"H06",name:"Pink",rgb:[247,168,196]},
+{id:"H07",name:"Purple",rgb:[123,63,152]},
+{id:"H08(Cobalt)",name:"Blue",rgb:[28,63,148]},
+{id:"H10(진초록/深绿)",name:"Green",rgb:[10,124,62]},
+{id:"H11(밝은초록)",name:"Light Green",rgb:[168,220,160]},
+{id:"H12(진갈색)",name:"Brown",rgb:[74,49,34]},
+{id:"H17(회색)",name:"Grey",rgb:[138,140,142]},
+{id:"H18(검정색)",name:"Black",rgb:[0,0,0]},
+{id:"H20(녹슨/锈色)",name:"Reddish Brown",rgb:[156,74,36]},
+{id:"H21(밝은갈색)",name:"Light Brown",rgb:[181,131,90]},
+{id:"H31(청록)",name:"Turquoise",rgb:[0,169,157]},
+{id:"H32(형광분홍)",name:"Neon Pink",rgb:[255,79,163]},
+{id:"H34(형광노랑)",name:"Neon Yellow",rgb:[234,255,0]},
+{id:"H37(형광초록)",name:"Neon Green",rgb:[92,255,92]},
+{id:"H38(형광주황)",name:"Neon Orange",rgb:[255,122,0]},
+{id:"H43(파스텔옐로)",name:"Pastel Yellow",rgb:[246,239,166]},
+{id:"H44(핫코랄)",name:"Pastel Red",rgb:[241,95,90]},
+{id:"H46(파스텔블루)",name:"Pastel Blue",rgb:[164,212,230]},
+{id:"H47(파스텔그린)",name:"Pastel Green",rgb:[191,230,179]},
+{id:"H49(로빈에그)",name:"Azure",rgb:[91,194,214]},
+{id:"H60(버터스카치)",name:"Teddybear Brown",rgb:[240,169,59]},
+{id:"H77(밝은회색)",name:"Light Grey",rgb:[207,207,207]},
+{id:"H71(진회색)",name:"Dark Grey",rgb:[88,89,91]},
+{id:"H75(황갈색)",name:"Tan",rgb:[217,179,128]},
+{id:"H76(진저브레드)",name:"Nougat",rgb:[124,74,30]},
+{id:"H77(밝은회색/浅灰)",name:"Cloudy White",rgb:[207,207,207]},
+{id:"H78(복숭아/桃)",name:"Light Blush",rgb:[252,213,181]},
+{id:"H79(주황/橙)",name:"Apricot",rgb:[243,111,33]},
+{id:"H82(자두/李子)",name:"Plum",rgb:[108,48,130]}
+];
+var ARTKAL_COLORS=[
+{id:"S01",name:"White",rgb:[255,255,255]},
+{id:"S02",name:"Burning Sand",rgb:[255,163,139]},
+{id:"S03",name:"Tangerine",rgb:[255,130,0]},
+{id:"S04",name:"Orange",rgb:[250,70,22]},
+{id:"S05",name:"Tall Poppy",rgb:[238,39,55]},
+{id:"S06",name:"Raspberry Pink",rgb:[239,100,162]},
+{id:"S07",name:"Gray",rgb:[151,153,155]},
+{id:"S08",name:"Emerald",rgb:[38,208,124]},
+{id:"S09",name:"Dark Green",rgb:[0,115,113]},
+{id:"S10",name:"Baby Blue",rgb:[86,183,230]},
+{id:"S11",name:"Dark Blue",rgb:[0,80,181]},
+{id:"S12",name:"Pastel Lavender",rgb:[144,99,205]},
+{id:"S13",name:"Black",rgb:[0,0,0]},
+{id:"S14",name:"Sandstorm",rgb:[253,218,36]},
+{id:"S15",name:"Redwood",rgb:[167,43,42]},
+{id:"S16",name:"Brown",rgb:[103,71,54]},
+{id:"S17",name:"Light Brown",rgb:[123,77,53]},
+{id:"S18",name:"Sand",rgb:[234,167,148]},
+{id:"S19",name:"Bubble Gum",rgb:[248,193,184]},
+{id:"S20",name:"Green",rgb:[36,158,107]},
+{id:"S21",name:"Pastel Green",rgb:[147,201,14]},
+{id:"S22",name:"Purple",rgb:[72,54,152]},
+{id:"S23",name:"Royal Purple",rgb:[125,85,199]},
+{id:"S24",name:"True Blue",rgb:[17,100,201]},
+{id:"S25",name:"Hot Pink",rgb:[239,96,163]},
+{id:"S26",name:"Magenta",rgb:[240,78,152]},
+{id:"S27",name:"Yellow",rgb:[255,199,44]},
+{id:"S28",name:"Lily Pink",rgb:[239,149,207]},
+{id:"S29",name:"Pastel Yellow",rgb:[251,219,101]},
+{id:"S30",name:"Shadow Green",rgb:[164,230,232]},
+{id:"S31",name:"Sea Mist",rgb:[181,227,216]},
+{id:"S32",name:"Beeswax",rgb:[254,203,139]},
+{id:"S33",name:"Maverick",rgb:[197,180,227]},
+{id:"S34",name:"Red",rgb:[213,0,50]},
+{id:"S35",name:"Mona Lisa",rgb:[247,206,215]},
+{id:"S36",name:"Old Pink",rgb:[224,98,135]},
+{id:"S37",name:"Blue-Green",rgb:[139,211,230]},
+{id:"S38",name:"Burgundy",rgb:[188,32,75]},
+{id:"S39",name:"Yellow Orange",rgb:[255,127,65]},
+{id:"S40",name:"Carnation Pink",rgb:[249,159,201]},
+{id:"S41",name:"Copper",rgb:[154,85,22]},
+{id:"S42",name:"Silver",rgb:[160,159,157]},
+{id:"S43",name:"Dark Gray",rgb:[117,120,123]},
+{id:"S44",name:"Sky Blue",rgb:[155,203,235]},
+{id:"S45",name:"Medium Turquoise",rgb:[0,178,169]},
+{id:"S46",name:"Bright Green",rgb:[142,221,101]},
+{id:"S47",name:"Marigold",rgb:[166,99,27]},
+{id:"S48",name:"Corn",rgb:[255,200,69]},
+{id:"S49",name:"Mulberry Wood",rgb:[151,57,97]},
+{id:"S50",name:"Mandys Pink",rgb:[255,179,171]},
+{id:"S51",name:"Spring Sun",rgb:[255,248,219]},
+{id:"S52",name:"Picasso",rgb:[248,224,142]},
+{id:"S53",name:"Blue Enchantress",rgb:[98,160,230]},
+{id:"S54",name:"Light Blue",rgb:[0,144,218]},
+{id:"S55",name:"Pistachio",rgb:[173,220,145]},
+{id:"S56",name:"Bright Carrot",rgb:[255,106,57]},
+{id:"S57",name:"Buccaneer",rgb:[179,61,38]},
+{id:"S58",name:"Paprika",rgb:[186,12,47]},
+{id:"S59",name:"Butterfly Bush",rgb:[89,73,167]},
+{id:"S60",name:"Lavender",rgb:[150,120,211]},
+{id:"S61",name:"Key Lemon Pie",rgb:[230,222,119]},
+{id:"S62",name:"Green Tea",rgb:[0,124,88]},
+{id:"S63",name:"Metallic Gold",rgb:[76,89,20]},
+{id:"S64",name:"Black Rock",rgb:[44,45,101]},
+{id:"S65",name:"Canary",rgb:[240,236,116]},
+{id:"S66",name:"Blaze Orange",rgb:[238,83,64]},
+{id:"S67",name:"Vanilla",rgb:[236,195,178]},
+{id:"S68",name:"Tan",rgb:[231,183,138]},
+{id:"S69",name:"Mine Shaft",rgb:[33,39,33]},
+{id:"S70",name:"Dark Algae",rgb:[186,188,22]},
+{id:"S71",name:"Jade Green",rgb:[0,133,34]},
+{id:"S72",name:"Light Sea Blue",rgb:[103,217,223]},
+{id:"S73",name:"Steel Blue",rgb:[72,169,197]},
+{id:"S74",name:"Azure",rgb:[4,169,199]},
+{id:"S75",name:"Dark Steel Blue",rgb:[0,133,173]},
+{id:"S76",name:"Sea Blue",rgb:[0,167,181]},
+{id:"S77",name:"Ghost White",rgb:[217,217,214]},
+{id:"S78",name:"Ash Gray",rgb:[200,201,199]},
+{id:"S79",name:"Light Gray",rgb:[177,179,179]},
+{id:"S80",name:"Dark Olive",rgb:[162,165,105]},
+{id:"S81",name:"Deer",rgb:[213,162,134]},
+{id:"S82",name:"Clay",rgb:[197,139,104]},
+{id:"S83",name:"Sienna",rgb:[177,85,51]},
+{id:"S84",name:"Deep Chestnut",rgb:[171,92,87]},
+{id:"S85",name:"Red Wine",rgb:[138,42,43]},
+{id:"S86",name:"Goldenrod",rgb:[242,157,4]},
+{id:"S87",name:"Coral Red",rgb:[255,128,139]},
+{id:"S88",name:"Dark Pink",rgb:[218,24,132]},
+{id:"S89",name:"Charcoal Gray",rgb:[83,86,90]},
+{id:"S90",name:"Pastel Orange",rgb:[255,197,110]},
+{id:"S91",name:"Brunswick Green",rgb:[24,48,40]},
+{id:"S92",name:"Dandelion",rgb:[198,146,20]},
+{id:"S93",name:"Pale Skin",rgb:[237,200,163]},
+{id:"S94",name:"Warm Blush",rgb:[234,167,148]},
+{id:"S95",name:"Salmon",rgb:[232,146,124]},
+{id:"S96",name:"Apricot",rgb:[255,141,109]},
+{id:"S97",name:"Papaya",rgb:[227,82,5]},
+{id:"S98",name:"Himalaya Blue",rgb:[128,182,232]},
+{id:"S99",name:"Waterfall",rgb:[92,169,204]},
+{id:"S100",name:"Lagoon",rgb:[93,179,203]},
+{id:"S101",name:"Electric Blue",rgb:[0,163,225]},
+{id:"S102",name:"Pool Blue",rgb:[0,119,207]},
+{id:"S103",name:"Caribbean Blue",rgb:[0,103,185]},
+{id:"S104",name:"Deep Water",rgb:[0,125,186]},
+{id:"S105",name:"Petrol Blue",rgb:[0,133,155]},
+{id:"S106",name:"Wedgewood Blue",rgb:[0,118,168]},
+{id:"S107",name:"Pond Blue",rgb:[0,112,150]},
+{id:"S108",name:"Seashell Beige",rgb:[230,199,138]},
+{id:"S109",name:"Beige",rgb:[206,184,136]},
+{id:"S110",name:"Beach Beige",rgb:[198,170,118]},
+{id:"S111",name:"Caffe Latte",rgb:[160,134,41]},
+{id:"S112",name:"Oaktree Brown",rgb:[137,118,48]},
+{id:"S113",name:"Khaki",rgb:[195,198,168]},
+{id:"S114",name:"Light Greengray",rgb:[192,187,135]},
+{id:"S115",name:"Mossy Green",rgb:[176,170,126]},
+{id:"S116",name:"Earth Green",rgb:[163,170,131]},
+{id:"S117",name:"Sage Green",rgb:[119,116,77]},
+{id:"S118",name:"Pinetree Green",rgb:[94,103,56]},
+{id:"S119",name:"Frosty Blue",rgb:[152,219,206]},
+{id:"S120",name:"Polar Mint",rgb:[155,227,191]},
+{id:"S121",name:"Celadon Green",rgb:[107,187,174]},
+{id:"S122",name:"Eucalyptus",rgb:[0,187,126]},
+{id:"S123",name:"Clover Field",rgb:[49,183,0]},
+{id:"S124",name:"Pooltable Felt",rgb:[3,95,29]},
+{id:"S125",name:"Snake Green",rgb:[0,120,100]},
+{id:"S126",name:"Dark Eucalyptus",rgb:[0,104,94]},
+{id:"S127",name:"Marshmallow Rose",rgb:[222,205,231]},
+{id:"S128",name:"Light Grape",rgb:[201,139,219]},
+{id:"S129",name:"Rosebud Pink",rgb:[220,182,201]},
+{id:"S130",name:"Fuchsia",rgb:[221,116,161]},
+{id:"S131",name:"Candy Violet",rgb:[173,150,220]},
+{id:"S132",name:"Flamingo",rgb:[239,66,111]},
+{id:"S133",name:"Pink Plum",rgb:[199,36,177]},
+{id:"S134",name:"Amethyst",rgb:[128,49,167]},
+{id:"S135",name:"Moonlight Blue",rgb:[159,174,229]},
+{id:"S136",name:"Summer Rain",rgb:[180,178,228]},
+{id:"S137",name:"Azur Blue",rgb:[95,141,218]},
+{id:"S138",name:"Cornflower Blue",rgb:[87,128,210]},
+{id:"S139",name:"Forget Me Not",rgb:[85,118,209]},
+{id:"S140",name:"Indigo",rgb:[60,98,195]},
+{id:"S141",name:"Horizon Blue",rgb:[70,108,202]},
+{id:"S142",name:"Cobalt",rgb:[54,90,189]},
+{id:"S143",name:"Royal Blue",rgb:[30,34,170]},
+{id:"S144",name:"Marine",rgb:[0,45,114]},
+{id:"S145",name:"Pale Yellow Moss",rgb:[233,225,134]},
+{id:"S146",name:"Bloodrose Red",rgb:[140,36,61]},
+{id:"S147",name:"Spearmint",rgb:[134,200,188]},
+{id:"S148",name:"Mocha",rgb:[114,71,54]},
+{id:"S149",name:"Creme",rgb:[252,210,153]},
+{id:"S150",name:"Iris Violet",rgb:[139,132,215]},
+{id:"S151",name:"Forrest Green",rgb:[51,85,37]},
+{id:"S152",name:"Lilac",rgb:[167,164,224]},
+{id:"S153",name:"Pale Lilac",rgb:[198,196,234]},
+{id:"S154",name:"Sahara Sand",rgb:[235,194,157]},
+{id:"S155",name:"Sunkissed Teint",rgb:[197,139,104]},
+{id:"S156",name:"Steel Grey",rgb:[99,102,106]},
+{id:"S157",name:"Iron Grey",rgb:[70,73,76]},
+{id:"S158",name:"Pepper",rgb:[25,29,25]},
+{id:"S159",name:"Oslo Gray",rgb:[136,136,141]},
+{id:"SE01",name:"Pale Blue",rgb:[209,221,230]},
+{id:"SE02",name:"Light Blue",rgb:[155,184,227]},
+{id:"SE03",name:"Medium Blue",rgb:[94,138,180]},
+{id:"SE04",name:"Cyan",rgb:[106,209,227]},
+{id:"SE05",name:"Teal",rgb:[3,193,170]},
+{id:"SE06",name:"Bright Blue",rgb:[18,106,212]},
+{id:"SE07",name:"Dusty Mauve",rgb:[191,165,184]},
+{id:"SE08",name:"Muted Purple",rgb:[155,119,147]},
+{id:"SE09",name:"Dark Plum",rgb:[105,60,94]},
+{id:"SE10",name:"Bright Magenta",rgb:[201,100,207]},
+{id:"SE11",name:"Deep Magenta",rgb:[173,26,172]},
+{id:"SE12",name:"Light Orange",rgb:[255,178,91]},
+{id:"SE13",name:"Caramel",rgb:[230,166,93]},
+{id:"SE14",name:"Dark Caramel",rgb:[211,130,53]},
+{id:"SE15",name:"Burnt Caramel",rgb:[193,108,24]},
+{id:"SE16",name:"Light Pink",rgb:[245,182,205]},
+{id:"SE17",name:"Maroon",rgb:[93,42,44]}
+];
+function nearestMardIndex(rgb){var best=0,bd=1e18;for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(rgb,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}return best;}
+
+/* ---------- 2. 多品牌色板切换（仅切换取色色板，不改量化） ---------- */
+var BRAND_PALETTES={
+    MARD:{name:'MARD 195色',colors:MARD_COLORS},
+    PERLER:{name:'Perler 117色',colors:PERLER_COLORS},
+    HAMA:{name:'Hama 33色',colors:HAMA_COLORS},
+    ARTKAL:{name:'Artkal 176色',colors:ARTKAL_COLORS}
+};
+function pickIds(ids){var out=[];for(var i=0;i<ids.length;i++){for(var j=0;j<MARD_COLORS.length;j++){if(MARD_COLORS[j].id===ids[i]){out.push(MARD_COLORS[j]);break;}}}return out;}
+function rebuildSwatchGrid(colors){
+    var grid=document.getElementById('mardFullGrid'); grid.innerHTML='';
+    for(var i=0;i<colors.length;i++){
+        var mc=colors[i];
+        var item=document.createElement('div'); item.className='mard-full-item';
+        item.title=mc.id+' '+mc.name;
+        item.innerHTML='<div class="mard-full-swatch" style="background:rgb('+mc.rgb.join(',')+')"></div><div class="mard-full-label">'+mc.id+'</div>';
+        var _mi=MARD_COLORS.indexOf(mc); if(_mi<0)_mi=nearestMardIndex(mc.rgb); item.dataset.mard=_mi; item.dataset.index=i;
+        item.addEventListener('click',function(e){
+            if(eyedropperActive){toggleEyedropper();return;}
+            selectBrush(parseInt(this.dataset.mard));
+            document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
+            this.classList.add('active');
+        });
+        grid.appendChild(item);
+    }
+    var first=MARD_COLORS.indexOf(colors[0]); if(first<0)first=nearestMardIndex(colors[0].rgb);
+    selectBrush(first);
+    if(grid.children[0])grid.children[0].classList.add('active');
+}
+function applyBrand(key){ if(!BRAND_PALETTES[key])return; rebuildSwatchGrid(BRAND_PALETTES[key].colors); document.getElementById('pixelInfo').textContent='🌈 已切换色板：'+BRAND_PALETTES[key].name; }
+
+/* ---------- 3. 前置裁剪 ---------- */
+var rawOriginalImage=null, cropState=null;
+function openCrop(){
+    if(!originalImage){alert('请先上传图片');return;}
+    setFloatVisible(true);
+    if(!rawOriginalImage)rawOriginalImage=originalImage;
+    var img=document.getElementById('originalImage');
+    if(img.style.display==='none'){alert('请先上传图片');return;}
+    var r=img.getBoundingClientRect();
+    var ov=document.getElementById('cropOverlay');
+    ov.style.left=r.left+'px'; ov.style.top=r.top+'px'; ov.style.width=r.width+'px'; ov.style.height=r.height+'px';
+    ov.style.display='block';
+    cropState={x:r.width*0.1,y:r.height*0.1,w:r.width*0.8,h:r.height*0.8};
+    drawCropRect(); document.getElementById('cropApplyBtn').disabled=false;
+}
+function drawCropRect(){var rect=document.getElementById('cropRect'),s=cropState;rect.style.left=s.x+'px';rect.style.top=s.y+'px';rect.style.width=s.w+'px';rect.style.height=s.h+'px';}
+function closeCrop(){document.getElementById('cropOverlay').style.display='none';}
+function applyCrop(){
+    if(!cropState||!originalImage)return;
+    var ov=document.getElementById('cropOverlay'); var r=ov.getBoundingClientRect();
+    var sx=cropState.x/r.width*originalImage.naturalWidth;
+    var sy=cropState.y/r.height*originalImage.naturalHeight;
+    var sw=cropState.w/r.width*originalImage.naturalWidth;
+    var sh=cropState.h/r.height*originalImage.naturalHeight;
+    var c=document.createElement('canvas'); c.width=Math.max(1,Math.round(sw)); c.height=Math.max(1,Math.round(sh));
+    c.getContext('2d').drawImage(originalImage,sx,sy,sw,sh,0,0,c.width,c.height);
+    var ni=new Image();
+    ni.onload=function(){ originalImage=ni; var oi=document.getElementById('originalImage'); oi.src=ni.src; oi.style.display='block'; closeCrop(); pendingReapply=captureBrushEdits(); requestProcess(); document.getElementById('pixelInfo').textContent='✂ 已应用前置裁剪'; };
+    ni.src=c.toDataURL('image/png');
+}
+function restoreCrop(){
+    if(!rawOriginalImage)return;
+    originalImage=rawOriginalImage; var oi=document.getElementById('originalImage'); oi.src=rawOriginalImage.src; oi.style.display='block';
+    closeCrop(); pendingReapply=captureBrushEdits(); requestProcess(); document.getElementById('pixelInfo').textContent='↺ 已恢复原图（取消裁剪）';
+}
+(function(){
+    var ov=document.getElementById('cropOverlay'); var drag=null;
+    ov.addEventListener('pointerdown',function(e){drag={sx:e.clientX,sy:e.clientY};e.preventDefault();});
+    window.addEventListener('pointermove',function(e){
+        if(!drag)return; var r=ov.getBoundingClientRect();
+        var x=Math.min(drag.sx,e.clientX)-r.left, y=Math.min(drag.sy,e.clientY)-r.top;
+        var w=Math.abs(e.clientX-drag.sx), h=Math.abs(e.clientY-drag.sy);
+        cropState={x:Math.max(0,x),y:Math.max(0,y),w:Math.min(w,r.width-x),h:Math.min(h,r.height-y)};
+        drawCropRect();
+    });
+    window.addEventListener('pointerup',function(){drag=null;});
+})();
+
+/* ---------- 原图浮窗：显示/隐藏 + 拖动 ---------- */
+function setFloatVisible(show){
+    var fw=document.getElementById('floatOriginal');
+    var tb=document.getElementById('toggleOriginalBtn');
+    document.getElementById('floatOriginal').style.left = "400px";
+    document.getElementById('floatOriginal').style.top = "60px";
+    if(!fw)return;
+    fw.style.display=show?'block':'none';
+    if(tb)tb.textContent=show?'🙈 隐藏原图浮窗':'👁 显示原图浮窗';
+}
+(function(){
+    var fw=document.getElementById('floatOriginal');
+    var fh=document.getElementById('floatHead');
+    var closeBtn=document.getElementById('floatClose');
+    var toggleBtn=document.getElementById('toggleOriginalBtn');
+    if(!fw||!fh||!toggleBtn)return;
+    var dragging=false,offX=0,offY=0;
+    toggleBtn.addEventListener('click',function(){ setFloatVisible(fw.style.display==='none'); });
+    closeBtn.addEventListener('click',function(){ setFloatVisible(false); });
+    fh.addEventListener('pointerdown',function(e){
+        if(e.target===closeBtn)return;
+        dragging=true;
+        var r=fw.getBoundingClientRect();
+        offX=e.clientX-r.left; offY=e.clientY-r.top;
+        fw.style.left=r.left+'px'; fw.style.top=r.top+'px';
+        fw.style.right='auto'; fw.style.bottom='auto';
+        e.preventDefault();
+    });
+    window.addEventListener('pointermove',function(e){
+        if(!dragging)return;
+        var w=fw.offsetWidth,h=fw.offsetHeight;
+        var x=e.clientX-offX, y=e.clientY-offY;
+        x=Math.max(0,Math.min(x,window.innerWidth-w));
+        y=Math.max(0,Math.min(y,window.innerHeight-h));
+        fw.style.left=x+'px'; fw.style.top=y+'px';
+    });
+    window.addEventListener('pointerup',function(){dragging=false;});
+})();
+
+/* ---------- 4. 一键清杂点（连通分量，≤阈值并入周边主色） ---------- */
+function cleanSpecks(){
+    if(!gridData){alert('请先生成图纸');return;}
+    var maxSize=parseInt(document.getElementById('speckSize').value)||2;
+    saveUndo();
+    var w=gridW,h=gridH,dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+    var visited=[];for(var y=0;y<h;y++){visited[y]=[];for(var x=0;x<w;x++)visited[y][x]=false;}
+    var changed=0;
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+        if(visited[y][x])continue; var c=gridData[y][x]; if(c[3]<128)continue;
+        var comp=[],stack=[[x,y]]; visited[y][x]=true;
+        while(stack.length){var p=stack.pop(),px=p[0],py=p[1]; comp.push([px,py]);
+            for(var d=0;d<4;d++){var nx=px+dirs[d][0],ny=py+dirs[d][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;if(visited[ny][nx])continue;var nc=gridData[ny][nx];if(nc[3]<128)continue;if(nc[0]===c[0]&&nc[1]===c[1]&&nc[2]===c[2]){visited[ny][nx]=true;stack.push([nx,ny]);}}
+        }
+        if(comp.length<=maxSize){
+            var cnt={};
+            for(var i=0;i<comp.length;i++){var cx=comp[i][0],cy=comp[i][1];
+                for(var d=0;d<4;d++){var nx=cx+dirs[d][0],ny=cy+dirs[d][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;var nb=gridData[ny][nx];if(nb[3]<128)continue;if(nb[0]===c[0]&&nb[1]===c[1]&&nb[2]===c[2])continue;var key=nb[0]+','+nb[1]+','+nb[2];cnt[key]=(cnt[key]||0)+1;}}
+            var best=null,bn=0; for(var k in cnt){if(cnt[k]>bn){bn=cnt[k];best=k;}}
+            for(var i=0;i<comp.length;i++){ if(best){var a=best.split(',').map(Number);gridData[comp[i][1]][comp[i][0]]=[a[0],a[1],a[2],255];} else {gridData[comp[i][1]][comp[i][0]]=[0,0,0,0];} changed++; }
+        }
+    }
+    if(changed>0){rerender();document.getElementById('pixelInfo').textContent='✨ 清除 '+changed+' 个杂点';}
+    else{undoStack.pop();document.getElementById('pixelInfo').textContent='✨ 当前无≤'+maxSize+'颗的杂点';}
+}
+
+/* ---------- 5. 对称绘图（新增独立点击监听，不改原画笔） ---------- */
+var symmetryMode='off';
+document.getElementById('resultCanvas').addEventListener('click',function(e){
+    if(!gridData||symmetryMode==='off'||wandActive||eyedropperActive)return;
+    var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
+    var mx=e.clientX-rect.left,my=e.clientY-rect.top,margin=40,cs=30;
+    var gx=Math.floor((mx*sx-margin)/cs),gy=Math.floor((my*sx-margin)/cs);
+    if(gx<0||gx>=gridW||gy<0||gy>=gridH)return;
+    var bs=parseInt(document.getElementById('brushSize').value)||1;
+    var set={};
+    function addT(tx,ty){ if(tx<0||tx>=gridW||ty<0||ty>=gridH)return; set[ty*gridW+tx]=1; }
+    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){
+        var nx=gx+dx,ny=gy+dy; if(nx<0||nx>=gridW||ny<0||ny>=gridH)continue;
+        addT(nx,ny);
+        if(symmetryMode==='vertical')addT(gridW-1-nx,ny);
+        if(symmetryMode==='horizontal')addT(nx,gridH-1-ny);
+        if(symmetryMode==='quad'){addT(gridW-1-nx,ny);addT(nx,gridH-1-ny);addT(gridW-1-nx,gridH-1-ny);}
+    }
+    for(var key in set){var tx=key%gridW,ty=Math.floor(key/gridW);
+        if(selectedBrushIsNull)gridData[ty][tx]=[0,0,0,0];
+        else gridData[ty][tx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];
+        if(editMask)editMask[ty][tx]=true;
+    }
+    rerender();
+});
+
+/* ---------- 6. 挂件工艺模板 ---------- */
+function applyTemplate(name){
+    if(!gridData){alert('请先生成图纸');return;}
+    saveUndo();
+    var w=gridW,h=gridH;
+    var mask=function(){return true;};
+    if(name==='disc'){var cx=(w-1)/2,cy=(h-1)/2,R=Math.min(w,h)/2-0.5; mask=function(x,y){return Math.hypot((x+0.5)-cx,(y+0.5)-cy)<=R;};}
+    else if(name==='heart'){mask=function(x,y){var nx=((x)/(w-1))*2-1,ny=((y)/(h-1))*2-1,a=nx,b=-ny;return Math.pow(a*a+b*b-1,3)-a*a*b*b*b<=0;};}
+    else if(name==='rsquare'){mask=function(x,y){var nx=((x)/(w-1))*2-1,ny=((y)/(h-1))*2-1;return (Math.abs(nx)<=0.82&&Math.abs(ny)<=0.82)||Math.hypot(Math.max(0,Math.abs(nx)-0.6),Math.max(0,Math.abs(ny)-0.6))<=0.28;};}
+    if(name!=='none'){
+        for(var y=0;y<h;y++)for(var x=0;x<w;x++){ if(!mask(x,y))gridData[y][x]=[0,0,0,0]; }
+        var hx=Math.round((w-1)/2);
+        if(h>3&&hx-1>=0&&hx+1<w){gridData[2][hx-1]=[0,0,0,0];gridData[2][hx+1]=[0,0,0,0];}
+        document.getElementById('pixelInfo').textContent='🔯 已应用挂件模板：'+name;
+    } else { document.getElementById('pixelInfo').textContent='已清除挂件模板'; }
+    rerender();
+}
+
+/* ---------- 7. 颜色高亮（覆盖 rerender 以叠加高亮层，不修改原绘制） ---------- */
+var highlightId=null;
+function highlightColor(id){highlightId=id;if(gridData)rerender();}
+function clearHighlight(){highlightId=null;if(gridData)rerender();}
+function applyHighlightOverlay(){
+    if(!highlightId||!gridData)return;
+    var c=document.getElementById('resultCanvas'); if(!c)return;
+    var ctx=c.getContext('2d'),margin=40,cs=30;
+    ctx.save();
+    for(var y=0;y<gridH;y++)for(var x=0;x<gridW;x++){
+        var clr=gridData[y][x]; if(clr[3]<128)continue;
+        if(findMardId(clr)===highlightId){ctx.fillStyle='rgba(233,69,96,0.5)';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);}
+    }
+    ctx.restore();
+}
+var _origRerender=rerender;
+rerender=function(){_origRerender();applyHighlightOverlay();applyRiskOverlay();scheduleReview();};
+var _reviewPending=false;
+function scheduleReview(){ if(_reviewPending)return; _reviewPending=true; requestAnimationFrame(function(){_reviewPending=false; if(window.innerWidth>=1200||document.getElementById('reviewPanel').classList.contains('open'))buildReview();}); }
+
+/* ---------- 8. 工艺评审报告（本地像素扫描） ---------- */
+function openReview(){var rp=document.getElementById('reviewPanel');if(window.innerWidth<1200&&rp.classList.contains('open')){closeReview();return;}buildReview();if(window.innerWidth<1200){rp.classList.add('open');document.getElementById('scrim').classList.add('show');}}
+function closeReview(){document.getElementById('reviewPanel').classList.remove('open');maybeHideScrim();}
+function openSettings(){document.getElementById('control-panel').classList.add('open');document.getElementById('scrim').classList.add('show');}
+function closeAll(){document.getElementById('control-panel').classList.remove('open');document.getElementById('reviewPanel').classList.remove('open');document.getElementById('scrim').classList.remove('show');}
+function maybeHideScrim(){var cp=document.getElementById('control-panel').classList.contains('open'),rp=document.getElementById('reviewPanel').classList.contains('open');if(!cp&&!rp)document.getElementById('scrim').classList.remove('show');}
+/* ===== 工艺评审：分析引擎 + 多版面 + 交互式整改 ===== */
+function analyzeCraftReview(){
+    var w=gridW,h=gridH;
+    var nullCount=0,totalBeans=0;
+    var counts={},idMap={};
+    var visited=[];for(var y=0;y<h;y++){visited[y]=[];for(var x=0;x<w;x++)visited[y][x]=false;}
+    var regions=[];
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++){
+        if(visited[y][x])continue;
+        var c=gridData[y][x];
+        if(c[3]<128){nullCount++;continue;}
+        var comp=[],stack=[[x,y]];visited[y][x]=true;
+        var minx=x,maxx=x,miny=y,maxy=y;
+        while(stack.length){
+            var p=stack.pop(),px=p[0],py=p[1];comp.push([px,py]);
+            if(px<minx)minx=px;if(px>maxx)maxx=px;if(py<miny)miny=py;if(py>maxy)maxy=py;
+            var dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+            for(var d=0;d<4;d++){var nx=px+dirs[d][0],ny=py+dirs[d][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;if(visited[ny][nx])continue;var nc=gridData[ny][nx];if(nc[3]<128)continue;if(nc[0]===c[0]&&nc[1]===c[1]&&nc[2]===c[2]){visited[ny][nx]=true;stack.push([nx,ny]);}}
+        }
+        totalBeans+=comp.length;
+        var key=c[0]+','+c[1]+','+c[2];counts[key]=(counts[key]||0)+comp.length;
+        if(!idMap[key])idMap[key]=findMardId(c);
+        regions.push({pixels:comp,color:[c[0],c[1],c[2]],size:comp.length,bbox:{minx:minx,maxx:maxx,miny:miny,maxy:maxy}});
+    }
+    var colorCount=Object.keys(counts).length;
+    var colorList=Object.keys(counts).map(function(k){var rgb=k.split(',').map(Number);return{id:idMap[k],count:counts[k],rgb:rgb};}).sort(function(a,b){return b.count-a.count;});
+    var nullRatio=nullCount/(w*h);
+    var totalRegions=regions.length;
+    var fragmentation=totalRegions/Math.max(1,colorCount);
+    var isCharmMode=false;
+    for(var y=0;y<h&&!isCharmMode;y++)for(var x=0;x<w;x++){
+        if(gridData[y][x][3]<128){
+            var filled=0,dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+            for(var d=0;d<4;d++){var nx=x+dirs[d][0],ny=y+dirs[d][1];if(nx>=0&&nx<w&&ny>=0&&ny<h&&gridData[ny][nx][3]>=128)filled++;}
+            if(filled===4){isCharmMode=true;break;}
+        }
+    }
+    var chessNoiseCnt=0;
+    for(var y=1;y<h-1;y++)for(var x=1;x<w-2;x++){
+        var c0=gridData[y][x],c1=gridData[y][x+1],c2=gridData[y][x+2];
+        if(c0[3]<128||c1[3]<128||c2[3]<128)continue;
+        var k0=c0[0]+','+c0[1]+','+c0[2],k1=c1[0]+','+c1[1]+','+c1[2],k2=c2[0]+','+c2[1]+','+c2[2];
+        if(k0===k2&&k0!==k1)chessNoiseCnt++;
+    }
+    var thinBars=[],islands=[],speck1=[];
+    for(var i=0;i<regions.length;i++){
+        var reg=regions[i],sz=reg.size,bb=reg.bbox;
+        var bw=bb.maxx-bb.minx+1,bh=bb.maxy-bb.miny+1;
+        if(sz===1){speck1.push({pixels:[[reg.pixels[0][0],reg.pixels[0][1]]]});}
+        else if(Math.min(bw,bh)===1&&Math.max(bw,bh)>=5){thinBars.push({pixels:reg.pixels.slice(),color:reg.color});}
+        else if(sz>=2&&sz<=24){
+            var touchesOther=false;
+            for(var k2=0;k2<reg.pixels.length&&!touchesOther;k2++){
+                var pp=reg.pixels[k2];
+                var dirs2=[[1,0],[-1,0],[0,1],[0,-1]];
+                for(var d2=0;d2<4;d2++){var nx=pp[0]+dirs2[d2][0],ny=pp[1]+dirs2[d2][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;var nb=gridData[ny][nx];if(nb[3]<128)continue;if(!(nb[0]===reg.color[0]&&nb[1]===reg.color[1]&&nb[2]===reg.color[2])){touchesOther=true;break;}}
+            }
+            if(!touchesOther)islands.push({pixels:reg.pixels.slice(),color:reg.color});
+        }
+    }
+    var risks=[];
+    function pushRisk(t,dd,lv,sg){risks.push({title:t,desc:dd,riskLevel:lv,suggest:sg});}
+    if(thinBars.length>0)pushRisk('细长单像素构件','检测到 '+thinBars.length+' 处宽度仅 1 像素的细长构件，物理强度极低，极易断裂脱落。',isCharmMode?3:2,isCharmMode?'挂件图纸必须优先整改：使用【整改界面】加宽线条，或在原图里把线画粗。':'用【整改界面】给长条周边填充同色豆子加宽；或手动画笔补粗。');
+    if(islands.length>0)pushRisk('悬浮孤岛','检测到 '+islands.length+' 处与主结构仅极少连接的悬浮孤岛，熨烫加热后粘结不足，易脱落丢失。',2,'使用【整改界面】「孤岛加固搭桥」把孤岛连到主体；或手动画笔补一条连接通道。');
+    if(speck1.length>0)pushRisk('单点孤立碎块','检测到 '+speck1.length+' 个孤立单颗豆子，无周边支撑，熨烫时易移位脱落，观感也差。',1,'使用【整改界面】清除微小碎块，或手动画笔并入周边颜色。');
+    if(chessNoiseCnt>0)pushRisk('棋盘噪点','检测到 '+chessNoiseCnt+' 处量化产生的交替棋盘噪点，成品会出现斑驳闪烁观感。',1,'使用【整改界面】「噪点修复」抹平交替点。');
+    if(nullRatio>0.4)pushRisk('高镂空占比','镂空/留空占比 '+(nullRatio*100).toFixed(1)+'%，图纸骨架化、结构松散，拿取易变形。',nullRatio>0.5?2:1,'减少镂空范围，或在镂空边缘加支撑连接；挂件注意保留挂孔强度。');
+    if(colorCount>60)pushRisk('颜色过多','使用 '+colorCount+' 种颜色，手工需频繁换豆，工时大幅上涨且易出错。',colorCount>90?2:1,'下调「最大颜色数」或提高「相似颜色合并」简化拼制。');
+    if(fragmentation>5)pushRisk('颜色碎片化严重','平均每种颜色被拆成 '+fragmentation.toFixed(1)+' 块，同一颜色零散分布，效率低。',1,'提高「相似颜色合并」，把同色碎片合并成大块。');
+    if(isCharmMode){
+        var topNull=false;
+        for(var x=0;x<w;x++){if(gridData[0][x][3]<128||(h>1&&gridData[1][x][3]<128)){topNull=true;break;}}
+        if(topNull)pushRisk('挂孔位置危险','挂孔紧贴顶部边缘，挂绳受力直接作用于边缘少量豆子，悬挂易撕裂。',2,'使用【整改界面】「下移修复挂孔」把挂孔下移，远离边缘。');
+    }
+    if(risks.length===0)pushRisk('整图健康','未检测到明显工艺风险，可按图施工。',0,'保持即可。');
+    var baseScore=Math.log2(w*h)/2+colorCount/8+totalRegions/5;
+    var riskPenalty=0;
+    for(var ri=0;ri<risks.length;ri++){var rl=risks[ri].riskLevel;if(rl===3)riskPenalty+=10;else if(rl===2)riskPenalty+=5;else if(rl===1)riskPenalty+=2;}
+    var score=Math.min(100,baseScore+riskPenalty);
+    var lvl;if(score<8)lvl={t:'★ 入门'};else if(score<14)lvl={t:'★★ 轻松'};else if(score<22)lvl={t:'★★★ 适中'};else if(score<32)lvl={t:'★★★★ 挑战'};else lvl={t:'★★★★★ 大师'};
+    return {w:w,h:h,totalBeans:totalBeans,colorUsed:colorCount,nullCount:nullCount,nullRatio:nullRatio,totalRegions:totalRegions,fragmentation:fragmentation,isCharmMode:isCharmMode,colorList:colorList,risks:risks,thinBars:thinBars,islands:islands,speck1:speck1,chessNoiseCnt:chessNoiseCnt,lvl:lvl,score:score};
+}
+
+/* 画布风险标记框：勾选后在画布叠加各风险区域的虚线框 */
+function applyRiskOverlay(){
+    if(!showRiskOverlay||!riskResultCache||!gridData)return;
+    var c=document.getElementById('resultCanvas');if(!c)return;
+    var ctx=c.getContext('2d'),margin=40,cs=30;
+    ctx.save();
+    var groups=[{list:riskResultCache.thinBars,color:'rgba(255,68,68,0.95)'},{list:riskResultCache.islands,color:'rgba(255,153,51,0.95)'},{list:riskResultCache.speck1,color:'rgba(255,221,68,0.95)'}];
+    groups.forEach(function(g){
+        if(!g.list)return;
+        g.list.forEach(function(reg){
+            var xs=[],ys=[];
+            reg.pixels.forEach(function(p){xs.push(p[0]);ys.push(p[1]);});
+            var mnx=Math.min.apply(null,xs),mxx=Math.max.apply(null,xs),mny=Math.min.apply(null,ys),mxy=Math.max.apply(null,ys);
+            ctx.strokeStyle=g.color;ctx.lineWidth=2;ctx.setLineDash([5,3]);
+            ctx.strokeRect(margin+mnx*cs-2,margin+mny*cs-2,cs*(mxx-mnx+1)+4,cs*(mxy-mny+1)+4);
+        });
+    });
+    ctx.restore();
+}
+
+function buildReview(){
+    var body=document.getElementById('reviewBody');
+    if(!gridData){body.innerHTML='<div class="rp-section">请先生成或打开一份图纸。</div>';return;}
+    var res=analyzeCraftReview();
+    riskResultCache=res;
+    var risks=res.risks;
+    var html='';
+    html+='<div style="display:flex;gap:4px;margin-bottom:12px">'
+        +'<button data-tab="overview" class="rp-tab" style="flex:1;padding:6px 2px;border:none;border-radius:4px;background:'+(reviewTab==='overview'?'#6c5ce7':'#0f3460')+';color:#fff;font-size:11px;cursor:pointer">📋问题概览</button>'
+        +'<button data-tab="detail" class="rp-tab" style="flex:1;padding:6px 2px;border:none;border-radius:4px;background:'+(reviewTab==='detail'?'#6c5ce7':'#0f3460')+';color:#fff;font-size:11px;cursor:pointer">🔍问题详情</button>'
+        +'<button data-tab="fix" class="rp-tab" style="flex:1;padding:6px 2px;border:none;border-radius:4px;background:'+(reviewTab==='fix'?'#6c5ce7':'#0f3460')+';color:#fff;font-size:11px;cursor:pointer">🛠整改界面</button>'
+        +'</div>';
+    if(reviewTab==='overview'){
+        var cntFatal=0,cntMid=0,cntMinor=0,cntOk=0;
+        risks.forEach(function(r){if(r.riskLevel===3)cntFatal++;else if(r.riskLevel===2)cntMid++;else if(r.riskLevel===1)cntMinor++;else cntOk++;});
+        html+='<div class="rp-section"><h4>📊 图纸统计</h4>';
+        html+='<div class="rp-stat"><span>底板尺寸</span><b>'+res.w+' × '+res.h+'</b></div>';
+        html+='<div class="rp-stat"><span>实际豆数</span><b>'+res.totalBeans+' 颗</b></div>';
+        html+='<div class="rp-stat"><span>使用颜色</span><b>'+res.colorUsed+' 色</b></div>';
+        html+='<div class="rp-stat"><span>镂空格</span><b>'+res.nullCount+' ('+(res.nullRatio*100).toFixed(1)+'%)</b></div>';
+        html+='<div class="rp-stat"><span>连通域总数</span><b>'+res.totalRegions+'</b></div>';
+        html+='<div class="rp-stat"><span>碎片化系数</span><b>'+res.fragmentation.toFixed(2)+'</b></div>';
+        html+='<div class="rp-stat"><span>图纸模式</span><b>'+(res.isCharmMode?'挂件模式(结构加权)':'摆件模式')+'</b></div>';
+        html+='</div>';
+        html+='<div class="rp-section"><h4>⚠ 风险等级统计</h4><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
+            +'<div style="background:#441111;padding:6px;border-radius:4px;text-align:center"><div style="color:#ff4444;font-weight:bold">'+cntFatal+'</div><div style="font-size:10px;color:#aaa">致命风险</div></div>'
+            +'<div style="background:#332211;padding:6px;border-radius:4px;text-align:center"><div style="color:#ff9933;font-weight:bold">'+cntMid+'</div><div style="font-size:10px;color:#aaa">中等风险</div></div>'
+            +'<div style="background:#2e2b18;padding:6px;border-radius:4px;text-align:center"><div style="color:#ffdd44;font-weight:bold">'+cntMinor+'</div><div style="font-size:10px;color:#aaa">轻微风险</div></div>'
+            +'</div></div>';
+        html+='<div class="rp-section"><h4>⭐ 综合难度</h4><div style="text-align:center;padding:6px 0"><span class="rp-badge">'+res.lvl.t+'</span></div><p style="font-size:11px;color:#aaa;text-align:center">综合得分 '+res.score.toFixed(1)+'/100</p></div>';
+        html+='<div class="rp-section"><h4>📃 风险问题列表（点击条目查看详情）</h4>';
+        for(var i=0;i<risks.length;i++){
+            var r=risks[i];var tag='';
+            if(r.riskLevel===1)tag='<span style="color:#ffdd44">[轻微]</span>';
+            else if(r.riskLevel===2)tag='<span style="color:#ff9933">[中等]</span>';
+            else if(r.riskLevel===3)tag='<span style="color:#ff4444">[致命]</span>';
+            else tag='<span style="color:#8f8">[正常]</span>';
+            html+='<div class="risk-item" data-idx="'+i+'" style="padding:6px 4px;margin:4px 0;background:#0f3460;border-radius:4px;cursor:pointer;border:1px solid #1a3a6e">'+tag+' <b>'+r.title+'</b><div style="font-size:10px;color:#aaa;margin-top:2px">'+r.desc+'</div></div>';
+        }
+        html+='</div>';
+        html+='<div class="rp-section"><div class="checkbox-row"><input type="checkbox" id="toggleRiskOverlay" '+(showRiskOverlay?'checked':'')+'><label for="toggleRiskOverlay">画布显示风险标记框</label></div></div>';
+    } else if(reviewTab==='detail'){
+        if(selectedRiskIndex<0||selectedRiskIndex>=risks.length){
+            html+='<div class="rp-section"><p style="color:#aaa">请回到【问题概览】点击一条风险条目查看详情</p></div>';
+        } else {
+            var r=risks[selectedRiskIndex];
+            var tag='';
+            if(r.riskLevel===1)tag='<span style="color:#ffdd44">[轻微风险]</span>';
+            else if(r.riskLevel===2)tag='<span style="color:#ff9933">[中等风险]</span>';
+            else if(r.riskLevel===3)tag='<span style="color:#ff4444">[致命风险]</span>';
+            else tag='<span style="color:#8f8">[无风险]</span>';
+            html+='<div class="rp-section"><h4>'+tag+' '+r.title+'</h4>';
+            html+='<div style="margin:8px 0"><b>现象描述：</b><div style="font-size:12px;margin-top:4px">'+r.desc+'</div></div>';
+            var harmText='';
+            if(r.title.indexOf('细长单像素构件')>=0)harmText='1像素宽度长条物理强度极低；挂件经过熨烫、弯折极易直接断裂脱落；摆件也容易磕碰掉豆。挂件图纸必须优先整改。';
+            else if(r.title.indexOf('悬浮孤岛')>=0)harmText='该色块仅极少豆子与主体相连；拼好熨烫加热后粘结面积不足，冷却后孤岛直接脱落丢失。';
+            else if(r.title.indexOf('高镂空占比')>=0)harmText='大量镂空，图纸骨架化，整体结构松散；制作、拿取过程极易变形碎裂。';
+            else if(r.title.indexOf('颜色过多')>=0)harmText='颜色数量过高，手工需要频繁更换豆子，制作工时大幅上涨，新手极易出错。';
+            else if(r.title.indexOf('单点孤立碎块')>=0)harmText='孤立单颗豆子，无周边支撑；拼豆熨烫时容易移位、脱落；不影响主体，但观感差。';
+            else if(r.title.indexOf('挂孔位置危险')>=0)harmText='挂孔紧贴顶部边缘，挂绳受力直接作用边缘少量豆子；悬挂受力直接撕裂挂孔区域。';
+            else if(r.title.indexOf('棋盘噪点')>=0)harmText='量化算法产生的交替噪点，实物成品会出现斑驳闪烁观感，不是原图细节。';
+            else if(r.title.indexOf('颜色碎片化严重')>=0)harmText='同一个颜色被拆分成大量零散小块；手工需要反复取同一种豆子来回填充，效率低下。';
+            else harmText='无特殊工艺危害。';
+            html+='<div style="margin:10px 0"><b>⚠ 工艺危害：</b><div style="background:#16213e;padding:8px;border-radius:4px;font-size:12px;margin-top:4px;color:#ddd">'+harmText+'</div></div>';
+            html+='<div style="margin:10px 0"><b>💡 人工整改建议：</b><div style="font-size:12px;margin-top:4px">'+r.suggest+'</div></div>';
+            html+='<div style="margin-top:12px;display:flex;gap:6px"><button id="detailLocateBtn" style="flex:1;padding:7px;background:#0984e3;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">🔎 画布定位风险区域</button><button id="goFixTabBtn" style="flex:1;padding:7px;background:#6c5ce7;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">🛠 跳转整改界面</button></div>';
+            html+='</div>';
+        }
+    } else if(reviewTab==='fix'){
+        if(selectedRiskIndex<0||selectedRiskIndex>=risks.length){
+            html+='<div class="rp-section"><p style="color:#aaa">请回到【概览】选择一条风险，再进入整改界面</p></div>';
+        } else {
+            var r=risks[selectedRiskIndex];
+            html+='<div class="rp-section"><h4>🛠 针对性整改：'+r.title+'</h4><p style="font-size:11px;color:#aaa;margin-bottom:10px">⚠ 所有修改会写入图纸；可使用界面【后退】撤销操作。</p>';
+            if(r.title.indexOf('细长单像素构件')>=0){
+                html+='<div class="setting-row"><label>线条加宽像素 <span id="fixThinExpandVal">'+fixParams.thinExpandSize+'</span></label><input type="range" id="fixThinExpand" min="1" max="3" value="'+fixParams.thinExpandSize+'" step="1"><span class="hint">向长条周边填充同色豆子加宽，数值越大线条越粗，豆子增加越多</span></div><button id="runFixThin" class="btn" style="margin-top:8px;background:#e17055">▶ 执行修复细长构件</button>';
+            } else if(r.title.indexOf('悬浮孤岛')>=0){
+                html+='<div class="setting-row"><label>搭桥最大距离 <span id="fixBridgeVal">'+fixParams.bridgeMaxDist+'</span></label><input type="range" id="fixBridge" min="1" max="3" value="'+fixParams.bridgeMaxDist+'" step="1"><span class="hint">孤岛到主体最大允许搭桥空格；越大越容易把孤岛连上，但会改动更多画面</span></div><button id="runFixIsland" class="btn" style="margin-top:8px;background:#e17055">▶ 执行孤岛加固搭桥</button>';
+            } else if(r.title.indexOf('单点孤立碎块')>=0){
+                html+='<div class="setting-row"><label>碎块最大尺寸阈值 <span id="fixSpeckVal">'+fixParams.speckThreshold+'</span></label><input type="range" id="fixSpeck" min="1" max="4" value="'+fixParams.speckThreshold+'" step="1"><span class="hint">小于等于该大小的连通域会被清除并入周边颜色</span></div><button id="runFixSpeck" class="btn" style="margin-top:8px;background:#0984e3">▶ 清除微小碎块</button>';
+            } else if(r.title.indexOf('棋盘噪点')>=0){
+                html+='<div class="setting-row"><label>噪点修复强度 <span id="fixChessVal">'+fixParams.chessAggress+'</span></label><input type="range" id="fixChess" min="1" max="3" value="'+fixParams.chessAggress+'" step="1"><span class="hint">强度越高，会抹平更多交替噪点，可能损失细节</span></div><button id="runFixChess" class="btn" style="margin-top:8px;background:#0984e3">▶ 执行修复棋盘噪点</button>';
+            } else if(r.title.indexOf('挂孔位置危险')>=0){
+                html+='<p style="font-size:12px">挂孔风险：自动下移挂孔位置</p><button id="runFixHook" class="btn" style="margin-top:8px;background:#bb44ff">▶ 下移修复挂孔</button>';
+            } else {
+                html+='<p style="color:#aaa">该风险无自动整改方案，请参考建议手动画笔修改图纸。</p>';
+            }
+            html+='<div style="margin-top:12px"><button id="fixBackOverview" style="width:100%;background:#636e72;color:#fff;border:none;border-radius:6px;padding:7px;font-size:11px">← 返回问题概览</button></div></div>';
+        }
+    }
+    html+='<div class="rp-section"><h4>🎨 颜色高亮</h4><p style="font-size:11px;color:#aaa;margin-bottom:6px">点击色号高亮分布</p><div style="display:flex;flex-wrap:wrap;gap:4px">';
+    html+=res.colorList.map(function(c){return '<button class="hl-btn" data-id="'+c.id+'" style="background:#0f3460;color:#eee;border:1px solid #1a3a6e;border-radius:5px;padding:4px 6px;font-size:11px;cursor:pointer">'+c.id+'</button>';}).join('');
+    html+='</div><button id="clearHl" style="margin-top:8px;width:100%;background:#636e72;color:#fff;border:none;border-radius:6px;padding:6px;font-size:12px;cursor:pointer">清除高亮</button></div>';
+    body.innerHTML=html;
+    body.querySelectorAll('.rp-tab').forEach(function(tab){tab.onclick=function(){reviewTab=this.getAttribute('data-tab');buildReview();};});
+    body.querySelectorAll('.risk-item').forEach(function(item){item.onclick=function(){selectedRiskIndex=Number(this.getAttribute('data-idx'));reviewTab='detail';buildReview();};});
+    var tro=document.getElementById('toggleRiskOverlay');if(tro)tro.onchange=function(){showRiskOverlay=this.checked;rerender();};
+    document.getElementById('clearHl').onclick=clearHighlight;
+    if(reviewTab==='detail'){
+        var lb=document.getElementById('detailLocateBtn');if(lb)lb.onclick=function(){locateRiskToCanvas(selectedRiskIndex);};
+        var gf=document.getElementById('goFixTabBtn');if(gf)gf.onclick=function(){reviewTab='fix';buildReview();};
+    }
+    if(reviewTab==='fix'){
+        var te=document.getElementById('fixThinExpand');if(te)te.oninput=function(){fixParams.thinExpandSize=Number(this.value);document.getElementById('fixThinExpandVal').textContent=fixParams.thinExpandSize;};
+        var bs=document.getElementById('fixBridge');if(bs)bs.oninput=function(){fixParams.bridgeMaxDist=Number(this.value);document.getElementById('fixBridgeVal').textContent=fixParams.bridgeMaxDist;};
+        var ss=document.getElementById('fixSpeck');if(ss)ss.oninput=function(){fixParams.speckThreshold=Number(this.value);document.getElementById('fixSpeckVal').textContent=fixParams.speckThreshold;};
+        var cs=document.getElementById('fixChess');if(cs)cs.oninput=function(){fixParams.chessAggress=Number(this.value);document.getElementById('fixChessVal').textContent=fixParams.chessAggress;};
+        var rt=document.getElementById('runFixThin');if(rt)rt.onclick=function(){fixAllThinBarsParam(fixParams.thinExpandSize);};
+        var ri=document.getElementById('runFixIsland');if(ri)ri.onclick=function(){fixAllIslandsParam(fixParams.bridgeMaxDist);};
+        var rs=document.getElementById('runFixSpeck');if(rs)rs.onclick=function(){fixAllSpecksParam(fixParams.speckThreshold);};
+        var rc=document.getElementById('runFixChess');if(rc)rc.onclick=function(){fixChessNoiseParam(fixParams.chessAggress);};
+        var rh=document.getElementById('runFixHook');if(rh)rh.onclick=function(){fixHookHazard();};
+        var rb=document.getElementById('fixBackOverview');if(rb)rb.onclick=function(){reviewTab='overview';buildReview();};
+    }
+    body.querySelectorAll('.hl-btn').forEach(function(b){b.onclick=function(){highlightColor(this.getAttribute('data-id'));};});
+}
+
+/* 画布定位风险：黄色闪烁标记选中风险的像素 */
+function locateRiskToCanvas(riskIdx){
+    if(!riskResultCache)return;
+    var canvas=document.getElementById('resultCanvas');var ctx=canvas.getContext('2d');var margin=40,cs=30;
+    var risk=riskResultCache.risks[riskIdx];if(!risk)return;
+    var blinkCnt=0;
+    var timer=setInterval(function(){
+        blinkCnt++;rerender();
+        setTimeout(function(){
+            ctx.save();ctx.fillStyle='rgba(255,255,0,0.45)';
+            if(risk.title.indexOf('细长单像素构件')>=0){
+                riskResultCache.thinBars.forEach(function(reg){reg.pixels.forEach(function(p){ctx.fillRect(margin+p[0]*cs,margin+p[1]*cs,cs,cs);});});
+            } else if(risk.title.indexOf('悬浮孤岛')>=0){
+                riskResultCache.islands.forEach(function(reg){reg.pixels.forEach(function(p){ctx.fillRect(margin+p[0]*cs,margin+p[1]*cs,cs,cs);});});
+            } else if(risk.title.indexOf('单点孤立碎块')>=0){
+                riskResultCache.speck1.forEach(function(sp){var p=sp.pixels[0];ctx.fillRect(margin+p[0]*cs,margin+p[1]*cs,cs,cs);});
+            }
+            ctx.restore();
+        },10);
+        if(blinkCnt>=3){clearInterval(timer);rerender();}
+    },400);
+    document.getElementById('pixelInfo').textContent='🔎 已在画布闪烁标记风险位置';
+}
+
+/* 带参数的整改函数（复用 undo / 草稿 / 导出系统） */
+function fixAllThinBarsParam(expandSize){
+    if(!riskResultCache||riskResultCache.thinBars.length===0){document.getElementById('pixelInfo').textContent='✅ 没有检测到细长构件，无需修复';return;}
+    saveUndo();
+    var dir4=[[1,0],[-1,0],[0,1],[0,-1]];var fixedCount=0;
+    for(var i=0;i<riskResultCache.thinBars.length;i++){
+        var reg=riskResultCache.thinBars[i];var rr=reg.color[0],rg=reg.color[1],rb=reg.color[2];
+        for(var step=0;step<expandSize;step++){
+            var tempAdd=[];
+            for(var k=0;k<reg.pixels.length;k++){var px=reg.pixels[k][0],py=reg.pixels[k][1];
+                for(var d=0;d<4;d++){var nx=px+dir4[d][0],ny=py+dir4[d][1];if(nx<0||nx>=gridW||ny<0||ny>=gridH)continue;if(gridData[ny][nx][3]<128){tempAdd.push([nx,ny]);}}
+            }
+            for(var t=0;t<tempAdd.length;t++){var ax=tempAdd[t][0],ay=tempAdd[t][1];gridData[ay][ax]=[rr,rg,rb,255];fixedCount++;}
+        }
+    }
+    document.getElementById('pixelInfo').textContent='🛠 细长构件修复完成，新增 '+fixedCount+' 颗豆子';rerender();
+}
+function fixAllIslandsParam(maxBridgeDist){
+    if(!riskResultCache||riskResultCache.islands.length===0){document.getElementById('pixelInfo').textContent='✅ 没有检测悬浮孤岛';return;}
+    saveUndo();
+    var dir4=[[1,0],[-1,0],[0,1],[0,-1]];var bridgeCnt=0;
+    for(var i=0;i<riskResultCache.islands.length;i++){
+        var reg=riskResultCache.islands[i];var rr=reg.color[0],rg=reg.color[1],rb=reg.color[2];
+        for(var k=0;k<reg.pixels.length;k++){var px=reg.pixels[k][0],py=reg.pixels[k][1];
+            for(var d=1;d<=maxBridgeDist;d++){
+                var ok=false;
+                for(var dd=0;dd<4;dd++){var nx=px+dir4[dd][0]*d,ny=py+dir4[dd][1]*d;if(nx<0||nx>=gridW||ny<0||ny>=gridH)continue;if(gridData[ny][nx][3]>128){
+                    for(var s=1;s<d;s++){var mx=px+dir4[dd][0]*s,my=py+dir4[dd][1]*s;if(gridData[my][mx][3]<128){gridData[my][mx]=[rr,rg,rb,255];bridgeCnt++;}}
+                    ok=true;break;
+                }}
+                if(ok)break;
+            }
+        }
+    }
+    document.getElementById('pixelInfo').textContent='🛠 孤岛加固完成，搭建 '+bridgeCnt+' 座连接桥';rerender();
+}
+function fixAllSpecksParam(threshold){
+    document.getElementById('speckSize').value=threshold;cleanSpecks();
+    document.getElementById('pixelInfo').textContent='🛠 已清除≤'+threshold+'颗的连通域碎块';
+}
+function fixChessNoiseParam(aggress){
+    if(!riskResultCache||riskResultCache.chessNoiseCnt===0){document.getElementById('pixelInfo').textContent='✅ 未检测棋盘噪点';return;}
+    saveUndo();var fixCnt=0;
+    for(var level=0;level<aggress;level++){
+        for(var y=1;y<gridH-1;y++)for(var x=1;x<gridW-2;x++){
+            var c0=gridData[y][x],c1=gridData[y][x+1],c2=gridData[y][x+2];
+            if(c0[3]<128||c1[3]<128||c2[3]<128)continue;
+            var k0=c0[0]+','+c0[1]+','+c0[2],k1=c1[0]+','+c1[1]+','+c1[2],k2=c2[0]+','+c2[1]+','+c2[2];
+            if(k0===k2&&k0!==k1){gridData[y][x+1]=[c0[0],c0[1],c0[2],255];fixCnt++;}
+        }
+    }
+    document.getElementById('pixelInfo').textContent='🛠 噪点修复完成，修正 '+fixCnt+' 处交替噪点';rerender();
+}
+function fixHookHazard(){
+    if(!gridData)return;
+    saveUndo();
+    var midX=Math.floor(gridW/2);
+    for(var y=0;y<=2;y++){gridData[y][midX]=[255,255,255,0];}
+    var newY=3;if(newY<gridH){gridData[newY][midX-1]=[0,0,0,0];gridData[newY][midX+1]=[0,0,0,0];}
+    document.getElementById('pixelInfo').textContent='🛠 挂孔已经向下移位修复';rerender();
+}
+
+/* ---------- 9. 导出：彩色PDF / 黑白轮廓PDF / CSV / 一键打包 ---------- */
+function stamp(){return new Date().toISOString().slice(0,10);}
+function renderVariant(variant){
+    var prev=showCodes;
+    if(variant==='codes')showCodes=true; else showCodes=false;
+    var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;
+    var c=drawGridFromData(gridW,gridH,sg,gc);
+    showCodes=prev; return c;
+}
+function drawOutlineFromData(gw,gh,sg,gc){
+    var c=document.createElement('canvas'),ctx=c.getContext('2d'),margin=40,cs=30;
+    var cl=getColorListText();
+    var perRow=13,rowH=54,swSize=36,usableW=gw*cs,minColW=swSize+12+58;
+    var autoPerRow=Math.floor(usableW/minColW); if(autoPerRow<perRow)perRow=Math.max(3,autoPerRow);
+    var colW=usableW/perRow,legendRows=cl.length>0?Math.ceil(cl.length/perRow):0;
+    var legendTopGap=46,titleH=36,legendAreaH=legendTopGap+titleH+legendRows*rowH+12,watermarkH=44;
+    var tw=gw*cs+margin*2,th=margin+gh*cs+legendAreaH+watermarkH;
+    c.width=tw;c.height=th;ctx.fillStyle='#fff';ctx.fillRect(0,0,tw,th);ctx.imageSmoothingEnabled=false;
+    for(var y=0;y<gh;y++)for(var x=0;x<gw;x++){
+        var clr=gridData[y][x],tx=margin+x*cs,ty=margin+y*cs;
+        if(clr[3]<128){ctx.strokeStyle='#ddd';ctx.lineWidth=1;ctx.strokeRect(tx,ty,cs,cs);continue;}
+        ctx.fillStyle='#fff';ctx.fillRect(tx,ty,cs,cs);
+        ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(tx,ty,cs,cs);
+    }
+    ctx.fillStyle='#222';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+    for(var x=0;x<gw;x++){ctx.fillText(x+1,margin+x*cs+cs/2,margin/2);ctx.fillText(x+1,margin+x*cs+cs/2,margin+gh*cs+18);}
+    ctx.textAlign='right';for(var y=0;y<gh;y++)ctx.fillText(y+1,margin-5,margin+y*cs+cs/2);
+    ctx.textAlign='left';for(var y=0;y<gh;y++)ctx.fillText(y+1,tw-margin+5,margin+y*cs+cs/2);
+    ctx.strokeStyle='#000';ctx.lineWidth=1;ctx.strokeRect(margin,margin,gw*cs,gh*cs);
+    var ly=margin+gh*cs+legendTopGap;
+    ctx.font='bold 22px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText('耗材清单 (共 '+cl.length+' 色)',margin,ly); ly+=titleH;
+    for(var i=0;i<cl.length;i++){var col=i%perRow,rowi=Math.floor(i/perRow),ix=margin+col*colW,iy=ly+rowi*rowH,item=cl[i];
+        ctx.strokeStyle='#000';ctx.lineWidth=1.5;ctx.strokeRect(ix,iy,swSize,swSize);
+        ctx.font='bold 16px monospace';ctx.fillStyle='#222';ctx.textAlign='left';ctx.textBaseline='top';
+        ctx.fillText(item.id,ix+swSize+7,iy+4);
+        ctx.font='15px monospace';ctx.fillText('×'+item.count,ix+swSize+7,iy+25);
+    }
+    drawWatermark(ctx,tw,th); return c;
+}
+function findMardName(rgb){for(var j=0;j<MARD_COLORS.length;j++){if(MARD_COLORS[j].rgb[0]===rgb[0]&&MARD_COLORS[j].rgb[1]===rgb[1]&&MARD_COLORS[j].rgb[2]===rgb[2])return MARD_COLORS[j].name;}return '';}
+function buildCsv(){
+    var lines=getColorListText(); var out='序号,色号,名称,R,G,B,数量\n';
+    for(var i=0;i<lines.length;i++){var l=lines[i];out+=(i+1)+','+l.id+','+findMardName(l.rgb)+','+l.rgb[0]+','+l.rgb[1]+','+l.rgb[2]+','+l.count+'\n';}
+    return out;
+}
+function canvasToBlob(c,type,q){return new Promise(function(res){c.toBlob(function(b){res(b);},type,q);});}
+function downloadBlob(blob,name){var l=document.createElement('a');l.download=name;l.href=URL.createObjectURL(blob);l.click();setTimeout(function(){URL.revokeObjectURL(l.href);},1500);}
+function pdfFromCanvas(canvas,q){
+    var dataURL=canvas.toDataURL('image/jpeg',q||0.92),comma=dataURL.indexOf(',');
+    var bin=atob(dataURL.slice(comma+1)),bytes=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    return new Blob([buildPdf(bytes,canvas.width,canvas.height)],{type:'application/pdf'});
+}
+function buildPdf(jpeg,w,h){
+    var enc=new TextEncoder(),chunks=[],pos=0,offsets=[];
+    function addBytes(a){chunks.push(a);pos+=a.length;}
+    function addStr(s){addBytes(enc.encode(s));}
+    addStr('%PDF-1.3\n');
+    offsets[1]=pos; addStr('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+    offsets[2]=pos; addStr('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+    offsets[3]=pos; addStr('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+w+' '+h+'] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n');
+    offsets[4]=pos; addStr('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+w+' /Height '+h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpeg.length+' >>\nstream\n');
+    addBytes(jpeg); addStr('\nendstream\nendobj\n');
+    var content='q '+w+' 0 0 '+h+' 0 0 cm /Im0 Do Q\n';
+    offsets[5]=pos; addStr('5 0 obj\n<< /Length '+content.length+' >>\nstream\n'+content+'endstream\nendobj\n');
+    var xrefPos=pos,n=6,xref='xref\n0 '+n+'\n0000000000 65535 f \n';
+    for(var i=1;i<n;i++){var o=('0000000000'+(offsets[i]||0)).slice(-10);xref+=o+' 00000 n \n';}
+    addStr(xref);
+    addStr('trailer\n<< /Size '+n+' /Root 1 0 R >>\nstartxref\n'+xrefPos+'\n%%EOF');
+    var total=0;for(var k=0;k<chunks.length;k++)total+=chunks[k].length;
+    var out=new Uint8Array(total),o2=0;for(var k=0;k<chunks.length;k++){out.set(chunks[k],o2);o2+=chunks[k].length;}
+    return out;
+}
+function crc32(buf){var c=~0;for(var i=0;i<buf.length;i++){c^=buf[i];for(var k=0;k<8;k++)c=(c>>>1)^(0xEDB88320&-(c&1));}return (c>>>0);}
+function buildZipSync(files){
+    var enc=new TextEncoder(),chunks=[],pos=0,offsets=[];
+    function add(a){chunks.push(a);pos+=a.length;}
+    for(var i=0;i<files.length;i++){
+        var name=enc.encode(files[i].name),data=files[i].data;
+        var lh=new Uint8Array(30+name.length),dv=new DataView(lh.buffer);
+        dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);dv.setUint16(8,0,true);dv.setUint16(10,0,true);dv.setUint16(12,0,true);
+        dv.setUint32(14,crc32(data),true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);dv.setUint16(26,name.length,true);dv.setUint16(28,0,true);
+        lh.set(name,30);
+        offsets[i]={local:pos,crc:crc32(data),size:data.length,name:files[i].name};
+        add(lh);add(data);
+    }
+    var cdStart=pos;
+    for(var i=0;i<files.length;i++){
+        var o=offsets[i],name=enc.encode(o.name),ch=new Uint8Array(46+name.length),dv=new DataView(ch.buffer);
+        dv.setUint32(0,0x02014b50,true);dv.setUint16(4,20,true);dv.setUint16(6,20,true);dv.setUint16(8,0,true);dv.setUint16(10,0,true);dv.setUint16(12,0,true);dv.setUint16(14,0,true);
+        dv.setUint32(16,o.crc,true);dv.setUint32(20,o.size,true);dv.setUint32(24,o.size,true);dv.setUint16(28,name.length,true);dv.setUint16(30,0,true);dv.setUint16(32,0,true);dv.setUint16(34,0,true);dv.setUint16(36,0,true);dv.setUint32(40,o.local,true);
+        ch.set(name,46);
+        add(ch);
+    }
+    var cdSize=pos-cdStart,eo=new Uint8Array(22),dv=new DataView(eo.buffer);
+    dv.setUint32(0,0x06054b50,true);dv.setUint16(4,0,true);dv.setUint16(6,0,true);dv.setUint16(8,files.length,true);dv.setUint16(10,files.length,true);dv.setUint32(12,cdSize,true);dv.setUint32(16,cdStart,true);dv.setUint16(20,0,true);
+    add(eo);
+    var total=0;for(var k=0;k<chunks.length;k++)total+=chunks[k].length;
+    var out=new Uint8Array(total),p=0;for(var k=0;k<chunks.length;k++){out.set(chunks[k],p);p+=chunks[k].length;}
+    return out;
+}
+function downloadColorPdf(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(pdfFromCanvas(renderVariant('effect'),0.92),'bead_color_'+stamp()+'.pdf');}
+function downloadOutlinePdf(){if(!gridData){alert('请先生成图纸');return;}var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;downloadBlob(pdfFromCanvas(drawOutlineFromData(gridW,gridH,sg,gc),0.95),'bead_outline_'+stamp()+'.pdf');}
+function downloadCsv(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(new Blob([buildCsv()],{type:'text/csv;charset=utf-8'}),'bead_materials_'+stamp()+'.csv');}
+async function packageExport(){
+    if(!gridData){alert('请先生成图纸');return;}
+    var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;
+    var effectC=renderVariant('effect'),codesC=renderVariant('codes'),outlineC=drawOutlineFromData(gridW,gridH,sg,gc);
+    var files=[
+        {name:'bead_effect.png',blob:await canvasToBlob(effectC,'image/png')},
+        {name:'bead_codes.png',blob:await canvasToBlob(codesC,'image/png')},
+        {name:'bead_color.pdf',blob:pdfFromCanvas(effectC,0.92)},
+        {name:'bead_outline.pdf',blob:pdfFromCanvas(outlineC,0.95)},
+        {name:'bead_materials.csv',blob:new Blob([buildCsv()],{type:'text/csv;charset=utf-8'})}
+    ];
+    if(window.showDirectoryPicker){
+        try{
+            var dir=await window.showDirectoryPicker();
+            for(var i=0;i<files.length;i++){var fh=await dir.getFileHandle(files[i].name,{create:true});var wr=await fh.createWritable();await wr.write(files[i].blob);await wr.close();}
+            document.getElementById('pixelInfo').textContent='📦 已导出 '+files.length+' 个文件到所选文件夹';
+            return;
+        }catch(err){ if(err&&err.name==='AbortError')return; }
+    }
+    var arr=[];for(var i=0;i<files.length;i++){var ab=new Uint8Array(await files[i].blob.arrayBuffer());arr.push({name:files[i].name,data:ab});}
+    downloadBlob(new Blob([buildZipSync(arr)],{type:'application/zip'}),'bead_package_'+stamp()+'.zip');
+    document.getElementById('pixelInfo').textContent='📦 浏览器不支持选文件夹，已打包ZIP下载（解压即得文件夹）';
+}
+
+/* ---------- 10. 移动端：双指缩放 ---------- */
+(function(){
+    var c=document.getElementById('resultCanvas'),pinchStart=0,zoomStart=1;
+    function dist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
+    c.addEventListener('touchstart',function(e){if(e.touches.length===2){pinchStart=dist(e.touches);zoomStart=viewZoom;}},{passive:false});
+    c.addEventListener('touchmove',function(e){if(e.touches.length===2){e.preventDefault();var d=dist(e.touches);viewZoom=Math.max(0.1,Math.min(8,zoomStart*d/pinchStart));applyZoom();}},{passive:false});
+})();
+
+/* ---------- 11. 事件绑定 ---------- */
+document.getElementById('cropOpenBtn').addEventListener('click',openCrop);
+document.getElementById('cropApplyBtn').addEventListener('click',applyCrop);
+document.getElementById('cropRestoreBtn').addEventListener('click',restoreCrop);
+document.getElementById('cleanSpecksBtn').addEventListener('click',cleanSpecks);
+document.getElementById('speckSize').addEventListener('input',function(){document.getElementById('speckSizeValue').textContent=this.value;});
+document.getElementById('symMode').addEventListener('change',function(){symmetryMode=this.value;document.getElementById('pixelInfo').textContent='对称模式：'+this.value;});
+document.getElementById('applyTemplateBtn').addEventListener('click',function(){applyTemplate(document.getElementById('templateSel').value);});
+document.getElementById('brandSel').addEventListener('change',function(){applyBrand(this.value);});
+document.getElementById('openReview').addEventListener('click',openReview);
+document.getElementById('closeReview')&&document.getElementById('closeReview').addEventListener('click',closeReview);
+document.getElementById('openSettings').addEventListener('click',openSettings);
+document.getElementById('closeReview').addEventListener('click',closeReview);
+document.getElementById('scrim').addEventListener('click',closeAll);
+
+console.log('✅ MARD 195色完整版就绪 by 三金超人_SuperTrigen');
+// 进入页面时左栏（及色板子区域）滚动到最顶
+if('scrollRestoration' in history)history.scrollRestoration='manual';
+function resetLeftScroll(){var cp=document.getElementById('control-panel'); if(cp)cp.scrollTop=0; var gf=document.getElementById('mardFullGrid'); if(gf)gf.scrollTop=0;}
+resetLeftScroll();
+setTimeout(resetLeftScroll,0);
+window.addEventListener('load',resetLeftScroll);
+</script>
+</body>
+</html>
