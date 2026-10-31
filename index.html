@@ -92,6 +92,7 @@
 .center-column .mid-bottom #draftSelect{width:100px}
 .center-column .mid-bottom .draft-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
 .center-column .mid-bottom .mini{background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;padding:6px 7px;white-space:nowrap}
+.center-column .mid-bottom .mini:disabled{background:#3a3f4a;color:#888;cursor:not-allowed;opacity:.6}
 .center-column .mid-bottom .btn{padding:5px 8px;font-size:12px}
 .center-column .mid-bottom #toggleOriginalBtn{margin:0!important}
 .center-column .mid-bottom #zoomInfo,.center-column .mid-bottom #draftInfo{margin:0!important}
@@ -171,16 +172,13 @@
 <div class="mard-full-grid" id="mardFullGrid"></div>
 <button class="btn btn-null" id="nullBrushBtn" onclick="selectNullBrush()" style="margin-top:6px;margin-bottom:4px;">⬜ 镂空笔(null) · 不填充</button>
 <div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
-<div style="display:flex;gap:4px;margin-bottom:4px;">
-    <button class="btn btn-undo" onclick="undoBrush()" style="margin-bottom:0">↩ 后退</button>
-    <button class="btn btn-undo" onclick="redoBrush()" style="margin-bottom:0">↷ 前进</button>
-</div></div>
+</div>
 <div class="control-group"><h3>🔯 挂件工艺模板</h3>
 <div class="setting-row"><label>模板形状</label><select id="templateSel"><option value="none" selected>无 / 清除</option><option value="disc">圆形挂件</option><option value="heart">心形挂件</option><option value="rsquare">圆角方挂件</option></select></div>
-<button class="btn btn-download2" id="applyTemplateBtn">🔯 应用模板</button>
-<span class="hint">将板外区域设为镂空并自动加挂孔</span></div>
+<div class="setting-row" id="templateScaleRow" style="margin-top:6px;display:none;"><label>模板大小 <span id="templateScaleValue">100%</span></label><input type="range" id="templateScale" min="0.3" max="1" value="1" step="0.05"></div>
+<span class="hint">选中模板后拖动滑块，右侧实时预览；将板外区域设为镂空并自动加挂孔</span></div>
 <div class="control-group"><h3>✨ 智能清理</h3>
-<div class="setting-row"><label>碎块阈值(≤N颗) <span id="speckSizeValue" class="value-display">2</span></label><input type="range" id="speckSize" min="1" max="8" value="2" step="1"></div>
+<div class="setting-row"><label>清杂碎块(≤N颗) <span id="speckSizeValue" class="value-display">2</span></label><input type="range" id="speckSize" min="1" max="8" value="2" step="1"><span class="hint">仅清除完全孤立在同色区域中的小色块，不碰细线与边缘</span></div>
 <button class="btn btn-clear" id="cleanSpecksBtn">✨ 一键清杂点</button>
 <span class="hint">移除≤阈值的孤立同色碎块，自动并入周边主色</span></div>
 <div class="setting-row" style="margin-bottom:6px;"><label>导出文件命名前缀</label><input type="text" id="exportName" placeholder="留空自动：随机命名1 / 随机命名2 …"></div>
@@ -212,6 +210,11 @@
 </div>
 <p class="file-info" id="zoomInfo" style="text-align:center;margin-top:2px;">100%</p>
 </div>
+<div class="control-group zoom-bar"><h3>↩ 操作</h3>
+<div class="zoom-btns">
+<button class="mini" id="undoBtn" onclick="undoBrush()">↩ 后退</button>
+<button class="mini" id="redoBtn" onclick="redoBrush()">↷ 前进</button>
+</div></div>
 <div class="control-group"><h3>🔲 网格</h3>
 <div class="setting-row"><label>显示网格线</label><select id="showGrid"><option value="yes" selected>是</option><option value="no">否</option></select></div>
 <div class="setting-row"><label>网格线颜色</label><input type="color" id="gridColor" value="#cccccc"></div>
@@ -261,7 +264,7 @@ var originalImage=null,gridW=0,gridH=0,gridData=null,displayScale=30,editMask=nu
 var currentViewRect=null; // 当前原图在原图(原始未裁)像素坐标系中的可视区域，用于裁剪时映射笔刷点坐标
 var exportCounter=0; // 未填命名时自动编号：随机命名1、随机命名2…
 var undoStack=[],redoStack=[],colorPalette=[],showCodes=false;
-var selectedBrushColor=[0,0,0],selectedBrushId='H19',selectedBrushIsNull=false,eyedropperActive=false;
+var selectedBrushColor=[0,0,0],selectedBrushId='H19',selectedBrushIsNull=false,eyedropperActive=false,suppressWandFill=false;
 var processTimer=null;
 var wandActive=false,wandSelection=null,viewZoom=1,lastFitGs=-1;
 var riskResultCache=null,reviewTab="overview",selectedRiskIndex=-1,showRiskOverlay=false;
@@ -280,6 +283,8 @@ bind('gamma','gammaValue',function(v){return(v/100).toFixed(2);});bind('saturati
 bind('contrast','contrastValue',function(v){return v+'%';});bind('brightness','brightValue');
 bind('sharpen','sharpValue');bind('denoise','denoiseValue');bind('maxColors','colorCountValue');bind('mergeSimilar','mergeSimilarValue');
 document.getElementById('brushSize').addEventListener('input',function(){document.getElementById('brushSizeValue').textContent=this.value;});
+document.getElementById('templateScale').addEventListener('input',function(){document.getElementById('templateScaleValue').textContent=(Math.round(this.value*100))+'%';var tn=document.getElementById('templateSel').value;if(tn!=='none')applyTemplate(tn,true);});
+document.getElementById('templateSel').addEventListener('change',function(){var tn=this.value;document.getElementById('templateScaleRow').style.display=(tn==='none'?'none':'');applyTemplate(tn,false);});
 
 function initMardFullGrid(){
     var grid=document.getElementById('mardFullGrid');
@@ -314,7 +319,7 @@ function selectBrush(idx){
     var items=document.getElementById('mardFullGrid').children;
     if(items[idx]){items[idx].classList.add('active');if(_gridInit)items[idx].scrollIntoView({block:'nearest'});}
     var nb=document.getElementById('nullBrushBtn');if(nb)nb.classList.remove('active');
-    if(wandActive&&wandSelection)applyWandFill([selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255]);
+    if(!suppressWandFill&&wandActive&&wandSelection)applyWandFill([selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255]);
 }
 function selectNullBrush(){
     selectedBrushIsNull=true;
@@ -323,7 +328,7 @@ function selectNullBrush(){
     document.getElementById('mardCodeInput').value='NULL';
     document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
     var nb=document.getElementById('nullBrushBtn');if(nb)nb.classList.add('active');
-    if(wandActive&&wandSelection)applyWandFill([0,0,0,0]);
+    if(!suppressWandFill&&wandActive&&wandSelection)applyWandFill([0,0,0,0]);
 }
 function setBrushByCode(){
     var code=document.getElementById('mardCodeInput').value.trim().toUpperCase();
@@ -361,7 +366,7 @@ document.getElementById('fileInput').addEventListener('change',function(e){
     var r=new FileReader();
     r.onload=function(ev){
         var img=new Image();
-        img.onload=function(){originalImage=img;rawOriginalImage=null;cropState=null;currentViewRect={x:0,y:0,w:img.naturalWidth,h:img.naturalHeight};document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';setFloatVisible(true);requestProcess()};
+        img.onload=function(){resetTemplateUI();originalImage=img;rawOriginalImage=null;cropState=null;currentViewRect={x:0,y:0,w:img.naturalWidth,h:img.naturalHeight};document.getElementById('originalImage').src=ev.target.result;document.getElementById('originalImage').style.display='block';setFloatVisible(true);requestProcess()};
         img.src=ev.target.result;
     };
     r.readAsDataURL(f);
@@ -453,7 +458,7 @@ function processImage(){
         gridData=getGridData(quantized,gw,gh);
         editMask=makeEditMask(gw,gh);
         if(pendingReapply){applyBrushEdits(pendingReapply);pendingReapply=null;}
-        undoStack=[];redoStack=[];wandSelection=null;
+        undoStack=[];redoStack=[];wandSelection=null;templateBase=null;
         rerender();
         if(gridW!==lastFitGs){fitZoom();lastFitGs=gridW;}
         document.getElementById('downloadBtn').disabled=false;
@@ -461,7 +466,7 @@ function processImage(){
         document.getElementById('colorPdfBtn').disabled=false;
         document.getElementById('csvBtn').disabled=false;
         document.getElementById('packageBtn').disabled=false;
-    }catch(e){console.error(e);alert('处理失败: '+e.message);}
+    }catch(e){console.error(e);templateBase=null;alert('处理失败: '+e.message);}
 }
 
 function mardQuantize(sc, maxColors, mergeThreshold){
@@ -632,20 +637,26 @@ function deepCopyGrid(g){
     for(var y=0;y<g.length;y++){c[y]=[];for(var x=0;x<g[y].length;x++){c[y][x]=g[y][x].slice();}}
     return c;
 }
+function updateUndoButtons(){
+    var u=document.getElementById('undoBtn'),r=document.getElementById('redoBtn');
+    if(u)u.disabled=undoStack.length===0;
+    if(r)r.disabled=redoStack.length===0;
+}
 function saveUndo(){
     if(!gridData)return;
     undoStack.push(deepCopyGrid(gridData));if(undoStack.length>20)undoStack.shift();
     redoStack=[];
+    updateUndoButtons();
 }
 function undoBrush(){
     if(undoStack.length===0){document.getElementById('pixelInfo').textContent='无可后退';return}
     redoStack.push(deepCopyGrid(gridData));
-    gridData=undoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已后退('+undoStack.length+'步)';
+    gridData=undoStack.pop();rerender();updateUndoButtons();document.getElementById('pixelInfo').textContent='已后退('+undoStack.length+'步)';
 }
 function redoBrush(){
     if(redoStack.length===0){document.getElementById('pixelInfo').textContent='无可前进';return}
     undoStack.push(deepCopyGrid(gridData));
-    gridData=redoStack.pop();rerender();document.getElementById('pixelInfo').textContent='已前进('+redoStack.length+'步)';
+    gridData=redoStack.pop();rerender();updateUndoButtons();document.getElementById('pixelInfo').textContent='已前进('+redoStack.length+'步)';
 }
 function getColorListText(){
     var counts={},idMap={};
@@ -911,7 +922,7 @@ function applyDraftData(d){
     document.getElementById('colorCountValue').textContent=p.maxColors||48;
     document.getElementById('mergeSimilarValue').textContent=p.mergeSimilar||0;
     function applyGrid(){
-        gridData=d.gridData;gridW=d.gridW;gridH=d.gridH;undoStack=[];redoStack=[];wandSelection=null;editMask=makeEditMask(gridW,gridH);
+        gridData=d.gridData;gridW=d.gridW;gridH=d.gridH;undoStack=[];redoStack=[];wandSelection=null;editMask=makeEditMask(gridW,gridH);resetTemplateUI();
         rerender();fitZoom();document.getElementById('downloadBtn').disabled=false;document.getElementById('downloadCodeBtn').disabled=false;
     }
     if(d.img){
@@ -974,26 +985,65 @@ document.getElementById('draftFileInput').addEventListener('change',function(e){
 refreshDraftSelect();
 
 
-document.getElementById('resultCanvas').addEventListener('click',function(e){
-    if(!gridData)return;var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
-    var mx=e.clientX-rect.left,my=e.clientY-rect.top;var margin=40,cs=30;
-    var gx=Math.floor((mx*sx-margin)/cs),gy=Math.floor((my*sx-margin)/cs);
-    if(gx<0||gx>=gridW||gy<0||gy>=gridH)return;
-    if(wandActive){doWandSelect(gx,gy);return;}
-    if(eyedropperActive){
-        var clr=gridData[gy][gx];
-        if(clr[3]<128){selectNullBrush();toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → 镂空NULL';return;}
-        var best=0,bd=Infinity;for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(clr,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}
-        selectBrush(best);toggleEyedropper();document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → '+MARD_COLORS[best].id;return;
+
+// （已移除：分享口令 / 导入口令功能）
+
+// ================= 自由画笔（按住拖动连续绘制 + 对称 + 大小） =================
+function eventToGrid(e){
+    var c=document.getElementById('resultCanvas');var rect=c.getBoundingClientRect(),sx=c.width/rect.width;
+    var mx=e.clientX-rect.left,my=e.clientY-rect.top,margin=40,cs=30;
+    return [Math.floor((mx*sx-margin)/cs),Math.floor((my*sx-margin)/cs)];
+}
+function brushSymCells(gx,gy){
+    var bs=parseInt(document.getElementById('brushSize').value)||1;
+    var set={};
+    function addT(tx,ty){ if(tx<0||tx>=gridW||ty<0||ty>=gridH)return; set[ty*gridW+tx]=1; }
+    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){
+        var nx=gx+dx,ny=gy+dy; if(nx<0||nx>=gridW||ny<0||ny>=gridH)continue;
+        addT(nx,ny);
+        if(symmetryMode==='vertical')addT(gridW-1-nx,ny);
+        if(symmetryMode==='horizontal')addT(nx,gridH-1-ny);
+        if(symmetryMode==='quad'){addT(gridW-1-nx,ny);addT(nx,gridH-1-ny);addT(gridW-1-nx,gridH-1-ny);}
     }
-    saveUndo();var bs=parseInt(document.getElementById('brushSize').value);
-    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){var nx=gx+dx,ny=gy+dy;        if(nx>=0&&nx<gridW&&ny>=0&&ny<gridH){
-        if(selectedBrushIsNull){gridData[ny][nx]=[0,0,0,0];}
-        else{gridData[ny][nx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];}
-        if(editMask)editMask[ny][nx]=true;
-    }}
-    rerender();document.getElementById('pixelInfo').textContent=(selectedBrushIsNull?'镂空: ':'修改: ')+'('+gx+','+gy+') → '+selectedBrushId;
+    var cells=[];for(var key in set){cells.push([key%gridW,Math.floor(key/gridW)]);}return cells;
+}
+function paintCells(cells){
+    var col=selectedBrushIsNull?[0,0,0,0]:[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];
+    for(var i=0;i<cells.length;i++){var x=cells[i][0],y=cells[i][1];gridData[y][x]=col.slice();if(editMask)editMask[y][x]=true;}
+}
+function doPickColor(gx,gy){
+    var clr=gridData[gy][gx];
+    // 取色只设置当前画笔颜色，绝不应触发魔棒选区填充（否则选区会跟着被填掉）
+    suppressWandFill=true;
+    if(clr[3]<128){selectNullBrush();}
+    else{var best=0,bd=Infinity;for(var j=0;j<MARD_COLORS.length;j++){var d=weightedLabDist(clr,MARD_COLORS[j].rgb);if(d<bd){bd=d;best=j;}}selectBrush(best);}
+    suppressWandFill=false;
+    toggleEyedropper();
+    document.getElementById('pixelInfo').textContent='取色: ('+gx+','+gy+') → '+(clr[3]<128?'镂空NULL':MARD_COLORS[best].id);
+}
+var isPainting=false,lastPx=null,lastPy=null,_cv=document.getElementById('resultCanvas');
+_cv.style.touchAction='none';
+_cv.addEventListener('pointerdown',function(e){
+    if(!gridData)return;
+    var g=eventToGrid(e);
+    if(g[0]<0||g[0]>=gridW||g[1]<0||g[1]>=gridH)return;
+    if(eyedropperActive){doPickColor(g[0],g[1]);return;}
+    if(wandActive){doWandSelect(g[0],g[1]);return;}
+    e.preventDefault();isPainting=true;saveUndo();
+    lastPx=g[0];lastPy=g[1];
+    paintCells(brushSymCells(g[0],g[1]));rerender();
+    try{_cv.setPointerCapture(e.pointerId);}catch(_){}
 });
+_cv.addEventListener('pointermove',function(e){
+    if(!isPainting||!gridData)return;
+    var g=eventToGrid(e);if(g[0]<0||g[0]>=gridW||g[1]<0||g[1]>=gridH){lastPx=g[0];lastPy=g[1];return;}
+    var x0=lastPx,y0=lastPy,x1=g[0],y1=g[1];
+    var dx=Math.abs(x1-x0),dy=Math.abs(y1-y0),sx=(x0<x1?1:-1),sy=(y0<y1?1:-1),err=dx-dy,cx=x0,cy=y0;
+    while(true){paintCells(brushSymCells(cx,cy));if(cx===x1&&cy===y1)break;var e2=2*err;if(e2>-dy){err-=dy;cx+=sx;}if(e2<dx){err+=dx;cy+=sy;}}
+    lastPx=x1;lastPy=y1;rerender();
+});
+function endPaint(){if(isPainting){isPainting=false;document.getElementById('pixelInfo').textContent=(selectedBrushIsNull?'镂空':'画笔')+'：按住拖动连续绘制完成';}}
+_cv.addEventListener('pointerup',endPaint);_cv.addEventListener('pointerleave',endPaint);_cv.addEventListener('pointercancel',endPaint);
 // ================= 新增功能（不改动画笔/色卡/图像转换/草稿核心代码） =================
 
 /* ---------- 1. 控制面板分组可折叠 ---------- */
@@ -1405,7 +1455,7 @@ function applyCrop(){
         var nv={x:(currentViewRect?currentViewRect.x:0)+sx, y:(currentViewRect?currentViewRect.y:0)+sy, w:sw, h:sh};
         pendingReapply=transformEdits((currentViewRect?currentViewRect.x:0),(currentViewRect?currentViewRect.y:0),(currentViewRect?currentViewRect.w:originalImage.naturalWidth),(currentViewRect?currentViewRect.h:originalImage.naturalHeight), nv.x,nv.y,nv.w,nv.h, edits);
         currentViewRect=nv;
-        originalImage=ni; var oi=document.getElementById('originalImage'); oi.src=ni.src; oi.style.display='block'; closeCrop(); requestProcess(); document.getElementById('pixelInfo').textContent='✂ 已应用前置裁剪';
+        originalImage=ni; var oi=document.getElementById('originalImage'); oi.src=ni.src; oi.style.display='block'; closeCrop(); resetTemplateUI(); requestProcess(); document.getElementById('pixelInfo').textContent='✂ 已应用前置裁剪';
     };
     ni.src=c.toDataURL('image/png');
 }
@@ -1416,7 +1466,7 @@ function restoreCrop(){
     pendingReapply=transformEdits((currentViewRect?currentViewRect.x:0),(currentViewRect?currentViewRect.y:0),(currentViewRect?currentViewRect.w:rw),(currentViewRect?currentViewRect.h:rh), 0,0,rw,rh, edits);
     currentViewRect={x:0,y:0,w:rw,h:rh};
     originalImage=rawOriginalImage; var oi=document.getElementById('originalImage'); oi.src=rawOriginalImage.src; oi.style.display='block';
-    closeCrop(); requestProcess(); document.getElementById('pixelInfo').textContent='↺ 已恢复原图（取消裁剪）';
+    closeCrop(); resetTemplateUI(); requestProcess(); document.getElementById('pixelInfo').textContent='↺ 已恢复原图（取消裁剪）';
 }
 (function(){
     var ov=document.getElementById('cropOverlay'); var drag=null;
@@ -1470,73 +1520,73 @@ function setFloatVisible(show){
     window.addEventListener('pointerup',function(){dragging=false;});
 })();
 
-/* ---------- 4. 一键清杂点（连通分量，≤阈值并入周边主色） ---------- */
+/* ---------- 4. 一键清杂点（连通分量 + 孤岛判定：仅清除“完全孤立在同色区域中的小色块”，绝不碰细线/边缘） ---------- */
 function cleanSpecks(){
     if(!gridData){alert('请先生成图纸');return;}
-    var maxSize=parseInt(document.getElementById('speckSize').value)||2;
+    var maxSize=parseInt(document.getElementById('speckSize').value)||2; // ≤N颗的同色连通块才会被考虑
     saveUndo();
-    var w=gridW,h=gridH,dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+    var w=gridW,h=gridH,dirs4=[[1,0],[-1,0],[0,1],[0,-1]];
+    var src=deepCopyGrid(gridData); // 基于旧图一次性判定，避免改写连锁扩散
     var visited=[];for(var y=0;y<h;y++){visited[y]=[];for(var x=0;x<w;x++)visited[y][x]=false;}
-    var changed=0;
+    var changed=0,removed=0;
     for(var y=0;y<h;y++)for(var x=0;x<w;x++){
-        if(visited[y][x])continue; var c=gridData[y][x]; if(c[3]<128)continue;
-        var comp=[],stack=[[x,y]]; visited[y][x]=true;
-        while(stack.length){var p=stack.pop(),px=p[0],py=p[1]; comp.push([px,py]);
-            for(var d=0;d<4;d++){var nx=px+dirs[d][0],ny=py+dirs[d][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;if(visited[ny][nx])continue;var nc=gridData[ny][nx];if(nc[3]<128)continue;if(nc[0]===c[0]&&nc[1]===c[1]&&nc[2]===c[2]){visited[ny][nx]=true;stack.push([nx,ny]);}}
+        if(visited[y][x])continue;
+        var c=src[y][x]; if(c[3]<128){visited[y][x]=true;continue;}
+        // 4连通同色泛洪，得到连通块
+        var comp=[],stack=[[x,y]];visited[y][x]=true;
+        while(stack.length){var p=stack.pop(),px=p[0],py=p[1];comp.push([px,py]);
+            for(var d=0;d<4;d++){var nx=px+dirs4[d][0],ny=py+dirs4[d][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;if(visited[ny][nx])continue;var nc=src[ny][nx];if(nc[3]<128)continue;if(nc[0]===c[0]&&nc[1]===c[1]&&nc[2]===c[2]){visited[ny][nx]=true;stack.push([nx,ny]);}}
         }
-        if(comp.length<=maxSize){
-            var cnt={};
-            for(var i=0;i<comp.length;i++){var cx=comp[i][0],cy=comp[i][1];
-                for(var d=0;d<4;d++){var nx=cx+dirs[d][0],ny=cy+dirs[d][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;var nb=gridData[ny][nx];if(nb[3]<128)continue;if(nb[0]===c[0]&&nb[1]===c[1]&&nb[2]===c[2])continue;var key=nb[0]+','+nb[1]+','+nb[2];cnt[key]=(cnt[key]||0)+1;}}
-            var best=null,bn=0; for(var k in cnt){if(cnt[k]>bn){bn=cnt[k];best=k;}}
-            for(var i=0;i<comp.length;i++){ if(best){var a=best.split(',').map(Number);gridData[comp[i][1]][comp[i][0]]=[a[0],a[1],a[2],255];} else {gridData[comp[i][1]][comp[i][0]]=[0,0,0,0];} changed++; }
+        if(comp.length>maxSize)continue; // 比阈值大 → 当成真实形状（如细线），绝不处理
+        // 统计连通块“外圈”邻居颜色：必须是同一主导色（孤岛才清，边缘/细节保留）
+        var cnt={},border=0,bestKey=null,bestN=0;
+        for(var i=0;i<comp.length;i++){var cx=comp[i][0],cy=comp[i][1];
+            for(var d=0;d<4;d++){var nx=cx+dirs4[d][0],ny=cy+dirs4[d][1];if(nx<0||nx>=w||ny<0||ny>=h)continue;var nb=src[ny][nx];if(nb[3]<128)continue;if(nb[0]===c[0]&&nb[1]===c[1]&&nb[2]===c[2])continue;var key=nb[0]+','+nb[1]+','+nb[2];cnt[key]=(cnt[key]||0)+1;if(cnt[key]>bestN){bestN=cnt[key];bestKey=key;}border++;}
         }
+        if(border===0)continue;                 // 四周是镂空/画布边界 → 视为有意浮空元素，保留
+        if(bestN<Math.ceil(border*0.6))continue; // 外圈颜色不统一（贴在边缘/和多种颜色相邻）→ 保留
+        var bc=bestKey.split(',').map(Number);
+        for(var i=0;i<comp.length;i++){gridData[comp[i][1]][comp[i][0]]=[bc[0],bc[1],bc[2],255];}
+        removed+=comp.length;changed++;
     }
-    if(changed>0){rerender();document.getElementById('pixelInfo').textContent='✨ 清除 '+changed+' 个杂点';}
-    else{undoStack.pop();document.getElementById('pixelInfo').textContent='✨ 当前无≤'+maxSize+'颗的杂点';}
+    if(removed>0){rerender();var n=removed;document.getElementById('pixelInfo').textContent='✨ 清除 '+n+' 颗杂点（'+changed+' 个孤立色块）';}
+    else{undoStack.pop();document.getElementById('pixelInfo').textContent='✨ 当前无≤'+maxSize+'颗的孤立杂点';}
 }
 
-/* ---------- 5. 对称绘图（新增独立点击监听，不改原画笔） ---------- */
+/* ---------- 5. 对称绘图（对称模式由统一画笔处理函数 brushSymCells 读取） ---------- */
 var symmetryMode='off';
-document.getElementById('resultCanvas').addEventListener('click',function(e){
-    if(!gridData||symmetryMode==='off'||wandActive||eyedropperActive)return;
-    var rect=this.getBoundingClientRect(),sx=this.width/rect.width;
-    var mx=e.clientX-rect.left,my=e.clientY-rect.top,margin=40,cs=30;
-    var gx=Math.floor((mx*sx-margin)/cs),gy=Math.floor((my*sx-margin)/cs);
-    if(gx<0||gx>=gridW||gy<0||gy>=gridH)return;
-    var bs=parseInt(document.getElementById('brushSize').value)||1;
-    var set={};
-    function addT(tx,ty){ if(tx<0||tx>=gridW||ty<0||ty>=gridH)return; set[ty*gridW+tx]=1; }
-    for(var dy=-bs+1;dy<bs;dy++)for(var dx=-bs+1;dx<bs;dx++){
-        var nx=gx+dx,ny=gy+dy; if(nx<0||nx>=gridW||ny<0||ny>=gridH)continue;
-        addT(nx,ny);
-        if(symmetryMode==='vertical')addT(gridW-1-nx,ny);
-        if(symmetryMode==='horizontal')addT(nx,gridH-1-ny);
-        if(symmetryMode==='quad'){addT(gridW-1-nx,ny);addT(nx,gridH-1-ny);addT(gridW-1-nx,gridH-1-ny);}
-    }
-    for(var key in set){var tx=key%gridW,ty=Math.floor(key/gridW);
-        if(selectedBrushIsNull)gridData[ty][tx]=[0,0,0,0];
-        else gridData[ty][tx]=[selectedBrushColor[0],selectedBrushColor[1],selectedBrushColor[2],255];
-        if(editMask)editMask[ty][tx]=true;
-    }
-    rerender();
-});
 
 /* ---------- 6. 挂件工艺模板 ---------- */
-function applyTemplate(name){
-    if(!gridData){alert('请先生成图纸');return;}
-    saveUndo();
+var templateBase=null; // 进入模板模式时保存的原始图纸，便于滑块实时重算（向上拖回也能复原）
+// 切换原图/裁剪/导入草稿后，必须让模板状态与当前网格保持一致，否则下拉框仍显示旧模板、
+// 而 templateBase 若残留会直接把“旧图”套回新图（典型 bug：换图后拖滑块仍是老图）。
+function resetTemplateUI(){
+    var s=document.getElementById('templateSel'); if(s)s.value='none';
+    var r=document.getElementById('templateScaleRow'); if(r)r.style.display='none';
+    templateBase=null;
+}
+function applyTemplate(name,live){
+    if(!gridData){ if(name!=='none')alert('请先生成图纸'); return; }
     var w=gridW,h=gridH;
+    var ts=parseFloat(document.getElementById('templateScale').value)||1; // 模板大小比例 0.3~1
+    if(name==='none'){
+        if(templateBase){ gridData=deepCopyGrid(templateBase); templateBase=null; }
+        document.getElementById('pixelInfo').textContent='已清除挂件模板';
+        rerender(); return;
+    }
+    if(!templateBase){ templateBase=deepCopyGrid(gridData); } // 首次进入模板时锁定原始图纸
+    else if(templateBase.length!==h||templateBase[0].length!==w){ templateBase=deepCopyGrid(gridData); } // 基准尺寸与当前网格不符则重建（防旧图残留）
+    if(!live){ saveUndo(); } // 仅在选中模板时记一次撤销，拖动滑块不刷屏撤销栈
+    var src=deepCopyGrid(templateBase);
     var mask=function(){return true;};
-    if(name==='disc'){var cx=(w-1)/2,cy=(h-1)/2,R=Math.min(w,h)/2-0.5; mask=function(x,y){return Math.hypot((x+0.5)-cx,(y+0.5)-cy)<=R;};}
-    else if(name==='heart'){mask=function(x,y){var nx=((x)/(w-1))*2-1,ny=((y)/(h-1))*2-1,a=nx,b=-ny;return Math.pow(a*a+b*b-1,3)-a*a*b*b*b<=0;};}
-    else if(name==='rsquare'){mask=function(x,y){var nx=((x)/(w-1))*2-1,ny=((y)/(h-1))*2-1;return (Math.abs(nx)<=0.82&&Math.abs(ny)<=0.82)||Math.hypot(Math.max(0,Math.abs(nx)-0.6),Math.max(0,Math.abs(ny)-0.6))<=0.28;};}
-    if(name!=='none'){
-        for(var y=0;y<h;y++)for(var x=0;x<w;x++){ if(!mask(x,y))gridData[y][x]=[0,0,0,0]; }
-        var hx=Math.round((w-1)/2);
-        if(h>3&&hx-1>=0&&hx+1<w){gridData[2][hx-1]=[0,0,0,0];gridData[2][hx+1]=[0,0,0,0];}
-        document.getElementById('pixelInfo').textContent='🔯 已应用挂件模板：'+name;
-    } else { document.getElementById('pixelInfo').textContent='已清除挂件模板'; }
+    if(name==='disc'){var cx=(w-1)/2,cy=(h-1)/2,R=(Math.min(w,h)/2-0.5)*ts; mask=function(x,y){return Math.hypot((x+0.5)-cx,(y+0.5)-cy)<=R;};}
+    else if(name==='heart'){mask=function(x,y){var nx=((x)/(w-1))*2-1,ny=((y)/(h-1))*2-1,a=nx/ts,b=-ny/ts;return Math.pow(a*a+b*b-1,3)-a*a*b*b*b<=0;};}
+    else if(name==='rsquare'){mask=function(x,y){var nx=((x)/(w-1))*2-1,ny=((y)/(h-1))*2-1;var a=nx/ts,b=ny/ts;return (Math.abs(a)<=0.82&&Math.abs(b)<=0.82)||Math.hypot(Math.max(0,Math.abs(a)-0.6),Math.max(0,Math.abs(b)-0.6))<=0.28;};}
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++){ if(!mask(x,y))src[y][x]=[0,0,0,0]; }
+    var hx=Math.round((w-1)/2),hy=Math.max(0,Math.min(h-1,Math.round((h-1)*(1-ts)/2)+1)); // 挂孔随形状上移到新边缘
+    if(h>3&&hx-1>=0&&hx+1<w){src[Math.max(0,Math.min(h-1,hy))][hx-1]=[0,0,0,0];src[Math.max(0,Math.min(h-1,hy))][hx+1]=[0,0,0,0];}
+    gridData=src;
+    document.getElementById('pixelInfo').textContent='🔯 已应用挂件模板：'+name+'（大小 '+(ts*100).toFixed(0)+'%）';
     rerender();
 }
 
@@ -1991,12 +2041,10 @@ document.getElementById('cropRestoreBtn').addEventListener('click',restoreCrop);
 document.getElementById('cleanSpecksBtn').addEventListener('click',cleanSpecks);
 document.getElementById('speckSize').addEventListener('input',function(){document.getElementById('speckSizeValue').textContent=this.value;});
 document.getElementById('symMode').addEventListener('change',function(){symmetryMode=this.value;document.getElementById('pixelInfo').textContent='对称模式：'+this.value;});
-document.getElementById('applyTemplateBtn').addEventListener('click',function(){applyTemplate(document.getElementById('templateSel').value);});
 document.getElementById('brandSel').addEventListener('change',function(){applyBrand(this.value);});
 document.getElementById('openReview').addEventListener('click',openReview);
 document.getElementById('closeReview')&&document.getElementById('closeReview').addEventListener('click',closeReview);
 document.getElementById('openSettings').addEventListener('click',openSettings);
-document.getElementById('closeReview').addEventListener('click',closeReview);
 document.getElementById('scrim').addEventListener('click',closeAll);
 
 console.log('✅ MARD 195色完整版就绪 by 三金超人_SuperTrigen');
@@ -2006,6 +2054,7 @@ function resetLeftScroll(){var cp=document.getElementById('control-panel'); if(c
 resetLeftScroll();
 setTimeout(resetLeftScroll,0);
 window.addEventListener('load',resetLeftScroll);
+updateUndoButtons();
 </script>
 </body>
 </html>
