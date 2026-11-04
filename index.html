@@ -71,7 +71,7 @@
     .control-group.collapsed .group-toggle::after{content:' ▶'}
     .group-body{margin-top:8px}
     .mobile-bar{display:none;align-items:center;gap:8px;padding:10px;background:#16213e;border-bottom:2px solid #0f3460;position:fixed;top:0;left:0;right:0;z-index:72}
-    .mobile-bar .mbtn{flex:1;background:#0f3460;color:#eee;border:1px solid #1a3a6e;border-radius:8px;padding:12px;font-size:15px;font-weight:bold}
+    .mobile-top{display:none}    .mobile-bar .mbtn{flex:1;background:#0f3460;color:#eee;border:1px solid #1a3a6e;border-radius:8px;padding:12px;font-size:15px;font-weight:bold}
     .center-column{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;max-width:1000px;margin:0 auto;overflow-y:auto}
     .center-column .result-panel{flex:none;border-right:none;background:transparent;min-height:0}
     .result-area{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:8px}
@@ -122,28 +122,185 @@
     .rp-tab:hover{filter:brightness(1.15)}
     .risk-item{cursor:pointer;transition:background .15s,border-color .15s}
     .risk-item:hover{background:#1a3a6e!important;border-color:#e94560!important}
-    </style>
+
+/* ===== 版本选择器（进入网站时选择 电脑版 / 手机版） ===== */
+#versionChooser{position:fixed;inset:0;z-index:9999;background:radial-gradient(120% 120% at 50% 0%,#1f2b50 0%,#121a30 60%,#0c1124 100%);display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Segoe UI',Arial,sans-serif}
+#versionChooser .vc-card{background:#16213e;border:1px solid #0f3460;border-radius:20px;padding:30px 24px;max-width:440px;width:100%;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+#versionChooser h1{color:#e94560;font-size:21px;margin-bottom:8px}
+#versionChooser .vc-sub{color:#9aa3b8;font-size:13px;margin-bottom:24px}
+#versionChooser .vc-options{display:flex;flex-direction:column;gap:14px}
+#versionChooser .vc-btn{display:flex;align-items:center;gap:16px;padding:18px; border:2px solid #0f3460;border-radius:16px;background:#1a1a2e;color:#eee;cursor:pointer;text-align:left;transition:transform .12s,border-color .12s,background .12s}
+#versionChooser .vc-btn:active{transform:scale(.98)}
+#versionChooser .vc-btn.selected{border-color:#e94560;background:#1a3a6e;box-shadow:0 0 16px rgba(233,69,96,.35)}
+#versionChooser .vc-ico{font-size:38px;line-height:1;flex:0 0 auto}
+#versionChooser .vc-txt b{display:block;font-size:17px;color:#fff}
+#versionChooser .vc-txt span{font-size:12px;color:#9aa3b8}
+#versionChooser .vc-reco{display:none;font-size:10px;color:#fff;background:#e94560;border-radius:8px;padding:2px 8px;margin-left:8px;vertical-align:middle;font-weight:normal}
+#versionChooser .vc-foot{margin-top:22px;font-size:12px;color:#8a93a8;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none}
+#versionChooser .vc-foot input{width:16px;height:16px;accent-color:#e94560}
+/* 桌面端：切换按钮与标题同一行 */
+.title-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.title-row .title{font-size:16px!important;white-space:nowrap!important;margin:10px 0 0!important}
+.title-switch{background:#0f3460;color:#eee;border:1px solid #1a3a6e;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.title-switch:active{background:#1a3a6e}
+/* 选版本独立页面：彻底隐藏主程序，避免控制栏漏出 */
+body.choosing .app-container{display:none!important}
+body.choosing .mobile-top{display:none!important}
+body.choosing .mobile-bar{display:none!important}
+body.choosing .scrim{display:none!important}
+
+/* ===== 强制电脑版（在手机上也可选桌面布局） ===== */
+body.force-desktop .app-container{flex-direction:row!important;height:100vh!important;min-height:0!important;padding-top:0!important;overflow:auto!important}
+body.force-desktop .control-panel{position:relative!important;transform:none!important;top:auto!important;left:auto!important;height:auto!important;width:400px!important;min-width:240px!important;max-width:none!important;padding-top:20px!important;box-shadow:none!important;flex-shrink:0!important}
+body.force-desktop .review-panel{position:relative!important;transform:none!important;top:auto!important;right:auto!important;height:auto!important;width:260px!important;min-width:240px!important;max-width:none!important;box-shadow:none!important;flex-shrink:0!important}
+body.force-desktop .mobile-bar{display:none!important}
+body.force-desktop .scrim{display:none!important}
+body.force-desktop .mobile-top{display:none!important}
+body.force-desktop .center-column{max-width:none!important;margin:0!important;flex:1 1 auto!important;min-width:480px!important}
+
+/* ===== 手机版排版：美图秀秀式竖屏（画布为主角 + 底部工具栏 + 底部弹出面板） ===== */
+@media(max-width:1200px){
+  body:not(.force-desktop) .app-container{flex-direction:column!important;height:100vh!important;min-height:0!important;padding:0!important;overflow:hidden!important}
+  /* 中间列：画布占主体，常用工具条常驻底部 */
+  body:not(.force-desktop) .center-column{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;margin:0!important;max-width:none!important;padding:0 0 calc(98px + env(safe-area-inset-bottom))!important;overflow:hidden!important}
+  body:not(.force-desktop) .result-area{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;overflow:auto!important;padding:58px 14px 14px!important}
+  body:not(.force-desktop) .result-box{max-height:none!important;margin:0!important}
+  body:not(.force-desktop) .result-box canvas{max-width:100%!important;height:auto!important}
+  body:not(.force-desktop) .tool-info{margin:8px 0 0!important;font-size:12px;text-align:center}
+  body:not(.force-desktop) .mid-bottom{position:fixed!important;left:0;right:0;top:auto!important;bottom:calc(52px + env(safe-area-inset-bottom))!important;z-index:79;flex:0 0 auto!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;gap:6px!important;padding:0 10px!important;height:46px!important;box-sizing:border-box!important;align-items:center!important;background:#16213e!important;border-top:1px solid #0f3460}
+  body:not(.force-desktop) .center-column .mid-bottom .control-group{flex:0 0 auto!important}
+  body:not(.force-desktop) .mid-bottom .control-group h3{white-space:nowrap;font-size:12px}
+  body:not(.force-desktop) .mid-bottom .zoom-col{flex-direction:row!important;align-items:center!important;gap:6px!important}
+  body:not(.force-desktop) .mid-bottom::-webkit-scrollbar{height:6px}
+  body:not(.force-desktop) .mid-bottom::-webkit-scrollbar-thumb{background:#0f3460;border-radius:3px}
+  body:not(.force-desktop) .mid-bottom .control-group[data-grp="grid"],
+  body:not(.force-desktop) .mid-bottom .control-group[data-grp="code"],
+  body:not(.force-desktop) .mid-bottom .control-group[data-grp="draft"]{display:none!important}
+  body:not(.force-desktop) .storage-warn{padding:3px 10px!important}
+  /* 原图浮窗避让底部工具栏 */
+  body:not(.force-desktop) .float-original{bottom:calc(110px + env(safe-area-inset-bottom))!important;max-width:34vw!important}
+  body:not(.force-desktop) .float-original img{width:auto!important;max-width:100%!important;max-height:16vh!important}
+  /* 设置：底部弹出半屏 sheet（底部tab始终在最上层，故底部留白避开） */
+  body:not(.force-desktop) .control-panel{position:fixed!important;left:0;right:0;bottom:calc(98px + env(safe-area-inset-bottom))!important;top:auto!important;width:100%!important;max-width:none!important;min-width:0!important;max-height:calc(100vh - 160px)!important;height:auto!important;transform:translateY(100%)!important;transition:transform .3s cubic-bezier(.22,.61,.36,1)!important;background:#16213e!important;border:none!important;border-radius:18px 18px 0 0!important;box-shadow:0 -10px 40px rgba(0,0,0,.55)!important;padding:0 0 14px!important;z-index:74;overflow:auto!important}
+  body:not(.force-desktop) .control-panel.open{transform:translateY(0)!important}
+  /* 评审：顶部滑下浮窗（顶部栏在其上，故顶部留白避开） */
+  body:not(.force-desktop) .review-panel{position:fixed!important;left:0;right:0;top:0;bottom:auto!important;width:100%!important;max-width:none!important;min-width:0!important;max-height:82vh!important;height:auto!important;transform:translateY(-100%)!important;transition:transform .3s cubic-bezier(.22,.61,.36,1)!important;background:#16213e!important;border:none!important;border-radius:0 0 18px 18px!important;box-shadow:0 10px 40px rgba(0,0,0,.55)!important;padding:56px 0 calc(20px + env(safe-area-inset-bottom))!important;z-index:74;overflow:auto!important}
+  body:not(.force-desktop) .review-panel.open{transform:translateY(0)!important}
+  body:not(.force-desktop) .control-panel::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:#3a4570;margin:10px auto 2px}
+  body:not(.force-desktop) .control-panel .title{font-size:16px!important;white-space:normal!important;padding:6px 16px 0!important;margin-top:0!important}
+  body:not(.force-desktop) .control-panel .author{display:none!important}
+  body:not(.force-desktop) .control-panel .control-group{padding:12px 16px!important;margin:0!important}
+  body:not(.force-desktop) .review-panel .rp-header{padding:14px 16px 8px!important;font-size:16px}
+  body:not(.force-desktop) .review-panel .rp-body{padding:0 16px!important}
+  /* 顶部栏（网格/色号/评审 + 草稿/导出） */
+  body:not(.force-desktop) .mobile-top{display:flex!important;position:fixed;left:0;right:0;top:0;z-index:75;justify-content:space-between;align-items:center;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-top));background:#16213e;border-bottom:2px solid #0f3460}
+  body:not(.force-desktop) .mobile-top .mt-left,
+  body:not(.force-desktop) .mobile-top .mt-right{display:flex;gap:6px;align-items:center}
+  body:not(.force-desktop) .mobile-top .mt-btn{background:#0f3460;border:1px solid #1a3a6e;color:#cfd6e6;border-radius:18px;display:flex;align-items:center;gap:4px;padding:7px 12px;font-size:12px;font-weight:600;line-height:1}
+  body:not(.force-desktop) .mobile-top .mt-btn .mt-ico{font-size:15px;line-height:1}
+  body:not(.force-desktop) .mobile-top .mt-btn.active{background:#e94560;border-color:#e94560;color:#fff}
+  body:not(.force-desktop) .mobile-top .mt-btn.mt-accent{background:#e94560;border-color:#e94560;color:#fff}
+  body:not(.force-desktop) .title-switch{display:none!important}
+  /* 底部功能分类 tab（横向滚动） */
+  body:not(.force-desktop) .mobile-bar{display:flex!important;position:fixed;left:0;right:0;bottom:0;top:auto!important;z-index:78;gap:6px;height:calc(52px + env(safe-area-inset-bottom));box-sizing:border-box;align-items:center;padding:0 12px;background:#16213e;border-top:2px solid #0f3460;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  body:not(.force-desktop) .mobile-bar::-webkit-scrollbar{height:0}
+  body:not(.force-desktop) .mobile-bar .mbtn{flex:0 0 auto!important;background:transparent;border:none;color:#cfd6e6;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;font-size:11px;font-weight:600;line-height:1.2;white-space:nowrap;border-radius:8px}
+  body:not(.force-desktop) .mobile-bar .mbtn .ico{font-size:20px;line-height:1}
+  body:not(.force-desktop) .mobile-bar .mbtn.active{color:#e94560}
+  body:not(.force-desktop) .mobile-bar .mbtn.active .ico{transform:scale(1.12)}
+  /* 遮罩：打开面板时显示，点按关闭 */
+  body:not(.force-desktop) .scrim{z-index:72!important;background:rgba(0,0,0,.5)}
+  body:not(.force-desktop).mb-hidden .mid-bottom{display:none!important}
+  body:not(.force-desktop).mb-hidden .control-panel{bottom:calc(52px + env(safe-area-inset-bottom))!important}
+  body:not(.force-desktop).mb-hidden .center-column{padding-bottom:calc(52px + env(safe-area-inset-bottom))!important}
+}
+/* 强制手机版（任意宽度都按手机布局） */
+body.layout-mobile .app-container{flex-direction:column!important;height:100vh!important;min-height:0!important;padding:0!important;overflow:hidden!important}
+body.layout-mobile .center-column{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;margin:0!important;max-width:none!important;padding:0 0 calc(98px + env(safe-area-inset-bottom))!important;overflow:hidden!important}
+body.layout-mobile .result-area{flex:1 1 auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;overflow:auto!important;padding:58px 14px 14px!important}
+body.layout-mobile .result-box{max-height:none!important;margin:0!important}
+body.layout-mobile .result-box canvas{max-width:100%!important;height:auto!important}
+body.layout-mobile .tool-info{margin:8px 0 0!important;font-size:12px;text-align:center}
+body.layout-mobile .mid-bottom{position:fixed!important;left:0;right:0;top:auto!important;bottom:calc(52px + env(safe-area-inset-bottom))!important;z-index:79;flex:0 0 auto!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch;gap:6px!important;padding:0 10px!important;height:46px!important;box-sizing:border-box!important;align-items:center!important;background:#16213e!important;border-top:1px solid #0f3460}
+body.layout-mobile .center-column .mid-bottom .control-group{flex:0 0 auto!important}
+body.layout-mobile .mid-bottom .control-group h3{white-space:nowrap;font-size:12px}
+body.layout-mobile .mid-bottom .zoom-col{flex-direction:row!important;align-items:center!important;gap:6px!important}
+body.layout-mobile .mid-bottom::-webkit-scrollbar{height:6px}
+body.layout-mobile .mid-bottom::-webkit-scrollbar-thumb{background:#0f3460;border-radius:3px}
+body.layout-mobile .mid-bottom .control-group[data-grp="grid"],
+body.layout-mobile .mid-bottom .control-group[data-grp="code"],
+body.layout-mobile .mid-bottom .control-group[data-grp="draft"]{display:none!important}
+body.layout-mobile .storage-warn{padding:3px 10px!important}
+body.layout-mobile .float-original{bottom:calc(110px + env(safe-area-inset-bottom))!important;max-width:34vw!important}
+body.layout-mobile .float-original img{width:auto!important;max-width:100%!important;max-height:16vh!important}
+body.layout-mobile .control-panel{position:fixed!important;left:0;right:0;bottom:calc(98px + env(safe-area-inset-bottom))!important;top:auto!important;width:100%!important;max-width:none!important;min-width:0!important;max-height:calc(100vh - 160px)!important;height:auto!important;transform:translateY(100%)!important;transition:transform .3s cubic-bezier(.22,.61,.36,1)!important;background:#16213e!important;border:none!important;border-radius:18px 18px 0 0!important;box-shadow:0 -10px 40px rgba(0,0,0,.55)!important;padding:0 0 14px!important;z-index:74;overflow:auto!important}
+body.layout-mobile .control-panel.open{transform:translateY(0)!important}
+body.layout-mobile .review-panel{position:fixed!important;left:0;right:0;top:0;bottom:auto!important;width:100%!important;max-width:none!important;min-width:0!important;max-height:82vh!important;height:auto!important;transform:translateY(-100%)!important;transition:transform .3s cubic-bezier(.22,.61,.36,1)!important;background:#16213e!important;border:none!important;border-radius:0 0 18px 18px!important;box-shadow:0 10px 40px rgba(0,0,0,.55)!important;padding:56px 0 calc(20px + env(safe-area-inset-bottom))!important;z-index:74;overflow:auto!important}
+body.layout-mobile .review-panel.open{transform:translateY(0)!important}
+body.layout-mobile .control-panel::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:#3a4570;margin:10px auto 2px}
+body.layout-mobile .control-panel .title{font-size:16px!important;white-space:normal!important;padding:6px 16px 0!important;margin-top:0!important}
+body.layout-mobile .control-panel .author{display:none!important}
+body.layout-mobile .control-panel .control-group{padding:12px 16px!important;margin:0!important}
+body.layout-mobile .review-panel .rp-header{padding:14px 16px 8px!important;font-size:16px}
+body.layout-mobile .review-panel .rp-body{padding:0 16px!important}
+body.layout-mobile.mb-hidden .control-panel{bottom:calc(52px + env(safe-area-inset-bottom))!important}
+body.layout-mobile.mb-hidden .center-column{padding-bottom:calc(52px + env(safe-area-inset-bottom))!important}
+body.layout-mobile .mobile-top{display:flex!important;position:fixed;left:0;right:0;top:0;z-index:75;justify-content:space-between;align-items:center;gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-top));background:#16213e;border-bottom:2px solid #0f3460}
+body.layout-mobile .mobile-top .mt-left,
+body.layout-mobile .mobile-top .mt-right{display:flex;gap:6px;align-items:center}
+body.layout-mobile .mobile-top .mt-btn{background:#0f3460;border:1px solid #1a3a6e;color:#cfd6e6;border-radius:18px;display:flex;align-items:center;gap:4px;padding:7px 12px;font-size:12px;font-weight:600;line-height:1}
+body.layout-mobile .mobile-top .mt-btn .mt-ico{font-size:15px;line-height:1}
+body.layout-mobile .mobile-top .mt-btn.active{background:#e94560;border-color:#e94560;color:#fff}
+body.layout-mobile .mobile-top .mt-btn.mt-accent{background:#e94560;border-color:#e94560;color:#fff}
+body.layout-mobile .title-switch{display:none!important}
+body.layout-mobile .mobile-bar{display:flex!important;position:fixed;left:0;right:0;bottom:0;top:auto!important;z-index:78;gap:6px;height:calc(52px + env(safe-area-inset-bottom));box-sizing:border-box;align-items:center;padding:0 12px;background:#16213e;border-top:2px solid #0f3460;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+body.layout-mobile .mobile-bar::-webkit-scrollbar{height:0}
+body.layout-mobile .mobile-bar .mbtn{flex:0 0 auto!important;background:transparent;border:none;color:#cfd6e6;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;font-size:11px;font-weight:600;line-height:1.2;white-space:nowrap;border-radius:8px}
+body.layout-mobile .mobile-bar .mbtn .ico{font-size:20px;line-height:1}
+body.layout-mobile .mobile-bar .mbtn.active{color:#e94560}
+body.layout-mobile .mobile-bar .mbtn.active .ico{transform:scale(1.12)}
+body.layout-mobile .scrim{z-index:70!important;background:rgba(0,0,0,.5)}
+body.layout-mobile.mb-hidden .mid-bottom{display:none!important}
+</style>
 </head>
-<body>
+<body class="choosing">
+<div id="versionChooser">
+  <div class="vc-card">
+    <h1>🎨 超级拼豆图纸生成器</h1>
+    <p class="vc-sub">请选择使用版本</p>
+    <div class="vc-options">
+      <div class="vc-btn" data-mode="desktop">
+        <div class="vc-ico">💻</div>
+        <div class="vc-txt"><b>电脑版<span class="vc-reco">推荐</span></b><span>大屏操作 · 功能完整 · 三栏布局</span></div>
+      </div>
+      <div class="vc-btn" data-mode="mobile">
+        <div class="vc-ico">📱</div>
+        <div class="vc-txt"><b>手机版<span class="vc-reco">推荐</span></b><span>触屏优化 · 画布为主角 · 底部工具栏 · 弹出式面板</span></div>
+      </div>
+    </div>
+    <label class="vc-foot"><input type="checkbox" id="vcRemember"> 记住我的选择（下次直接进入）</label>
+  </div>
+</div>
 <div class="app-container">
 <div class="control-panel" id="control-panel" style="width:400px;flex-shrink:0;">
-<h1 class="title" style="font-size:18px;margin-top:10px;white-space:nowrap;">🎨 超级拼豆图纸生成器</h1>
+<div class="title-row"><button class="title-switch" id="switchVersionBtn2" onclick="showVersionChooser()" title="切换版本">⇄ 切换</button>
+<h1 class="title" style="font-size:18px;margin-top:10px;white-space:nowrap;">🎨 超级拼豆图纸生成器</h1></div>
 <p class="author" style="font-size:16px;margin-top:8px;white-space:nowrap;">by <a href="https://github.com/chai-07" target="_blank">三金超人_SuperTrigen</a></p>
-<div class="control-group"><h3>📁 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
-<div class="control-group"><h3>✂ 前置裁剪</h3>
+<div class="control-group" data-grp="upload"><h3>📁 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
+<div class="control-group" data-grp="crop"><h3>✂ 前置裁剪</h3>
 <button class="btn btn-clear" id="cropOpenBtn" style="margin-bottom:4px">✂ 开启裁剪</button>
 <div style="display:flex;gap:4px;">
     <button id="cropApplyBtn" disabled style="flex:1;background:#00b894;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer">✅ 应用裁剪</button>
     <button id="cropRestoreBtn" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer">↺ 恢复原图</button>
 </div>
 <span class="hint">在原图上拖拽选取区域，应用后仅该区域参与拼豆生成</span></div>
-<div class="control-group"><h3>📐 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="20">20×20 超小底板</option><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option><option value="custom">自定义尺寸…</option></select><span class="hint">生成的拼豆图纸尺寸</span></div><div class="setting-row" id="customSizeRow" style="display:none"><label>自定义 (宽×高)</label><span style="display:flex;gap:6px;align-items:stretch"><input type="text" id="customSize" placeholder="例如 35x35 或 60x40" style="flex:1;width:100%;min-width:0;padding:8px;border-radius:6px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:13px"><button class="btn" id="customSizeConfirm" style="width:auto;flex-shrink:0;padding:8px 16px;font-size:13px;border-radius:6px;background:#e94560;color:#fff">确认</button></span><span class="hint">输入格式：宽x高（5~150，如 35x35），填好后点「确认」生成</span></div></div>
-<div class="control-group"><h3>🌈 多品牌色板</h3>
+<div class="control-group" data-grp="canvas"><h3>📐 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="20">20×20 超小底板</option><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option><option value="custom">自定义尺寸…</option></select><span class="hint">生成的拼豆图纸尺寸</span></div><div class="setting-row" id="customSizeRow" style="display:none"><label>自定义 (宽×高)</label><span style="display:flex;gap:6px;align-items:stretch"><input type="text" id="customSize" placeholder="例如 35x35 或 60x40" style="flex:1;width:100%;min-width:0;padding:8px;border-radius:6px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:13px"><button class="btn" id="customSizeConfirm" style="width:auto;flex-shrink:0;padding:8px 16px;font-size:13px;border-radius:6px;background:#e94560;color:#fff">确认</button></span><span class="hint">输入格式：宽x高（5~150，如 35x35），填好后点「确认」生成</span></div></div>
+<div class="control-group" data-grp="brand"><h3>🌈 多品牌色板</h3>
 <div class="setting-row"><label>色板品牌</label><select id="brandSel"><option value="MARD" selected>MARD 195色</option><option value="PERLER">Perler 117色</option><option value="HAMA">Hama 33色</option><option value="ARTKAL">Artkal 176色</option></select></div>
 <span class="hint">切换取色色板（不影响自动量化配色）</span></div>
-<div class="control-group"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">48</span></label><input type="range" id="maxColors" min="4" max="195" value="48" step="1"><span class="hint">限制使用的MARD颜色数量</span></div>
+<div class="control-group" data-grp="quant"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">48</span></label><input type="range" id="maxColors" min="4" max="195" value="48" step="1"><span class="hint">限制使用的MARD颜色数量</span></div>
 <div class="setting-row"><label>相似颜色合并 <span class="value-display" id="mergeSimilarValue">0</span></label><input type="range" id="mergeSimilar" min="0" max="100" value="0" step="1"><span class="hint">颜色雷同时用同一种豆子替代，减少颜色数量（0=不合并）</span></div></div>
-<div class="control-group"><h3>🔧 图像增强（量化前执行）</h3>
+<div class="control-group" data-grp="enhance"><h3>🔧 图像增强（量化前执行）</h3>
 <div class="setting-row"><label>深色归一阈值 <span class="value-display" id="darkUnifyValue">0</span></label><input type="range" id="darkUnify" min="0" max="40" value="0" step="1"><span class="hint">亮度低于此值的像素强制变纯黑</span></div>
 <div class="setting-row"><label>黑色阈值 <span class="value-display" id="blackValue">0</span></label><input type="range" id="blackThreshold" min="0" max="30" value="0" step="1"><span class="hint">压暗部去灰雾，让画面更通透</span></div>
 <div class="setting-row"><label>伽马校正 <span class="value-display" id="gammaValue">1.00</span></label><input type="range" id="gamma" min="70" max="130" value="100" step="1"><span class="hint">校正整体亮度曲线</span></div>
@@ -153,12 +310,12 @@
 <div class="setting-row"><label>锐化 <span class="value-display" id="sharpValue">0</span></label><input type="range" id="sharpen" min="-10" max="10" value="0" step="1"><span class="hint">正值锐化 / 负值柔化，0为原图</span></div>
 <div class="setting-row"><label>降噪 <span class="value-display" id="denoiseValue">0</span></label><input type="range" id="denoise" min="0" max="5" value="0" step="1"><span class="hint">减少杂色碎点</span></div>
 <button class="btn btn-reset" onclick="resetParams()">↺ 重置所有参数</button></div>
-<div class="control-group"><h3>🧹 清理</h3><button class="btn btn-clear" onclick="removeSingles()">🧹 清除1×1孤立点</button></div>
+<div class="control-group" data-grp="clean"><h3>🧹 清理</h3><button class="btn btn-clear" onclick="removeSingles()">🧹 清除1×1孤立点</button></div>
 <!-- 画布缩放控件已移至中栏底部 .mid-bottom -->
-<div class="control-group"><h3>🪞 对称绘图</h3>
+<div class="control-group" data-grp="sym"><h3>🪞 对称绘图</h3>
 <div class="setting-row"><label>对称模式</label><select id="symMode"><option value="off" selected>关闭</option><option value="vertical">左右对称</option><option value="horizontal">上下对称</option><option value="quad">四向对称</option></select></div>
 <span class="hint">开启后画笔自动镜像，适合制作对称图案</span></div>
-<div class="control-group"><h3>🖌️ 手动修图</h3>
+<div class="control-group" data-grp="edit"><h3>🖌️ 手动修图</h3>
 <div style="display:flex;gap:4px;margin-bottom:6px;">
     <button class="btn btn-wand" id="wandBtn" onclick="toggleWand()" style="flex:1;background:#9b59b6;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;padding:8px 0;">🪄 魔棒选区</button>
 </div>
@@ -173,14 +330,15 @@
 <button class="btn btn-null" id="nullBrushBtn" onclick="selectNullBrush()" style="margin-top:6px;margin-bottom:4px;">⬜ 镂空笔(null) · 不填充</button>
 <div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
 </div>
-<div class="control-group"><h3>🔯 挂件工艺模板</h3>
+<div class="control-group" data-grp="pendant"><h3>🔯 挂件工艺模板</h3>
 <div class="setting-row"><label>模板形状</label><select id="templateSel"><option value="none" selected>无 / 清除</option><option value="disc">圆形挂件</option><option value="heart">心形挂件</option><option value="rsquare">圆角方挂件</option></select></div>
 <div class="setting-row" id="templateScaleRow" style="margin-top:6px;display:none;"><label>模板大小 <span id="templateScaleValue">100%</span></label><input type="range" id="templateScale" min="0.3" max="1" value="1" step="0.05"></div>
 <span class="hint">选中模板后拖动滑块，右侧实时预览；将板外区域设为镂空并自动加挂孔</span></div>
-<div class="control-group"><h3>✨ 智能清理</h3>
+<div class="control-group" data-grp="speck"><h3>✨ 智能清理</h3>
 <div class="setting-row"><label>清杂碎块(≤N颗) <span id="speckSizeValue" class="value-display">2</span></label><input type="range" id="speckSize" min="1" max="8" value="2" step="1"><span class="hint">仅清除完全孤立在同色区域中的小色块，不碰细线与边缘</span></div>
 <button class="btn btn-clear" id="cleanSpecksBtn">✨ 一键清杂点</button>
 <span class="hint">移除≤阈值的孤立同色碎块，自动并入周边主色</span></div>
+<div class="control-group" data-grp="export">
 <div class="setting-row" style="margin-bottom:6px;"><label>导出文件命名前缀</label><input type="text" id="exportName" placeholder="留空自动：随机命名1 / 随机命名2 …"></div>
 <button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
 <button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
@@ -188,6 +346,7 @@
 <button class="btn btn-download2" id="csvBtn" disabled onclick="downloadCsv()">📊 CSV耗材清单</button>
 <button class="btn" id="packageBtn"  disabled onclick="packageExport()">📦 一键打包导出（4种）</button>
 <span class="hint" id="pkgHint">打包将优先让你选择文件夹保存；浏览器不支持时自动下载ZIP（解压即得文件夹）</span>
+</div>
 </div>
 <div class="center-column">
 <div class="result-area" id="resultArea">
@@ -215,12 +374,12 @@
 <button class="mini" id="undoBtn" onclick="undoBrush()">↩ 后退</button>
 <button class="mini" id="redoBtn" onclick="redoBrush()">↷ 前进</button>
 </div></div>
-<div class="control-group"><h3>🔲 网格</h3>
+<div class="control-group" data-grp="grid"><h3>🔲 网格</h3>
 <div class="setting-row"><label>显示网格线</label><select id="showGrid"><option value="yes" selected>是</option><option value="no">否</option></select></div>
 <div class="setting-row"><label>网格线颜色</label><input type="color" id="gridColor" value="#cccccc"></div>
 </div>
-<div class="control-group" style="flex-direction:row;align-items:center"><div class="checkbox-row" style="margin:0"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div></div>
-<div class="control-group"><h3>📦 草稿</h3>
+<div class="control-group" data-grp="code" style="flex-direction:row;align-items:center"><div class="checkbox-row" style="margin:0"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div></div>
+<div class="control-group" data-grp="draft"><h3>📦 草稿</h3>
 <div class="draft-row">
 <input type="text" id="draftName" placeholder="草稿名称">
 <button class="btn btn-download2" onclick="saveDraft()">📂 暂存</button>
@@ -240,9 +399,30 @@
     <div class="rp-body" id="reviewBody"></div>
 </aside>
 </div>
+<div class="mobile-top" id="mobileTop">
+  <div class="mt-left">
+    <button class="mt-btn" id="switchVersionBtn" title="切换版本"><span class="mt-ico">⇄</span><span class="mt-txt">切换</span></button>
+    <button class="mt-btn" id="mtGrid" title="网格"><span class="mt-ico">🔲</span><span class="mt-txt">网格</span></button>
+    <button class="mt-btn" id="mtCode" title="色号标注"><span class="mt-ico">🔢</span><span class="mt-txt">色号</span></button>
+    <button class="mt-btn" id="mtReview" title="评审报告"><span class="mt-ico">📋</span><span class="mt-txt">评审</span></button>
+  </div>
+  <div class="mt-right">
+    <button class="mt-btn mt-accent" id="mtDraft" title="草稿"><span class="mt-ico">📂</span><span class="mt-txt">草稿</span></button>
+    <button class="mt-btn mt-accent" id="mtExport" title="导出"><span class="mt-ico">💾</span><span class="mt-txt">导出</span></button>
+  </div>
+</div>
 <div class="mobile-bar" id="mobileBar">
-    <button class="mbtn" id="openSettings">☰ 设置</button>
-    <button class="mbtn" id="openReview">📋 评审</button>
+    <button class="mbtn" data-grp="upload"><span class="ico">📁</span><span>上传</span></button>
+    <button class="mbtn" data-grp="crop"><span class="ico">✂️</span><span>裁剪</span></button>
+    <button class="mbtn" data-grp="canvas"><span class="ico">📐</span><span>画布</span></button>
+    <button class="mbtn" data-grp="brand"><span class="ico">🌈</span><span>色板</span></button>
+    <button class="mbtn" data-grp="quant"><span class="ico">🎨</span><span>调色</span></button>
+    <button class="mbtn" data-grp="enhance"><span class="ico">🔧</span><span>增强</span></button>
+    <button class="mbtn" data-grp="clean"><span class="ico">🧹</span><span>清理</span></button>
+    <button class="mbtn" data-grp="sym"><span class="ico">🪞</span><span>对称</span></button>
+    <button class="mbtn" data-grp="edit"><span class="ico">🖌️</span><span>手动</span></button>
+    <button class="mbtn" data-grp="pendant"><span class="ico">🔯</span><span>挂件</span></button>
+    <button class="mbtn" data-grp="speck"><span class="ico">✨</span><span>智能</span></button>
 </div>
 <div class="scrim" id="scrim"></div>
 
@@ -1608,10 +1788,10 @@ function applyHighlightOverlay(){
 var _origRerender=rerender;
 rerender=function(){_origRerender();applyHighlightOverlay();applyRiskOverlay();scheduleReview();};
 var _reviewPending=false;
-function scheduleReview(){ if(_reviewPending)return; _reviewPending=true; requestAnimationFrame(function(){_reviewPending=false; if(window.innerWidth>=1200||document.getElementById('reviewPanel').classList.contains('open'))buildReview();}); }
+function scheduleReview(){ if(_reviewPending)return; _reviewPending=true; requestAnimationFrame(function(){_reviewPending=false; if(!isMobileLayout()||document.getElementById('reviewPanel').classList.contains('open'))buildReview();}); }
 
 /* ---------- 8. 工艺评审报告（本地像素扫描） ---------- */
-function openReview(){var rp=document.getElementById('reviewPanel');if(window.innerWidth<1200&&rp.classList.contains('open')){closeReview();return;}buildReview();if(window.innerWidth<1200){rp.classList.add('open');document.getElementById('scrim').classList.add('show');}}
+function openReview(){var rp=document.getElementById('reviewPanel');if(isMobileLayout()&&rp.classList.contains('open')){closeReview();return;}buildReview();if(isMobileLayout()){rp.classList.add('open');document.getElementById('scrim').classList.add('show');}}
 function closeReview(){document.getElementById('reviewPanel').classList.remove('open');maybeHideScrim();}
 function openSettings(){document.getElementById('control-panel').classList.add('open');document.getElementById('scrim').classList.add('show');}
 function closeAll(){document.getElementById('control-panel').classList.remove('open');document.getElementById('reviewPanel').classList.remove('open');document.getElementById('scrim').classList.remove('show');}
@@ -2042,10 +2222,10 @@ document.getElementById('cleanSpecksBtn').addEventListener('click',cleanSpecks);
 document.getElementById('speckSize').addEventListener('input',function(){document.getElementById('speckSizeValue').textContent=this.value;});
 document.getElementById('symMode').addEventListener('change',function(){symmetryMode=this.value;document.getElementById('pixelInfo').textContent='对称模式：'+this.value;});
 document.getElementById('brandSel').addEventListener('change',function(){applyBrand(this.value);});
-document.getElementById('openReview').addEventListener('click',openReview);
+//document.getElementById('openReview').addEventListener('click',openReview);
 document.getElementById('closeReview')&&document.getElementById('closeReview').addEventListener('click',closeReview);
-document.getElementById('openSettings').addEventListener('click',openSettings);
-document.getElementById('scrim').addEventListener('click',closeAll);
+//document.getElementById('openSettings').addEventListener('click',openSettings);
+document.getElementById('scrim').addEventListener('click',closeSheet);
 
 console.log('✅ MARD 195色完整版就绪 by 三金超人_SuperTrigen');
 // 进入页面时左栏（及色板子区域）滚动到最顶
@@ -2055,6 +2235,108 @@ resetLeftScroll();
 setTimeout(resetLeftScroll,0);
 window.addEventListener('load',resetLeftScroll);
 updateUndoButtons();
+
+/* ===== 版本选择：电脑版 / 手机版 ===== */
+var LAYOUT_MODE='auto';
+function isMobileLayout(){
+  if(LAYOUT_MODE==='mobile')return true;
+  if(LAYOUT_MODE==='desktop')return false;
+  return window.innerWidth<1200;
+}
+function applyVersion(mode){
+  LAYOUT_MODE=(mode==='desktop')?'desktop':(mode==='mobile')?'mobile':'auto';
+  document.body.classList.toggle('force-desktop',LAYOUT_MODE==='desktop');
+  document.body.classList.toggle('layout-mobile',LAYOUT_MODE==='mobile');
+  document.body.classList.remove('mb-hidden');
+  closeAll();
+  var cp=document.getElementById('control-panel');
+  if(cp)cp.querySelectorAll('[data-grp]').forEach(function(g){g.style.display='';});
+  try{ if(typeof fitZoom==='function')fitZoom(); }catch(e){}
+}
+function openSheet(name, grp){
+  closeSheet();
+  if(name==='settings'){
+    var cp=document.getElementById('control-panel');
+    cp.classList.add('open');
+    cp.querySelectorAll('[data-grp]').forEach(function(g){ g.style.display = (!grp || g.getAttribute('data-grp')===grp) ? '' : 'none'; });
+  }
+  else if(name==='review'){document.getElementById('reviewPanel').classList.add('open');try{if(typeof buildReview==='function')buildReview();}catch(e){}}
+  document.getElementById('scrim').classList.add('show');
+  var mb=document.getElementById('mobileBar');
+  if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){b.classList.toggle('active', grp && b.dataset.grp===grp);});
+}
+function openSettings(){openSheet('settings');}
+function openReview(){openSheet('review');}
+function closeSheet(){closeAll();var cp=document.getElementById('control-panel');if(cp)cp.querySelectorAll('[data-grp]').forEach(function(g){g.style.display='';});var mb=document.getElementById('mobileBar');if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('active');});var mt=document.getElementById('mobileTop');if(mt)mt.querySelectorAll('.mt-btn').forEach(function(b){b.classList.remove('active');});}
+function enterVersion(mode){
+  applyVersion(mode);
+  var c=document.getElementById('versionChooser'); if(c)c.style.display='none';
+  document.body.classList.remove('choosing');
+}
+function showVersionChooser(){
+  var c=document.getElementById('versionChooser'); if(c)c.style.display='flex';
+  document.body.classList.add('choosing');
+}
+(function(){
+  var chooser=document.getElementById('versionChooser');
+  if(!chooser)return;
+  function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+  function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+  function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+  var remember=lsGet('bead_version_remember')==='1';
+  var saved=lsGet('bead_version');
+  var isSmall=window.innerWidth<1200;
+  var def=saved||(isSmall?'mobile':'desktop');
+  var recoMode=isSmall?'mobile':'desktop';
+  chooser.querySelectorAll('.vc-btn').forEach(function(b){
+    b.classList.toggle('selected',b.dataset.mode===def);
+    var r=b.querySelector('.vc-reco'); if(r)r.style.display=(b.dataset.mode===recoMode)?'inline-block':'none';
+    b.addEventListener('click',function(){
+      var mode=b.dataset.mode;
+      if(document.getElementById('vcRemember').checked){lsSet('bead_version_remember','1');}else{lsDel('bead_version_remember');}
+      lsSet('bead_version',mode);
+      enterVersion(mode);
+    });
+  });
+  // 底部功能分类 tab：点开对应分组参数（从底部弹出）
+  var mb=document.getElementById('mobileBar');
+  if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      var g=b.dataset.grp;
+      var cp=document.getElementById('control-panel');
+      if(g && cp.classList.contains('open') && b.classList.contains('active')){ closeSheet(); }
+      else { openSheet('settings', g); }
+    });
+  });
+  // 顶部栏：网格 / 色号 / 评审 / 草稿 / 导出
+  var mtGrid=document.getElementById('mtGrid'), mtCode=document.getElementById('mtCode'), mtReview=document.getElementById('mtReview'), mtDraft=document.getElementById('mtDraft'), mtExport=document.getElementById('mtExport');
+  function syncTopToggles(){
+    if(mtGrid)mtGrid.classList.toggle('active', document.getElementById('showGrid').value==='yes');
+    if(mtCode)mtCode.classList.toggle('active', document.getElementById('showColorCodes').checked);
+  }
+  if(mtGrid)mtGrid.addEventListener('click',function(){
+    var sg=document.getElementById('showGrid');
+    sg.value=(sg.value==='yes')?'no':'yes';
+    if(sg.dispatchEvent)sg.dispatchEvent(new Event('change'));
+    syncTopToggles();
+  });
+  if(mtCode)mtCode.addEventListener('click',function(){
+    var sc=document.getElementById('showColorCodes');
+    sc.checked=!sc.checked;
+    if(typeof toggleColorCodes==='function')toggleColorCodes();
+    syncTopToggles();
+  });
+  if(mtReview)mtReview.addEventListener('click',function(){
+    var rp=document.getElementById('reviewPanel');
+    if(rp.classList.contains('open'))closeSheet(); else openSheet('review');
+  });
+  if(mtDraft)mtDraft.addEventListener('click',function(){ openSheet('settings','draft'); });
+  if(mtExport)mtExport.addEventListener('click',function(){ openSheet('settings','export'); });
+  syncTopToggles();
+  var sb=document.getElementById('switchVersionBtn');
+  if(sb)sb.addEventListener('click',showVersionChooser);
+  if(remember&&saved){enterVersion(saved);}else{showVersionChooser();}
+})();
 </script>
 </body>
 </html>
