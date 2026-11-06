@@ -34,7 +34,7 @@ function refreshDraftSelect(){
     var info=document.getElementById('draftInfo');
     info.textContent=names.length?('已存 '+names.length+' 份草稿'):'';
     var sw=document.getElementById('storageWarn');
-    if(storageIsMemory){sw.textContent='⚠ 当前预览环境不支持本地存储，草稿仅本次会话有效；要永久保存请用「导出文件」或直接用浏览器打开本 HTML';sw.style.display='block';}
+    if(storageIsMemory){sw.textContent=' 当前预览环境不支持本地存储，草稿仅本次会话有效；要永久保存请用「导出文件」或直接用浏览器打开本 HTML';sw.style.display='block';}
     else sw.style.display='none';
 }
 function buildDraftObj(){
@@ -79,7 +79,7 @@ function saveDraft(){
     document.getElementById('exportName').value=name;
     refreshDraftSelect();
     document.getElementById('draftSelect').value=name;
-    document.getElementById('pixelInfo').textContent=ok?('✅ 草稿「'+name+'」已暂存到浏览器本地'):('✅ 草稿「'+name+'」已暂存（仅本次会话有效，建议导出文件备份）');
+    document.getElementById('pixelInfo').textContent=ok?(' 草稿「'+name+'」已暂存到浏览器本地'):(' 草稿「'+name+'」已暂存（仅本次会话有效，建议导出文件备份）');
 }
 function applyDraftData(d){
     var p=d.params||{};
@@ -110,11 +110,11 @@ function applyDraftData(d){
             document.getElementById('originalImage').style.display='block';
             setFloatVisible(true);
             currentViewRect={x:0,y:0,w:originalImage.naturalWidth,h:originalImage.naturalHeight};
-            applyGrid();document.getElementById('pixelInfo').textContent='✅ 已读取草稿「'+(d.name||'')+'」（原图 + 图纸）';
+            applyGrid();document.getElementById('pixelInfo').textContent=' 已读取草稿「'+(d.name||'')+'」（原图 + 图纸）';
         };
         originalImage.src=d.img;
     }else if(d.gridData){
-        applyGrid();document.getElementById('pixelInfo').textContent='✅ 已读取草稿「'+(d.name||'')+'」（无原图）';
+        applyGrid();document.getElementById('pixelInfo').textContent=' 已读取草稿「'+(d.name||'')+'」（无原图）';
     }else{alert('草稿内容为空');}
 }
 function loadDraft(){
@@ -132,7 +132,7 @@ function deleteDraft(){
     if(!confirm('确定删除草稿「'+name+'」吗？'))return;
     var drafts=readAllDrafts();delete drafts[name];
     writeAllDrafts(drafts);refreshDraftSelect();
-    document.getElementById('pixelInfo').textContent='🗑 已删除草稿「'+name+'」';
+    document.getElementById('pixelInfo').textContent=' 已删除草稿「'+name+'」';
 }
 function exportDraft(){
     if(!gridData){alert('还没有可导出的图纸');return;}
@@ -142,7 +142,7 @@ function exportDraft(){
     var l=document.createElement('a');l.download=name+'.bead.json';
     l.href=URL.createObjectURL(blob);l.click();
     setTimeout(function(){URL.revokeObjectURL(l.href);},1000);
-    document.getElementById('pixelInfo').textContent='💾 已导出草稿文件 '+name+'.bead.json';
+    document.getElementById('pixelInfo').textContent=' 已导出草稿文件 '+name+'.bead.json';
 }
 document.getElementById('draftFileInput').addEventListener('change',function(e){
     var f=e.target.files[0];if(!f)return;
@@ -155,7 +155,7 @@ document.getElementById('draftFileInput').addEventListener('change',function(e){
             if(typeof syncGridRadio==='function')syncGridRadio();
             if(d.name)document.getElementById('draftName').value=d.name;
             if(d.name)document.getElementById('exportName').value=d.name;
-            document.getElementById('pixelInfo').textContent='✅ 已导入草稿文件「'+(d.name||f.name)+'」';
+            document.getElementById('pixelInfo').textContent=' 已导入草稿文件「'+(d.name||f.name)+'」';
         }catch(err){alert('导入失败：'+err.message);}
     };
     r.readAsText(f);
@@ -163,4 +163,4 @@ document.getElementById('draftFileInput').addEventListener('change',function(e){
 });
 refreshDraftSelect();
 
-
+

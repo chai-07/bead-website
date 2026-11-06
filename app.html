@@ -12,24 +12,24 @@
 <div class="app-container">
 <div class="control-panel" id="control-panel" style="width:400px;flex-shrink:0;">
 <div class="sheet-grip" data-sheet="cp"><button type="button" class="sheet-close" aria-label="关闭" onpointerdown="event.stopPropagation()" onclick="closeSheet()">✕</button></div>
-<div class="title-row"><button class="title-switch" id="switchVersionBtn2" onclick="location.href='index.html?choose=1'" title="切换版本">⇄ 切换</button>
-<h1 class="title" style="font-size:18px;margin-top:10px;white-space:nowrap;">🎨 超级拼豆图纸生成器</h1></div>
+<div class="title-row"><button class="title-switch" id="switchVersionBtn2" onclick="location.href='index.html?choose=1'" title="切换版本"> 切换</button>
+<h1 class="title" style="font-size:18px;margin-top:10px;white-space:nowrap;"> 超级拼豆图纸生成器</h1></div>
 <p class="author" style="font-size:16px;margin-top:8px;white-space:nowrap;">by <a href="https://github.com/chai-07" target="_blank">三金超人_SuperTrigen</a></p>
-<div class="control-group" data-grp="upload"><h3>📁 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
-<div class="control-group" data-grp="crop"><h3>✂ 前置裁剪</h3>
-<button class="btn btn-clear" id="cropOpenBtn" style="margin-bottom:4px">✂ 开启裁剪</button>
+<div class="control-group" data-grp="upload"><h3> 上传</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button class="btn btn-upload" onclick="document.getElementById('fileInput').click()">选择图片</button><p class="file-info" id="fileInfo">未选择</p></div>
+<div class="control-group" data-grp="crop"><h3> 前置裁剪</h3>
+<button class="btn btn-clear" id="cropOpenBtn" style="margin-bottom:4px"> 开启裁剪</button>
 <div style="display:flex;gap:4px;">
-    <button id="cropApplyBtn" disabled style="flex:1;background:#00b894;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer">✅ 应用裁剪</button>
-    <button id="cropRestoreBtn" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer">↺ 恢复原图</button>
+    <button id="cropApplyBtn" disabled style="flex:1;background:#00b894;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer"> 应用裁剪</button>
+    <button id="cropRestoreBtn" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:6px;padding:8px 0;font-size:12px;cursor:pointer"> 恢复原图</button>
 </div>
 <span class="hint">在原图上拖拽选取区域，应用后仅该区域参与拼豆生成</span></div>
-<div class="control-group" data-grp="canvas"><h3>📐 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="20">20×20 超小底板</option><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option><option value="custom">自定义尺寸…</option></select><span class="hint">生成的拼豆图纸尺寸</span></div><div class="setting-row" id="customSizeRow" style="display:none"><label>自定义 (宽×高)</label><span style="display:flex;gap:6px;align-items:stretch"><input type="text" id="customSize" placeholder="例如 35x35 或 60x40" style="flex:1;width:100%;min-width:0;padding:8px;border-radius:6px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:13px"><button class="btn" id="customSizeConfirm" style="width:auto;flex-shrink:0;padding:8px 16px;font-size:13px;border-radius:6px;background:#e94560;color:#fff">确认</button></span><span class="hint">输入格式：宽x高（5~150，如 35x35），填好后点「确认」生成</span></div></div>
-<div class="control-group" data-grp="brand"><h3>🌈 多品牌色板</h3>
+<div class="control-group" data-grp="canvas"><h3> 画布</h3><div class="setting-row"><label>拼豆网格</label><select id="canvasSize"><option value="20">20×20 超小底板</option><option value="29">29×29 小底板</option><option value="40" selected>40×40 中底板</option><option value="50">50×50 标准底板</option><option value="80">80×80 大底板</option><option value="100">100×100 超大底板</option><option value="custom">自定义尺寸…</option></select><span class="hint">生成的拼豆图纸尺寸</span></div><div class="setting-row" id="customSizeRow" style="display:none"><label>自定义 (宽×高)</label><span style="display:flex;gap:6px;align-items:stretch"><input type="text" id="customSize" placeholder="例如 35x35 或 60x40" style="flex:1;width:100%;min-width:0;padding:8px;border-radius:6px;background:#0f3460;color:#eee;border:1px solid #1a3a6e;font-size:13px"><button class="btn" id="customSizeConfirm" style="width:auto;flex-shrink:0;padding:8px 16px;font-size:13px;border-radius:6px;background:#e94560;color:#fff">确认</button></span><span class="hint">输入格式：宽x高（5~150，如 35x35），填好后点「确认」生成</span></div></div>
+<div class="control-group" data-grp="brand"><h3> 多品牌色板</h3>
 <div class="setting-row"><label>色板品牌</label><select id="brandSel"><option value="MARD" selected>MARD 195色</option><option value="PERLER">Perler 117色</option><option value="HAMA">Hama 33色</option><option value="ARTKAL">Artkal 176色</option></select></div>
 <span class="hint">切换取色色板（不影响自动量化配色）</span></div>
-<div class="control-group" data-grp="quant"><h3>🎨 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">48</span></label><input type="range" id="maxColors" min="4" max="195" value="48" step="1"><span class="hint">限制使用的MARD颜色数量</span></div>
+<div class="control-group" data-grp="quant"><h3> 颜色量化</h3><div class="setting-row"><label>最大颜色数 <span class="value-display" id="colorCountValue">48</span></label><input type="range" id="maxColors" min="4" max="195" value="48" step="1"><span class="hint">限制使用的MARD颜色数量</span></div>
 <div class="setting-row"><label>相似颜色合并 <span class="value-display" id="mergeSimilarValue">0</span></label><input type="range" id="mergeSimilar" min="0" max="100" value="0" step="1"><span class="hint">颜色雷同时用同一种豆子替代，减少颜色数量（0=不合并）</span></div></div>
-<div class="control-group" data-grp="enhance"><h3>🔧 图像增强（量化前执行）</h3>
+<div class="control-group" data-grp="enhance"><h3> 图像增强（量化前执行）</h3>
 <div class="enh-btns">
 <button type="button" class="enh-btn" data-target="darkUnify">深色归一</button>
 <button type="button" class="enh-btn" data-target="blackThreshold">黑色阈值</button>
@@ -50,42 +50,42 @@
 <div class="setting-row enh-row" data-row="sharpen"><label>锐化 <span class="value-display" id="sharpValue">0</span></label><input type="range" id="sharpen" min="-10" max="10" value="0" step="1"><span class="hint">正值锐化 / 负值柔化，0为原图</span></div>
 <div class="setting-row enh-row" data-row="denoise"><label>降噪 <span class="value-display" id="denoiseValue">0</span></label><input type="range" id="denoise" min="0" max="5" value="0" step="1"><span class="hint">减少杂色碎点</span></div>
 </div>
-<button class="btn btn-reset" onclick="resetParams()">↺ 重置所有参数</button></div>
-<div class="control-group" data-grp="clean"><h3>🧹 清理</h3><button class="btn btn-clear" onclick="removeSingles()">🧹 清除1×1孤立点</button></div>
+<button class="btn btn-reset" onclick="resetParams()"> 重置所有参数</button></div>
+<div class="control-group" data-grp="clean"><h3> 清理</h3><button class="btn btn-clear" onclick="removeSingles()"> 清除1×1孤立点</button></div>
 <!-- 画布缩放控件已移至中栏底部 .mid-bottom -->
-<div class="control-group" data-grp="sym"><h3>🪞 对称绘图</h3>
+<div class="control-group" data-grp="sym"><h3> 对称绘图</h3>
 <div class="setting-row"><label>对称模式</label><select id="symMode"><option value="off" selected>关闭</option><option value="vertical">左右对称</option><option value="horizontal">上下对称</option><option value="quad">四向对称</option></select></div>
 <span class="hint">开启后画笔自动镜像，适合制作对称图案</span></div>
-<div class="control-group" data-grp="edit"><h3>🖌️ 手动修图</h3>
+<div class="control-group" data-grp="edit"><h3> 手动修图</h3>
 <div style="display:flex;gap:4px;margin-bottom:6px;">
-    <button class="btn btn-wand" id="wandBtn" onclick="toggleWand()" style="flex:1;background:#9b59b6;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;padding:8px 0;">🪄 魔棒选区</button>
+    <button class="btn btn-wand" id="wandBtn" onclick="toggleWand()" style="flex:1;background:#9b59b6;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;padding:8px 0;"> 魔棒选区</button>
 </div>
 <p style="font-size:11px;color:#aaa;margin-bottom:4px;">画笔: <span id="brushColorDisplay" style="color:#e94560;">H19 黑色</span></p>
 <div style="display:flex;gap:4px;margin-bottom:6px;">
-    <button class="btn btn-eyedrop" id="eyedropBtn" onclick="toggleEyedropper()" style="flex:1;">💉 取色管</button>
+    <button class="btn btn-eyedrop" id="eyedropBtn" onclick="toggleEyedropper()" style="flex:1;"> 取色管</button>
     <input type="text" id="mardCodeInput" placeholder="输入色号如A1" style="flex:2;" onkeydown="if(event.key==='Enter')setBrushByCode()">
     <button onclick="setBrushByCode()" style="flex:1;background:#636e72;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px;">确定</button>
 </div>
 <p style="font-size:10px;color:#666;margin-bottom:4px;">全色板取色（点击选色，色板可滚动）</p>
 <div class="mard-full-grid" id="mardFullGrid"></div>
-<button class="btn btn-null" id="nullBrushBtn" onclick="selectNullBrush()" style="margin-top:6px;margin-bottom:4px;">⬜ 镂空笔(null) · 不填充</button>
+<button class="btn btn-null" id="nullBrushBtn" onclick="selectNullBrush()" style="margin-top:6px;margin-bottom:4px;"> 镂空笔(null) · 不填充</button>
 <div class="setting-row" style="margin-top:8px;"><label>画笔大小 <span id="brushSizeValue">1</span></label><input type="range" id="brushSize" min="1" max="5" value="1" step="1"></div>
 </div>
-<div class="control-group" data-grp="pendant"><h3>🔯 挂件工艺模板</h3>
+<div class="control-group" data-grp="pendant"><h3> 挂件工艺模板</h3>
 <div class="setting-row"><label>模板形状</label><select id="templateSel"><option value="none" selected>无 / 清除</option><option value="disc">圆形挂件</option><option value="heart">心形挂件</option><option value="rsquare">圆角方挂件</option></select></div>
 <div class="setting-row" id="templateScaleRow" style="margin-top:6px;display:none;"><label>模板大小 <span id="templateScaleValue">100%</span></label><input type="range" id="templateScale" min="0.3" max="1" value="1" step="0.05"></div>
 <span class="hint">选中模板后拖动滑块，右侧实时预览；将板外区域设为镂空并自动加挂孔</span></div>
-<div class="control-group" data-grp="speck"><h3>✨ 智能清理</h3>
+<div class="control-group" data-grp="speck"><h3> 智能清理</h3>
 <div class="setting-row"><label>清杂碎块(≤N颗) <span id="speckSizeValue" class="value-display">2</span></label><input type="range" id="speckSize" min="1" max="8" value="2" step="1"><span class="hint">仅清除完全孤立在同色区域中的小色块，不碰细线与边缘</span></div>
-<button class="btn btn-clear" id="cleanSpecksBtn">✨ 一键清杂点</button>
+<button class="btn btn-clear" id="cleanSpecksBtn"> 一键清杂点</button>
 <span class="hint">移除≤阈值的孤立同色碎块，自动并入周边主色</span></div>
 <div class="control-group" data-grp="export">
 <div class="setting-row" style="margin-bottom:6px;"><label>导出文件命名前缀</label><input type="text" id="exportName" placeholder="留空自动：随机命名1 / 随机命名2 …"></div>
-<button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()">💾 下载效果图 PNG</button>
-<button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()">📋 下载色号图纸 PNG</button>
-<button class="btn btn-download" id="colorPdfBtn" style="margin-top:6px" disabled onclick="downloadColorPdf()">📕 彩色PDF</button>
-<button class="btn btn-download2" id="csvBtn" disabled onclick="downloadCsv()">📊 CSV耗材清单</button>
-<button class="btn" id="packageBtn"  disabled onclick="packageExport()">📦 一键打包导出（4种）</button>
+<button class="btn btn-download" id="downloadBtn" disabled onclick="downloadResult()"> 下载效果图 PNG</button>
+<button class="btn btn-download2" id="downloadCodeBtn" disabled onclick="downloadCodeResult()"> 下载色号图纸 PNG</button>
+<button class="btn btn-download" id="colorPdfBtn" style="margin-top:6px" disabled onclick="downloadColorPdf()"> 彩色PDF</button>
+<button class="btn btn-download2" id="csvBtn" disabled onclick="downloadCsv()"> CSV耗材清单</button>
+<button class="btn" id="packageBtn"  disabled onclick="packageExport()"> 一键打包导出（4种）</button>
 <span class="hint" id="pkgHint">打包将优先让你选择文件夹保存；<br>浏览器不支持时自动下载ZIP（解压即得文件夹）</span>
 </div>
 </div>
@@ -94,15 +94,15 @@
 <div class="result-box"><canvas id="resultCanvas"></canvas><div class="placeholder" id="resultPlaceholder"><span class="icon">🔮</span>上传图片后自动生成</div></div>
 <p class="tool-info" id="pixelInfo"></p>
 <div class="float-original" id="floatOriginal" style="display:none">
-<div class="float-head" id="floatHead"><span>📷 原图（拖动此处移动）</span><span class="float-x" id="floatClose" title="隐藏原图">✕</span></div>
+<div class="float-head" id="floatHead"><span> 原图（拖动此处移动）</span><span class="float-x" id="floatClose" title="隐藏原图">✕</span></div>
 <div class="float-body"><img id="originalImage" style="display:none" alt="原图">
 <div class="crop-overlay" id="cropOverlay"><div class="crop-rect" id="cropRect"></div></div>
 </div>
 </div>
 </div>
 <div class="mid-bottom">
-<button class="btn btn-download2" id="toggleOriginalBtn">👁 显示原图浮窗</button>
-<div class="control-group zoom-bar zoom-col"><h3>🔍 画布缩放</h3>
+<button class="btn btn-download2" id="toggleOriginalBtn"> 显示原图浮窗</button>
+<div class="control-group zoom-bar zoom-col"><h3> 画布缩放</h3>
 <div class="zoom-btns">
 <button onclick="zoomCanvas(0.8)" class="mini">－ 缩小</button>
 <button onclick="fitZoom()" class="mini">适应</button>
@@ -110,12 +110,12 @@
 </div>
 <p class="file-info" id="zoomInfo" style="text-align:center;margin-top:2px;">100%</p>
 </div>
-<div class="control-group zoom-bar"><h3>↩ 操作</h3>
+<div class="control-group zoom-bar"><h3> 操作</h3>
 <div class="zoom-btns">
-<button class="mini" id="undoBtn" onclick="undoBrush()">↩ 后退</button>
-<button class="mini" id="redoBtn" onclick="redoBrush()">↷ 前进</button>
+<button class="mini" id="undoBtn" onclick="undoBrush()"> 后退</button>
+<button class="mini" id="redoBtn" onclick="redoBrush()"> 前进</button>
 </div></div>
-<div class="control-group" data-grp="grid"><h3>🔲 网格</h3>
+<div class="control-group" data-grp="grid"><h3> 网格</h3>
 <div class="setting-row radio-row"><label>显示网格线</label>
 <span class="radio-set">
 <label class="radio"><input type="radio" name="showGrid" value="yes" checked onchange="setGrid('yes')"> 是</label>
@@ -125,12 +125,12 @@
 <select id="showGrid" style="display:none"><option value="yes" selected>是</option><option value="no">否</option></select>
 </div>
 <div class="control-group" data-grp="code" style="flex-direction:row;align-items:center"><div class="checkbox-row" style="margin:0"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div></div>
-<div class="control-group" data-grp="draft"><h3>📦 草稿</h3>
+<div class="control-group" data-grp="draft"><h3> 草稿</h3>
 <div class="draft-row">
 <input type="text" id="draftName" placeholder="草稿名称">
-<button class="btn btn-download2" onclick="saveDraft()">📂 暂存</button>
+<button class="btn btn-download2" onclick="saveDraft()"> 暂存</button>
 <select id="draftSelect"><option value="">— 读取 —</option></select>
-<button class="btn btn-download2" onclick="loadDraft()">📥 读取</button>
+<button class="btn btn-download2" onclick="loadDraft()"> 读取</button>
 <span class="mini-cap"><span class="cap">删除</span><button class="mini" onclick="deleteDraft()" title="删除选中">🗑</button></span>
 <span class="mini-cap"><span class="cap">导出</span><button class="mini" onclick="exportDraft()" title="导出文件">💾</button></span>
 <span class="mini-cap"><span class="cap">导入</span><button class="mini" onclick="document.getElementById('draftFileInput').click()" title="导入文件">📁</button></span>
@@ -142,35 +142,35 @@
 </div>
 <aside class="review-panel" id="reviewPanel">
 <div class="sheet-grip" data-sheet="rp"><button type="button" class="sheet-close" aria-label="关闭" onpointerdown="event.stopPropagation()" onclick="closeSheet()">✕</button></div>
-    <div class="rp-header"><span>📋 工艺评审报告</span></div>
+    <div class="rp-header"><span> 工艺评审报告</span></div>
     <div class="rp-body" id="reviewBody"></div>
 </aside>
 </div>
 <div class="mobile-top" id="mobileTop">
-  <button type="button" class="mt-btn" id="mtSwitch" onclick="location.href='index.html?choose=1'" title="切换版本"><span class="mt-ico">⇄</span><span class="mt-txt">切换</span></button>
+  <button type="button" class="mt-btn" id="mtSwitch" onclick="location.href='index.html?choose=1'" title="切换版本"><span class="mt-ico"></span><span class="mt-txt">切换</span></button>
   <div class="mt-left">
-    <div class="mt-item"><button type="button" class="mt-btn" data-dd="grid"><span class="mt-ico">🔲</span><span class="mt-txt">网格</span></button><div class="mt-drop" id="dd-grid"></div></div>
-    <button type="button" class="mt-btn" id="mtCode" onclick="mtToggleCode(this)"><span class="mt-ico">🔢</span><span class="mt-txt">显示色号</span></button>
+    <div class="mt-item"><button type="button" class="mt-btn" data-dd="grid"><span class="mt-ico"></span><span class="mt-txt">网格</span></button><div class="mt-drop" id="dd-grid"></div></div>
+    <button type="button" class="mt-btn" id="mtCode" onclick="mtToggleCode(this)"><span class="mt-ico"></span><span class="mt-txt">显示色号</span></button>
   </div>
   <div class="mt-right">
-    <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="draft"><span class="mt-ico">📂</span><span class="mt-txt">草稿</span></button><div class="mt-drop" id="dd-draft"></div></div>
-    <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="export"><span class="mt-ico">💾</span><span class="mt-txt">导出</span></button><div class="mt-drop" id="dd-export"></div></div>
-    <button type="button" class="mt-btn" onclick="setFloatVisible(document.getElementById('floatOriginal').style.display!=='block')" title="显示原图"><span class="mt-ico">👁</span><span class="mt-txt">原图</span></button>
-    <button type="button" class="mt-btn" onclick="openReview()" title="评审报告"><span class="mt-ico">📋</span><span class="mt-txt">评审</span></button>
+    <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="draft"><span class="mt-ico"></span><span class="mt-txt">草稿</span></button><div class="mt-drop" id="dd-draft"></div></div>
+    <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="export"><span class="mt-ico"></span><span class="mt-txt">导出</span></button><div class="mt-drop" id="dd-export"></div></div>
+    <button type="button" class="mt-btn" onclick="setFloatVisible(document.getElementById('floatOriginal').style.display!=='block')" title="显示原图"><span class="mt-ico"></span><span class="mt-txt">原图</span></button>
+    <button type="button" class="mt-btn" onclick="openReview()" title="评审报告"><span class="mt-ico"></span><span class="mt-txt">评审</span></button>
   </div>
 </div>
 <div class="mobile-bar" id="mobileBar">
-    <button class="mbtn" data-grp="upload"><span class="ico">📁</span><span>上传</span></button>
-    <button class="mbtn" data-grp="crop"><span class="ico">✂️</span><span>裁剪</span></button>
-    <button class="mbtn" data-grp="canvas"><span class="ico">📐</span><span>画布</span></button>
-    <button class="mbtn" data-grp="brand"><span class="ico">🌈</span><span>色板</span></button>
-    <button class="mbtn" data-grp="quant"><span class="ico">🎨</span><span>调色</span></button>
-    <button class="mbtn" data-grp="enhance"><span class="ico">🔧</span><span>增强</span></button>
-    <button class="mbtn" data-grp="clean"><span class="ico">🧹</span><span>清理</span></button>
-    <button class="mbtn" data-grp="sym"><span class="ico">🪞</span><span>对称</span></button>
-    <button class="mbtn" data-grp="edit"><span class="ico">🖌️</span><span>手动</span></button>
-    <button class="mbtn" data-grp="pendant"><span class="ico">🔯</span><span>挂件</span></button>
-    <button class="mbtn" data-grp="speck"><span class="ico">✨</span><span>智能</span></button>
+    <button class="mbtn" data-grp="upload"><span class="ico"></span><span>上传</span></button>
+    <button class="mbtn" data-grp="crop"><span class="ico"></span><span>裁剪</span></button>
+    <button class="mbtn" data-grp="canvas"><span class="ico"></span><span>画布</span></button>
+    <button class="mbtn" data-grp="brand"><span class="ico"></span><span>色板</span></button>
+    <button class="mbtn" data-grp="quant"><span class="ico"></span><span>调色</span></button>
+    <button class="mbtn" data-grp="enhance"><span class="ico"></span><span>增强</span></button>
+    <button class="mbtn" data-grp="clean"><span class="ico"></span><span>清理</span></button>
+    <button class="mbtn" data-grp="sym"><span class="ico"></span><span>对称</span></button>
+    <button class="mbtn" data-grp="edit"><span class="ico"></span><span>手动</span></button>
+    <button class="mbtn" data-grp="pendant"><span class="ico"></span><span>挂件</span></button>
+    <button class="mbtn" data-grp="speck"><span class="ico"></span><span>智能</span></button>
 </div>
 <div class="right-tools" id="rightTools">
   <div class="rt-group">

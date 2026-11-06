@@ -55,8 +55,8 @@ function toggleEyedropper(){
     eyedropperActive=!eyedropperActive;
     var btn=document.getElementById('eyedropBtn');
     var canvas=document.getElementById('resultCanvas');
-    if(eyedropperActive){btn.classList.add('active');btn.textContent='💉 取色中...';canvas.classList.add('eyedrop-cursor');}
-    else{btn.classList.remove('active');btn.textContent='💉 取色管';canvas.classList.remove('eyedrop-cursor');}
+    if(eyedropperActive){btn.classList.add('active');btn.textContent=' 取色中...';canvas.classList.add('eyedrop-cursor');}
+    else{btn.classList.remove('active');btn.textContent=' 取色管';canvas.classList.remove('eyedrop-cursor');}
 }
 function toggleColorCodes(){showCodes=document.getElementById('showColorCodes').checked;if(gridData)rerender();}
 function rgb2lab(rgb){
@@ -110,5 +110,5 @@ function rebuildSwatchGrid(colors){
     selectBrush(first);
     if(grid.children[0])grid.children[0].classList.add('active');
 }
-function applyBrand(key){ if(!BRAND_PALETTES[key])return; rebuildSwatchGrid(BRAND_PALETTES[key].colors); document.getElementById('pixelInfo').textContent='🌈 已切换色板：'+BRAND_PALETTES[key].name; }
-
+function applyBrand(key){ if(!BRAND_PALETTES[key])return; rebuildSwatchGrid(BRAND_PALETTES[key].colors); document.getElementById('pixelInfo').textContent=' 已切换色板：'+BRAND_PALETTES[key].name; }
+

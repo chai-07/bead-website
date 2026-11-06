@@ -116,14 +116,14 @@ function buildReview(){
     var risks=res.risks;
     var html='';
     html+='<div style="display:flex;gap:4px;margin-bottom:12px">'
-        +'<button data-tab="overview" class="rp-tab" style="flex:1;padding:6px 2px;border:none;border-radius:4px;background:'+(reviewTab==='overview'?'#6c5ce7':'#0f3460')+';color:#fff;font-size:11px;cursor:pointer">📋问题概览</button>'
-        +'<button data-tab="detail" class="rp-tab" style="flex:1;padding:6px 2px;border:none;border-radius:4px;background:'+(reviewTab==='detail'?'#6c5ce7':'#0f3460')+';color:#fff;font-size:11px;cursor:pointer">🔍问题详情</button>'
-        +'<button data-tab="fix" class="rp-tab" style="flex:1;padding:6px 2px;border:none;border-radius:4px;background:'+(reviewTab==='fix'?'#6c5ce7':'#0f3460')+';color:#fff;font-size:11px;cursor:pointer">🛠整改界面</button>'
+        +'<button data-tab="overview" class="rp-tab'+(reviewTab==='overview'?' rp-tab--active':'')+'" style="flex:1;padding:6px 2px">问题概览</button>'
+        +'<button data-tab="detail" class="rp-tab'+(reviewTab==='detail'?' rp-tab--active':'')+'" style="flex:1;padding:6px 2px">问题详情</button>'
+        +'<button data-tab="fix" class="rp-tab'+(reviewTab==='fix'?' rp-tab--active':'')+'" style="flex:1;padding:6px 2px">整改界面</button>'
         +'</div>';
     if(reviewTab==='overview'){
         var cntFatal=0,cntMid=0,cntMinor=0,cntOk=0;
         risks.forEach(function(r){if(r.riskLevel===3)cntFatal++;else if(r.riskLevel===2)cntMid++;else if(r.riskLevel===1)cntMinor++;else cntOk++;});
-        html+='<div class="rp-section"><h4>📊 图纸统计</h4>';
+        html+='<div class="rp-section"><h4> 图纸统计</h4>';
         html+='<div class="rp-stat"><span>底板尺寸</span><b>'+res.w+' × '+res.h+'</b></div>';
         html+='<div class="rp-stat"><span>实际豆数</span><b>'+res.totalBeans+' 颗</b></div>';
         html+='<div class="rp-stat"><span>使用颜色</span><b>'+res.colorUsed+' 色</b></div>';
@@ -132,13 +132,13 @@ function buildReview(){
         html+='<div class="rp-stat"><span>碎片化系数</span><b>'+res.fragmentation.toFixed(2)+'</b></div>';
         html+='<div class="rp-stat"><span>图纸模式</span><b>'+(res.isCharmMode?'挂件模式(结构加权)':'摆件模式')+'</b></div>';
         html+='</div>';
-        html+='<div class="rp-section"><h4>⚠ 风险等级统计</h4><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
+        html+='<div class="rp-section"><h4> 风险等级统计</h4><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">'
             +'<div style="background:#441111;padding:6px;border-radius:4px;text-align:center"><div style="color:#ff4444;font-weight:bold">'+cntFatal+'</div><div style="font-size:10px;color:#aaa">致命风险</div></div>'
             +'<div style="background:#332211;padding:6px;border-radius:4px;text-align:center"><div style="color:#ff9933;font-weight:bold">'+cntMid+'</div><div style="font-size:10px;color:#aaa">中等风险</div></div>'
             +'<div style="background:#2e2b18;padding:6px;border-radius:4px;text-align:center"><div style="color:#ffdd44;font-weight:bold">'+cntMinor+'</div><div style="font-size:10px;color:#aaa">轻微风险</div></div>'
             +'</div></div>';
-        html+='<div class="rp-section"><h4>⭐ 综合难度</h4><div style="text-align:center;padding:6px 0"><span class="rp-badge">'+res.lvl.t+'</span></div><p style="font-size:11px;color:#aaa;text-align:center">综合得分 '+res.score.toFixed(1)+'/100</p></div>';
-        html+='<div class="rp-section"><h4>📃 风险问题列表（点击条目查看详情）</h4>';
+        html+='<div class="rp-section"><h4> 综合难度</h4><div style="text-align:center;padding:6px 0"><span class="rp-badge">'+res.lvl.t+'</span></div><p style="font-size:11px;color:#aaa;text-align:center">综合得分 '+res.score.toFixed(1)+'/100</p></div>';
+        html+='<div class="rp-section"><h4> 风险问题列表（点击条目查看详情）</h4>';
         for(var i=0;i<risks.length;i++){
             var r=risks[i];var tag='';
             if(r.riskLevel===1)tag='<span style="color:#ffdd44">[轻微]</span>';
@@ -171,9 +171,9 @@ function buildReview(){
             else if(r.title.indexOf('棋盘噪点')>=0)harmText='量化算法产生的交替噪点，实物成品会出现斑驳闪烁观感，不是原图细节。';
             else if(r.title.indexOf('颜色碎片化严重')>=0)harmText='同一个颜色被拆分成大量零散小块；手工需要反复取同一种豆子来回填充，效率低下。';
             else harmText='无特殊工艺危害。';
-            html+='<div style="margin:10px 0"><b>⚠ 工艺危害：</b><div style="background:#16213e;padding:8px;border-radius:4px;font-size:12px;margin-top:4px;color:#ddd">'+harmText+'</div></div>';
-            html+='<div style="margin:10px 0"><b>💡 人工整改建议：</b><div style="font-size:12px;margin-top:4px">'+r.suggest+'</div></div>';
-            html+='<div style="margin-top:12px;display:flex;gap:6px"><button id="detailLocateBtn" style="flex:1;padding:7px;background:#0984e3;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">🔎 画布定位风险区域</button><button id="goFixTabBtn" style="flex:1;padding:7px;background:#6c5ce7;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px">🛠 跳转整改界面</button></div>';
+            html+='<div style="margin:10px 0"><b> 工艺危害：</b><div style="background:#1f2228;padding:8px;border:1px solid #2c3038;border-radius:4px;font-size:12px;margin-top:4px;color:#E6E7EA">'+harmText+'</div></div>';
+            html+='<div style="margin:10px 0"><b> 人工整改建议：</b><div style="font-size:12px;margin-top:4px">'+r.suggest+'</div></div>';
+            html+='<div style="margin-top:12px;display:flex;gap:6px"><button id="detailLocateBtn" style="flex:1;padding:7px;background:#0984e3;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px"> 画布定位风险区域</button><button id="goFixTabBtn" style="flex:1;padding:7px;background:#6c5ce7;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:11px"> 跳转整改界面</button></div>';
             html+='</div>';
         }
     } else if(reviewTab==='fix'){
@@ -181,24 +181,24 @@ function buildReview(){
             html+='<div class="rp-section"><p style="color:#aaa">请回到【概览】选择一条风险，再进入整改界面</p></div>';
         } else {
             var r=risks[selectedRiskIndex];
-            html+='<div class="rp-section"><h4>🛠 针对性整改：'+r.title+'</h4><p style="font-size:11px;color:#aaa;margin-bottom:10px">⚠ 所有修改会写入图纸；可使用界面【后退】撤销操作。</p>';
+            html+='<div class="rp-section"><h4> 针对性整改：'+r.title+'</h4><p style="font-size:11px;color:#aaa;margin-bottom:10px"> 所有修改会写入图纸；可使用界面【后退】撤销操作。</p>';
             if(r.title.indexOf('细长单像素构件')>=0){
-                html+='<div class="setting-row"><label>线条加宽像素 <span id="fixThinExpandVal">'+fixParams.thinExpandSize+'</span></label><input type="range" id="fixThinExpand" min="1" max="3" value="'+fixParams.thinExpandSize+'" step="1"><span class="hint">向长条周边填充同色豆子加宽，数值越大线条越粗，豆子增加越多</span></div><button id="runFixThin" class="btn" style="margin-top:8px;background:#e17055">▶ 执行修复细长构件</button>';
+                html+='<div class="setting-row"><label>线条加宽像素 <span id="fixThinExpandVal">'+fixParams.thinExpandSize+'</span></label><input type="range" id="fixThinExpand" min="1" max="3" value="'+fixParams.thinExpandSize+'" step="1"><span class="hint">向长条周边填充同色豆子加宽，数值越大线条越粗，豆子增加越多</span></div><button id="runFixThin" class="btn" style="margin-top:8px;background:#e17055"> 执行修复细长构件</button>';
             } else if(r.title.indexOf('悬浮孤岛')>=0){
-                html+='<div class="setting-row"><label>搭桥最大距离 <span id="fixBridgeVal">'+fixParams.bridgeMaxDist+'</span></label><input type="range" id="fixBridge" min="1" max="3" value="'+fixParams.bridgeMaxDist+'" step="1"><span class="hint">孤岛到主体最大允许搭桥空格；越大越容易把孤岛连上，但会改动更多画面</span></div><button id="runFixIsland" class="btn" style="margin-top:8px;background:#e17055">▶ 执行孤岛加固搭桥</button>';
+                html+='<div class="setting-row"><label>搭桥最大距离 <span id="fixBridgeVal">'+fixParams.bridgeMaxDist+'</span></label><input type="range" id="fixBridge" min="1" max="3" value="'+fixParams.bridgeMaxDist+'" step="1"><span class="hint">孤岛到主体最大允许搭桥空格；越大越容易把孤岛连上，但会改动更多画面</span></div><button id="runFixIsland" class="btn" style="margin-top:8px;background:#e17055"> 执行孤岛加固搭桥</button>';
             } else if(r.title.indexOf('单点孤立碎块')>=0){
-                html+='<div class="setting-row"><label>碎块最大尺寸阈值 <span id="fixSpeckVal">'+fixParams.speckThreshold+'</span></label><input type="range" id="fixSpeck" min="1" max="4" value="'+fixParams.speckThreshold+'" step="1"><span class="hint">小于等于该大小的连通域会被清除并入周边颜色</span></div><button id="runFixSpeck" class="btn" style="margin-top:8px;background:#0984e3">▶ 清除微小碎块</button>';
+                html+='<div class="setting-row"><label>碎块最大尺寸阈值 <span id="fixSpeckVal">'+fixParams.speckThreshold+'</span></label><input type="range" id="fixSpeck" min="1" max="4" value="'+fixParams.speckThreshold+'" step="1"><span class="hint">小于等于该大小的连通域会被清除并入周边颜色</span></div><button id="runFixSpeck" class="btn" style="margin-top:8px;background:#0984e3"> 清除微小碎块</button>';
             } else if(r.title.indexOf('棋盘噪点')>=0){
-                html+='<div class="setting-row"><label>噪点修复强度 <span id="fixChessVal">'+fixParams.chessAggress+'</span></label><input type="range" id="fixChess" min="1" max="3" value="'+fixParams.chessAggress+'" step="1"><span class="hint">强度越高，会抹平更多交替噪点，可能损失细节</span></div><button id="runFixChess" class="btn" style="margin-top:8px;background:#0984e3">▶ 执行修复棋盘噪点</button>';
+                html+='<div class="setting-row"><label>噪点修复强度 <span id="fixChessVal">'+fixParams.chessAggress+'</span></label><input type="range" id="fixChess" min="1" max="3" value="'+fixParams.chessAggress+'" step="1"><span class="hint">强度越高，会抹平更多交替噪点，可能损失细节</span></div><button id="runFixChess" class="btn" style="margin-top:8px;background:#0984e3"> 执行修复棋盘噪点</button>';
             } else if(r.title.indexOf('挂孔位置危险')>=0){
-                html+='<p style="font-size:12px">挂孔风险：自动下移挂孔位置</p><button id="runFixHook" class="btn" style="margin-top:8px;background:#bb44ff">▶ 下移修复挂孔</button>';
+                html+='<p style="font-size:12px">挂孔风险：自动下移挂孔位置</p><button id="runFixHook" class="btn" style="margin-top:8px;background:#bb44ff"> 下移修复挂孔</button>';
             } else {
                 html+='<p style="color:#aaa">该风险无自动整改方案，请参考建议手动画笔修改图纸。</p>';
             }
             html+='<div style="margin-top:12px"><button id="fixBackOverview" style="width:100%;background:#636e72;color:#fff;border:none;border-radius:6px;padding:7px;font-size:11px">← 返回问题概览</button></div></div>';
         }
     }
-    html+='<div class="rp-section"><h4>🎨 颜色高亮</h4><p style="font-size:11px;color:#aaa;margin-bottom:6px">点击色号高亮分布</p><div style="display:flex;flex-wrap:wrap;gap:4px">';
+    html+='<div class="rp-section"><h4> 颜色高亮</h4><p style="font-size:11px;color:#aaa;margin-bottom:6px">点击色号高亮分布</p><div style="display:flex;flex-wrap:wrap;gap:4px">';
     html+=res.colorList.map(function(c){return '<button class="hl-btn" data-id="'+c.id+'" style="background:#0f3460;color:#eee;border:1px solid #1a3a6e;border-radius:5px;padding:4px 6px;font-size:11px;cursor:pointer">'+c.id+'</button>';}).join('');
     html+='</div><button id="clearHl" style="margin-top:8px;width:100%;background:#636e72;color:#fff;border:none;border-radius:6px;padding:6px;font-size:12px;cursor:pointer">清除高亮</button></div>';
     body.innerHTML=html;
@@ -246,12 +246,12 @@ function locateRiskToCanvas(riskIdx){
         },10);
         if(blinkCnt>=3){clearInterval(timer);rerender();}
     },400);
-    document.getElementById('pixelInfo').textContent='🔎 已在画布闪烁标记风险位置';
+    document.getElementById('pixelInfo').textContent=' 已在画布闪烁标记风险位置';
 }
 
 /* 带参数的整改函数（复用 undo / 草稿 / 导出系统） */
 function fixAllThinBarsParam(expandSize){
-    if(!riskResultCache||riskResultCache.thinBars.length===0){document.getElementById('pixelInfo').textContent='✅ 没有检测到细长构件，无需修复';return;}
+    if(!riskResultCache||riskResultCache.thinBars.length===0){document.getElementById('pixelInfo').textContent=' 没有检测到细长构件，无需修复';return;}
     saveUndo();
     var dir4=[[1,0],[-1,0],[0,1],[0,-1]];var fixedCount=0;
     for(var i=0;i<riskResultCache.thinBars.length;i++){
@@ -264,10 +264,10 @@ function fixAllThinBarsParam(expandSize){
             for(var t=0;t<tempAdd.length;t++){var ax=tempAdd[t][0],ay=tempAdd[t][1];gridData[ay][ax]=[rr,rg,rb,255];fixedCount++;}
         }
     }
-    document.getElementById('pixelInfo').textContent='🛠 细长构件修复完成，新增 '+fixedCount+' 颗豆子';rerender();
+    document.getElementById('pixelInfo').textContent=' 细长构件修复完成，新增 '+fixedCount+' 颗豆子';rerender();
 }
 function fixAllIslandsParam(maxBridgeDist){
-    if(!riskResultCache||riskResultCache.islands.length===0){document.getElementById('pixelInfo').textContent='✅ 没有检测悬浮孤岛';return;}
+    if(!riskResultCache||riskResultCache.islands.length===0){document.getElementById('pixelInfo').textContent=' 没有检测悬浮孤岛';return;}
     saveUndo();
     var dir4=[[1,0],[-1,0],[0,1],[0,-1]];var bridgeCnt=0;
     for(var i=0;i<riskResultCache.islands.length;i++){
@@ -283,14 +283,14 @@ function fixAllIslandsParam(maxBridgeDist){
             }
         }
     }
-    document.getElementById('pixelInfo').textContent='🛠 孤岛加固完成，搭建 '+bridgeCnt+' 座连接桥';rerender();
+    document.getElementById('pixelInfo').textContent=' 孤岛加固完成，搭建 '+bridgeCnt+' 座连接桥';rerender();
 }
 function fixAllSpecksParam(threshold){
     document.getElementById('speckSize').value=threshold;cleanSpecks();
-    document.getElementById('pixelInfo').textContent='🛠 已清除≤'+threshold+'颗的连通域碎块';
+    document.getElementById('pixelInfo').textContent=' 已清除≤'+threshold+'颗的连通域碎块';
 }
 function fixChessNoiseParam(aggress){
-    if(!riskResultCache||riskResultCache.chessNoiseCnt===0){document.getElementById('pixelInfo').textContent='✅ 未检测棋盘噪点';return;}
+    if(!riskResultCache||riskResultCache.chessNoiseCnt===0){document.getElementById('pixelInfo').textContent=' 未检测棋盘噪点';return;}
     saveUndo();var fixCnt=0;
     for(var level=0;level<aggress;level++){
         for(var y=1;y<gridH-1;y++)for(var x=1;x<gridW-2;x++){
@@ -300,7 +300,7 @@ function fixChessNoiseParam(aggress){
             if(k0===k2&&k0!==k1){gridData[y][x+1]=[c0[0],c0[1],c0[2],255];fixCnt++;}
         }
     }
-    document.getElementById('pixelInfo').textContent='🛠 噪点修复完成，修正 '+fixCnt+' 处交替噪点';rerender();
+    document.getElementById('pixelInfo').textContent=' 噪点修复完成，修正 '+fixCnt+' 处交替噪点';rerender();
 }
 function fixHookHazard(){
     if(!gridData)return;
@@ -308,6 +308,6 @@ function fixHookHazard(){
     var midX=Math.floor(gridW/2);
     for(var y=0;y<=2;y++){gridData[y][midX]=[255,255,255,0];}
     var newY=3;if(newY<gridH){gridData[newY][midX-1]=[0,0,0,0];gridData[newY][midX+1]=[0,0,0,0];}
-    document.getElementById('pixelInfo').textContent='🛠 挂孔已经向下移位修复';rerender();
+    document.getElementById('pixelInfo').textContent=' 挂孔已经向下移位修复';rerender();
 }
-
+

@@ -50,7 +50,7 @@ document.getElementById('closeReview')&&document.getElementById('closeReview').a
 //document.getElementById('openSettings').addEventListener('click',openSettings);
 document.getElementById('scrim').addEventListener('click',closeSheet);
 
-console.log('✅ MARD 195色完整版就绪 by 三金超人_SuperTrigen');
+console.log(' MARD 195色完整版就绪 by 三金超人_SuperTrigen');
 // 进入页面时左栏（及色板子区域）滚动到最顶
 if('scrollRestoration' in history)history.scrollRestoration='manual';
 function resetLeftScroll(){var cp=document.getElementById('control-panel'); if(cp)cp.scrollTop=0; var gf=document.getElementById('mardFullGrid'); if(gf)gf.scrollTop=0;}
@@ -252,4 +252,4 @@ function openSlider(rowId){
   var cb=document.getElementById('showColorCodes'); if(cb)cb.addEventListener('change', syncCodeBtn);
   syncCodeBtn(); syncGridRadio();
   var sg=document.getElementById('showGrid'); if(sg)sg.addEventListener('change', syncGridRadio);
-})();
+})();

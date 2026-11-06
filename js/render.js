@@ -47,7 +47,7 @@ function setSlider(id,val,disp,fmt){var el=document.getElementById(id);if(el)el.
 document.getElementById('fileInput').addEventListener('change',function(e){
     var f=e.target.files[0];if(!f)return;
     if(!f.type.startsWith('image/')){alert('请上传图片');return}
-    document.getElementById('fileInfo').textContent='📄 '+f.name;
+    document.getElementById('fileInfo').textContent=' '+f.name;
     var r=new FileReader();
     r.onload=function(ev){
         var img=new Image();
@@ -457,8 +457,8 @@ function zoomCanvas(f){
 function toggleWand(){
     wandActive=!wandActive;
     var btn=document.getElementById('wandBtn');
-    if(wandActive){btn.classList.add('active');btn.style.background='#e94560';btn.textContent='🪄 魔棒(已开)';}
-    else{btn.classList.remove('active');btn.style.background='#9b59b6';btn.textContent='🪄 魔棒选区';clearWandSelection();}
+    if(wandActive){btn.classList.add('active');btn.style.background='#e94560';btn.textContent=' 魔棒(已开)';}
+    else{btn.classList.remove('active');btn.style.background='#9b59b6';btn.textContent=' 魔棒选区';clearWandSelection();}
 }
 function clearWandSelection(){wandSelection=null;if(gridData)rerender();document.getElementById('pixelInfo').textContent='';}
 function doWandSelect(gx,gy){
@@ -479,14 +479,14 @@ function doWandSelect(gx,gy){
     }
     var n=0;for(var yy=0;yy<h;yy++)for(var xx=0;xx<w;xx++)if(sel[yy][xx])n++;
     wandSelection=sel;rerender();
-    document.getElementById('pixelInfo').textContent='🪄 已选中 '+n+' 块相连色块 → 选颜色/null 覆盖，或再次点击🪄魔棒取消选区';
+    document.getElementById('pixelInfo').textContent=' 已选中 '+n+' 块相连色块 → 选颜色/null 覆盖，或再次点击魔棒取消选区';
 }
 function applyWandFill(rgba){
     if(!wandSelection){return;}
     saveUndo();
     for(var y=0;y<gridH;y++)for(var x=0;x<gridW;x++){if(wandSelection[y][x])gridData[y][x]=[rgba[0],rgba[1],rgba[2],rgba[3]];}
     wandSelection=null;rerender();
-    document.getElementById('pixelInfo').textContent='✅ 魔棒选区已用「'+(selectedBrushIsNull?'镂空null':selectedBrushId)+'」填充';
+    document.getElementById('pixelInfo').textContent=' 魔棒选区已用「'+(selectedBrushIsNull?'镂空null':selectedBrushId)+'」填充';
 }
 function downloadResult(){showCodes=false;var s=wandSelection;wandSelection=null;rerender();var l=document.createElement('a');l.download=getExportPrefix()+'_效果图.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();}
 function downloadCodeResult(){showCodes=true;var s=wandSelection;wandSelection=null;rerender();setTimeout(function(){var l=document.createElement('a');l.download=getExportPrefix()+'_色号图纸.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();},200);}
@@ -597,7 +597,7 @@ function applyCrop(){
         var nv={x:(currentViewRect?currentViewRect.x:0)+sx, y:(currentViewRect?currentViewRect.y:0)+sy, w:sw, h:sh};
         pendingReapply=transformEdits((currentViewRect?currentViewRect.x:0),(currentViewRect?currentViewRect.y:0),(currentViewRect?currentViewRect.w:originalImage.naturalWidth),(currentViewRect?currentViewRect.h:originalImage.naturalHeight), nv.x,nv.y,nv.w,nv.h, edits);
         currentViewRect=nv;
-        originalImage=ni; var oi=document.getElementById('originalImage'); oi.src=ni.src; oi.style.display='block'; closeCrop(); resetTemplateUI(); requestProcess(); document.getElementById('pixelInfo').textContent='✂ 已应用前置裁剪';
+        originalImage=ni; var oi=document.getElementById('originalImage'); oi.src=ni.src; oi.style.display='block'; closeCrop(); resetTemplateUI(); requestProcess(); document.getElementById('pixelInfo').textContent=' 已应用前置裁剪';
     };
     ni.src=c.toDataURL('image/png');
 }
@@ -608,7 +608,7 @@ function restoreCrop(){
     pendingReapply=transformEdits((currentViewRect?currentViewRect.x:0),(currentViewRect?currentViewRect.y:0),(currentViewRect?currentViewRect.w:rw),(currentViewRect?currentViewRect.h:rh), 0,0,rw,rh, edits);
     currentViewRect={x:0,y:0,w:rw,h:rh};
     originalImage=rawOriginalImage; var oi=document.getElementById('originalImage'); oi.src=rawOriginalImage.src; oi.style.display='block';
-    closeCrop(); resetTemplateUI(); requestProcess(); document.getElementById('pixelInfo').textContent='↺ 已恢复原图（取消裁剪）';
+    closeCrop(); resetTemplateUI(); requestProcess(); document.getElementById('pixelInfo').textContent=' 已恢复原图（取消裁剪）';
 }
 (function(){
     var ov=document.getElementById('cropOverlay'); var drag=null;
@@ -633,7 +633,7 @@ function setFloatVisible(show){
       fw.style.top = "60px";
     }
     fw.style.display=show?'block':'none';
-    if(tb)tb.textContent=show?'🙈 原图':'👁 原图';
+    if(tb)tb.textContent=show?' 原图':' 原图';
 }
 (function(){
     var fw=document.getElementById('floatOriginal');
@@ -693,8 +693,8 @@ function cleanSpecks(){
         for(var i=0;i<comp.length;i++){gridData[comp[i][1]][comp[i][0]]=[bc[0],bc[1],bc[2],255];}
         removed+=comp.length;changed++;
     }
-    if(removed>0){rerender();var n=removed;document.getElementById('pixelInfo').textContent='✨ 清除 '+n+' 颗杂点（'+changed+' 个孤立色块）';}
-    else{undoStack.pop();document.getElementById('pixelInfo').textContent='✨ 当前无≤'+maxSize+'颗的孤立杂点';}
+    if(removed>0){rerender();var n=removed;document.getElementById('pixelInfo').textContent=' 清除 '+n+' 颗杂点（'+changed+' 个孤立色块）';}
+    else{undoStack.pop();document.getElementById('pixelInfo').textContent=' 当前无≤'+maxSize+'颗的孤立杂点';}
 }
 
 /* ---------- 5. 对称绘图（对称模式由统一画笔处理函数 brushSymCells 读取） ---------- */
@@ -730,7 +730,7 @@ function applyTemplate(name,live){
     var hx=Math.round((w-1)/2),hy=Math.max(0,Math.min(h-1,Math.round((h-1)*(1-ts)/2)+1)); // 挂孔随形状上移到新边缘
     if(h>3&&hx-1>=0&&hx+1<w){src[Math.max(0,Math.min(h-1,hy))][hx-1]=[0,0,0,0];src[Math.max(0,Math.min(h-1,hy))][hx+1]=[0,0,0,0];}
     gridData=src;
-    document.getElementById('pixelInfo').textContent='🔯 已应用挂件模板：'+name+'（大小 '+(ts*100).toFixed(0)+'%）';
+    document.getElementById('pixelInfo').textContent=' 已应用挂件模板：'+name+'（大小 '+(ts*100).toFixed(0)+'%）';
     rerender();
 }
 

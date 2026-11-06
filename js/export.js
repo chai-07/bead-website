@@ -94,12 +94,12 @@ async function packageExport(){
         try{
             var dir=await window.showDirectoryPicker();
             for(var i=0;i<files.length;i++){var fh=await dir.getFileHandle(files[i].name,{create:true});var wr=await fh.createWritable();await wr.write(files[i].blob);await wr.close();}
-            document.getElementById('pixelInfo').textContent='📦 已导出 '+files.length+' 个文件到所选文件夹';
+            document.getElementById('pixelInfo').textContent=' 已导出 '+files.length+' 个文件到所选文件夹';
             return;
         }catch(err){ if(err&&err.name==='AbortError')return; }
     }
     var arr=[];for(var i=0;i<files.length;i++){var ab=new Uint8Array(await files[i].blob.arrayBuffer());arr.push({name:files[i].name,data:ab});}
     downloadBlob(new Blob([buildZipSync(arr)],{type:'application/zip'}),prefix+'_打包.zip');
-    document.getElementById('pixelInfo').textContent='📦 浏览器不支持选文件夹，已打包ZIP下载（解压即得文件夹）';
+    document.getElementById('pixelInfo').textContent=' 浏览器不支持选文件夹，已打包ZIP下载（解压即得文件夹）';
 }
-
+
