@@ -67,7 +67,8 @@ function isMobileLayout(){
   return window.innerWidth<1200;
 }
 function applyVersion(mode){
-  LAYOUT_MODE=(mode==='desktop')?'desktop':(mode==='mobile')?'mobile':'auto';
+  if(mode!=='desktop'&&mode!=='mobile'){ mode=(window.innerWidth<1200)?'mobile':'desktop'; }
+  LAYOUT_MODE=mode;
   document.body.classList.toggle('force-desktop',LAYOUT_MODE==='desktop');
   document.body.classList.toggle('layout-mobile',LAYOUT_MODE==='mobile');
   document.body.classList.remove('mb-hidden');
@@ -109,36 +110,13 @@ function openSheet(name, grp){
 function openSettings(){openSheet('settings');}
 function openReview(){openSheet('review');}
 function closeSheet(){closeAll();var cp=document.getElementById('control-panel');if(cp){cp.querySelectorAll('[data-grp]').forEach(function(g){g.style.display='';});cp.style.height='';cp.style.maxHeight='';}var rp=document.getElementById('reviewPanel');if(rp){rp.style.height='';rp.style.maxHeight='';}var mb=document.getElementById('mobileBar');if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('active');});var mt=document.getElementById('mobileTop');if(mt)mt.querySelectorAll('.mt-btn').forEach(function(b){b.classList.remove('active');});}
-function enterVersion(mode){
-  applyVersion(mode);
-  var c=document.getElementById('versionChooser'); if(c)c.style.display='none';
-  document.body.classList.remove('choosing');
-}
-function showVersionChooser(){
-  var c=document.getElementById('versionChooser'); if(c)c.style.display='flex';
-  document.body.classList.add('choosing');
-}
+/* 应用页启动：根据 ?mode=desktop|mobile 固定布局（缺省按屏宽） */
 (function(){
-  var chooser=document.getElementById('versionChooser');
-  if(!chooser)return;
-  function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
-  function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
-  function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
-  var remember=lsGet('bead_version_remember')==='1';
-  var saved=lsGet('bead_version');
-  var isSmall=window.innerWidth<1200;
-  var def=saved||(isSmall?'mobile':'desktop');
-  var recoMode=isSmall?'mobile':'desktop';
-  chooser.querySelectorAll('.vc-btn').forEach(function(b){
-    b.classList.toggle('selected',b.dataset.mode===def);
-    var r=b.querySelector('.vc-reco'); if(r)r.style.display=(b.dataset.mode===recoMode)?'inline-block':'none';
-    b.addEventListener('click',function(){
-      var mode=b.dataset.mode;
-      if(document.getElementById('vcRemember').checked){lsSet('bead_version_remember','1');}else{lsDel('bead_version_remember');}
-      lsSet('bead_version',mode);
-      enterVersion(mode);
-    });
-  });
+  var m=new URLSearchParams(location.search).get('mode');
+  applyVersion(m==='desktop'||m==='mobile'?m:'auto');
+})();
+/* 移动端交互绑定（底部工具栏 / 顶部栏 / 切换版本） */
+(function(){
   // 底部功能分类 tab：点开对应分组参数（从底部弹出）
   var mb=document.getElementById('mobileBar');
   if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){
@@ -175,6 +153,5 @@ function showVersionChooser(){
   if(mtExport)mtExport.addEventListener('click',function(){var cp=document.getElementById('control-panel');if(cp.classList.contains('open')&&mtExport.classList.contains('active')){closeSheet();}else{openSheet('settings','export');}});
   syncTopToggles();
   var sb=document.getElementById('switchVersionBtn');
-  if(sb)sb.addEventListener('click',showVersionChooser);
-  if(remember&&saved){enterVersion(saved);}else{showVersionChooser();}
+  if(sb)sb.addEventListener('click',function(){location.href='index.html';});
 })();

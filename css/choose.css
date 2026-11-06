@@ -1,0 +1,21 @@
+/* 版本选择独立页样式（index.html 专用） */
+/* ===== 版本选择器（进入网站时选择 电脑版 / 手机版） ===== */
+#versionChooser{position:fixed;inset:0;z-index:9999;background:radial-gradient(120% 120% at 50% 0%,#1f2b50 0%,#121a30 60%,#0c1124 100%);display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Segoe UI',Arial,sans-serif}
+#versionChooser .vc-card{background:#16213e;border:1px solid #0f3460;border-radius:20px;padding:30px 24px;max-width:440px;width:100%;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+#versionChooser h1{color:#e94560;font-size:21px;margin-bottom:8px}
+#versionChooser .vc-sub{color:#9aa3b8;font-size:13px;margin-bottom:24px}
+#versionChooser .vc-options{display:flex;flex-direction:column;gap:14px}
+#versionChooser .vc-btn{display:flex;align-items:center;gap:16px;padding:18px; border:2px solid #0f3460;border-radius:16px;background:#1a1a2e;color:#eee;cursor:pointer;text-align:left;transition:transform .12s,border-color .12s,background .12s}
+#versionChooser .vc-btn:active{transform:scale(.98)}
+#versionChooser .vc-btn.selected{border-color:#e94560;background:#1a3a6e;box-shadow:0 0 16px rgba(233,69,96,.35)}
+#versionChooser .vc-ico{font-size:38px;line-height:1;flex:0 0 auto}
+#versionChooser .vc-txt b{display:block;font-size:17px;color:#fff}
+#versionChooser .vc-txt span{font-size:12px;color:#9aa3b8}
+#versionChooser .vc-reco{display:none;font-size:10px;color:#fff;background:#e94560;border-radius:8px;padding:2px 8px;margin-left:8px;vertical-align:middle;font-weight:normal}
+#versionChooser .vc-foot{margin-top:22px;font-size:12px;color:#8a93a8;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;user-select:none}
+#versionChooser .vc-foot input{width:16px;height:16px;accent-color:#e94560}
+/* 选版本独立页面：彻底隐藏主程序，避免控制栏漏出 */
+body.choosing .app-container{display:none!important}
+body.choosing .mobile-top{display:none!important}
+body.choosing .mobile-bar{display:none!important}
+body.choosing .scrim{display:none!important}
