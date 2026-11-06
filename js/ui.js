@@ -77,19 +77,22 @@ function applyVersion(mode){
   if(cp)cp.querySelectorAll('[data-grp]').forEach(function(g){g.style.display='';});
   try{ if(typeof fitZoom==='function')fitZoom(); }catch(e){}
 }
-/* 增强组：点按钮展开对应滑块（移动端生效，桌面端直接显示滑块） */
+/* 增强组：移动端点按钮 → 对应滑块行进入上一级联条；再点收起（节点移动逻辑见下方移动端交互） */
 (function(){
-  var cp=document.getElementById('control-panel');
-  if(!cp)return;
-  cp.addEventListener('click',function(e){
+  document.addEventListener('click',function(e){
+    if(document.body.classList.contains('force-desktop'))return;
     var btn=e.target.closest('.enh-btn');
-    if(!btn||!cp.contains(btn))return;
+    if(!btn)return;
     var id=btn.getAttribute('data-target');
-    var row=cp.querySelector('.enh-row[data-row="'+id+'"]');
-    if(!row)return;
-    var willOpen=(row.style.display!=='block');
-    row.style.display=willOpen?'block':'none';
-    btn.classList.toggle('active',willOpen);
+    if(btn.classList.contains('active')){
+      var row=document.querySelector('.enh-row[data-row="'+id+'"]');
+      if(row)restoreNode(row);
+      btn.classList.remove('active');
+      var lvl2=document.querySelector('#cascade .cascade-bar.level2');
+      if(lvl2 && !lvl2.hasChildNodes()){ lvl2.parentNode.removeChild(lvl2); }
+    } else {
+      openSlider(id);
+    }
   });
 })();
 function openSheet(name, grp){
@@ -115,43 +118,90 @@ function closeSheet(){closeAll();var cp=document.getElementById('control-panel')
   var m=new URLSearchParams(location.search).get('mode');
   applyVersion(m==='desktop'||m==='mobile'?m:'auto');
 })();
-/* 移动端交互绑定（底部工具栏 / 顶部栏 / 切换版本） */
+/* ===== 移动端新版交互：顶部下拉 + 底部级联菜单 + 右侧竖排工具 ===== */
+var MB_moved=[];
+function MB_origin(node){ for(var i=0;i<MB_moved.length;i++){ if(MB_moved[i].node===node) return MB_moved[i]; } return null; }
+function MB_mount(node, container){
+  if(!node||!container)return;
+  var rec=MB_origin(node);
+  if(!rec){ rec={node:node, parent:node.parentNode, next:node.nextSibling}; MB_moved.push(rec); }
+  container.appendChild(node);
+}
+function restoreNode(node){
+  var rec=MB_origin(node);
+  if(rec){ try{ rec.parent.insertBefore(node, rec.next); }catch(e){ if(rec.parent) rec.parent.appendChild(node); } node.style.display=''; MB_moved=MB_moved.filter(function(m){return m.node!==node;}); }
+}
+function MB_closeAllMenus(){
+  MB_moved.slice().forEach(function(m){ try{ m.parent.insertBefore(m.node, m.next); }catch(e){ if(m.parent) m.parent.appendChild(m.node); } m.node.style.display=''; });
+  MB_moved=[];
+  var cascade=document.getElementById('cascade'); if(cascade){ cascade.innerHTML=''; cascade.classList.remove('open'); }
+  document.querySelectorAll('.mt-drop.open').forEach(function(d){ d.classList.remove('open'); });
+  var mb=document.getElementById('mobileBar'); if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){ b.classList.remove('active'); });
+}
+function openCategory(grp){
+  if(document.body.classList.contains('force-desktop'))return;
+  MB_closeAllMenus();
+  var group=document.querySelector('[data-grp="'+grp+'"]');
+  if(!group)return;
+  var cascade=document.getElementById('cascade'); if(!cascade)return;
+  var lvl1=document.createElement('div'); lvl1.className='cascade-bar level1'; cascade.appendChild(lvl1);
+  if(grp==='enhance'){
+    var btns=group.querySelector('.enh-btns'); var reset=group.querySelector('.btn-reset');
+    if(btns)MB_mount(btns, lvl1);
+    if(reset)MB_mount(reset, lvl1);
+  } else {
+    MB_mount(group, lvl1);
+  }
+  cascade.classList.add('open');
+  var mb=document.getElementById('mobileBar'); if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){ b.classList.toggle('active', b.dataset.grp===grp); });
+}
+function openSlider(rowId){
+  if(document.body.classList.contains('force-desktop'))return;
+  var row=document.querySelector('.enh-row[data-row="'+rowId+'"]');
+  if(!row)return;
+  var cascade=document.getElementById('cascade'); if(!cascade)return;
+  var old=cascade.querySelector('.cascade-bar.level2 .enh-row'); if(old)restoreNode(old);
+  var lvl2=cascade.querySelector('.cascade-bar.level2');
+  if(!lvl2){ lvl2=document.createElement('div'); lvl2.className='cascade-bar level2'; cascade.insertBefore(lvl2, cascade.firstChild); }
+  MB_mount(row, lvl2);
+  row.style.display='block';
+  cascade.classList.add('open');
+  cascade.querySelectorAll('.enh-btn').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-target')===rowId); });
+}
 (function(){
-  // 底部功能分类 tab：点开对应分组参数（从底部弹出）
+  var isMb=function(){ return !document.body.classList.contains('force-desktop'); };
+  // 底部功能分类：点击 → 上方生成级联条（单一项直接显示；增强类先出按钮再出滑块）
   var mb=document.getElementById('mobileBar');
   if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){
     b.addEventListener('click',function(){
+      if(!isMb())return;
       var g=b.dataset.grp;
-      var cp=document.getElementById('control-panel');
-      if(g && cp.classList.contains('open') && b.classList.contains('active')){ closeSheet(); }
-      else { openSheet('settings', g); }
+      if(g && b.classList.contains('active')){ MB_closeAllMenus(); }
+      else { openCategory(g); }
     });
   });
-  // 顶部栏：网格 / 色号 / 评审 / 草稿 / 导出
-  var mtGrid=document.getElementById('mtGrid'), mtCode=document.getElementById('mtCode'), mtReview=document.getElementById('mtReview'), mtDraft=document.getElementById('mtDraft'), mtExport=document.getElementById('mtExport');
-  function syncTopToggles(){
-    if(mtGrid)mtGrid.classList.toggle('active', document.getElementById('showGrid').value==='yes');
-    if(mtCode)mtCode.classList.toggle('active', document.getElementById('showColorCodes').checked);
-  }
-  if(mtGrid)mtGrid.addEventListener('click',function(){
-    var sg=document.getElementById('showGrid');
-    sg.value=(sg.value==='yes')?'no':'yes';
-    if(sg.dispatchEvent)sg.dispatchEvent(new Event('change'));
-    syncTopToggles();
+  // 顶部下拉：点击展开对应分组，再次点击或点击别处收起
+  var mobileTop=document.getElementById('mobileTop');
+  var ddId={grid:'dd-grid', code:'dd-code', draft:'dd-draft', export:'dd-export'};
+  if(mobileTop)mobileTop.querySelectorAll('.mt-btn[data-dd]').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      if(!isMb())return;
+      e.stopPropagation();
+      var grp=btn.getAttribute('data-dd');
+      var dd=document.getElementById(ddId[grp]);
+      var willOpen=!(dd&&dd.classList.contains('open'));
+      MB_closeAllMenus();
+      if(willOpen && dd){
+        var group=document.querySelector('[data-grp="'+grp+'"]');
+        if(group){ MB_mount(group, dd); dd.classList.add('open'); }
+      }
+    });
   });
-  if(mtCode)mtCode.addEventListener('click',function(){
-    var sc=document.getElementById('showColorCodes');
-    sc.checked=!sc.checked;
-    if(typeof toggleColorCodes==='function')toggleColorCodes();
-    syncTopToggles();
+  // 点击空白处收起所有菜单（下拉 + 级联）
+  document.addEventListener('click',function(e){
+    if(!isMb())return;
+    var t=e.target;
+    if(t.closest('#mobileTop')||t.closest('#cascade')||t.closest('#mobileBar')||t.closest('#rightTools'))return;
+    MB_closeAllMenus();
   });
-  if(mtReview)mtReview.addEventListener('click',function(){
-    var rp=document.getElementById('reviewPanel');
-    if(rp.classList.contains('open'))closeSheet(); else openSheet('review');
-  });
-  if(mtDraft)mtDraft.addEventListener('click',function(){var cp=document.getElementById('control-panel');if(cp.classList.contains('open')&&mtDraft.classList.contains('active')){closeSheet();}else{openSheet('settings','draft');}});
-  if(mtExport)mtExport.addEventListener('click',function(){var cp=document.getElementById('control-panel');if(cp.classList.contains('open')&&mtExport.classList.contains('active')){closeSheet();}else{openSheet('settings','export');}});
-  syncTopToggles();
-  var sb=document.getElementById('switchVersionBtn');
-  if(sb)sb.addEventListener('click',function(){location.href='index.html';});
 })();

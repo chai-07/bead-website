@@ -143,14 +143,15 @@
 </div>
 <div class="mobile-top" id="mobileTop">
   <div class="mt-left">
-    <button class="mt-btn" id="switchVersionBtn" title="切换版本"><span class="mt-ico">⇄</span><span class="mt-txt">切换</span></button>
-    <button class="mt-btn" id="mtGrid" title="网格"><span class="mt-ico">🔲</span><span class="mt-txt">网格</span></button>
-    <button class="mt-btn" id="mtCode" title="色号标注"><span class="mt-ico">🔢</span><span class="mt-txt">色号</span></button>
-    <button class="mt-btn" id="mtReview" title="评审报告"><span class="mt-ico">📋</span><span class="mt-txt">评审</span></button>
+    <div class="mt-item"><button type="button" class="mt-btn" data-dd="grid"><span class="mt-ico">🔲</span><span class="mt-txt">网格</span></button><div class="mt-drop" id="dd-grid"></div></div>
+    <div class="mt-item"><button type="button" class="mt-btn" data-dd="code"><span class="mt-ico">🔢</span><span class="mt-txt">显示色号</span></button><div class="mt-drop" id="dd-code"></div></div>
   </div>
   <div class="mt-right">
-    <button class="mt-btn mt-accent" id="mtDraft" title="草稿"><span class="mt-ico">📂</span><span class="mt-txt">草稿</span></button>
-    <button class="mt-btn mt-accent" id="mtExport" title="导出"><span class="mt-ico">💾</span><span class="mt-txt">导出</span></button>
+    <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="draft"><span class="mt-ico">📂</span><span class="mt-txt">草稿</span></button><div class="mt-drop" id="dd-draft"></div></div>
+    <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="export"><span class="mt-ico">💾</span><span class="mt-txt">导出</span></button><div class="mt-drop" id="dd-export"></div></div>
+    <button type="button" class="mt-btn" onclick="setFloatVisible(document.getElementById('floatOriginal').style.display!=='block')" title="显示原图"><span class="mt-ico">👁</span><span class="mt-txt">原图</span></button>
+    <button type="button" class="mt-btn" onclick="openReview()" title="评审报告"><span class="mt-ico">📋</span><span class="mt-txt">评审</span></button>
+    <button type="button" class="mt-btn" onclick="location.href='index.html'" title="切换版本"><span class="mt-ico">⇄</span><span class="mt-txt">切换</span></button>
   </div>
 </div>
 <div class="mobile-bar" id="mobileBar">
@@ -166,6 +167,18 @@
     <button class="mbtn" data-grp="pendant"><span class="ico">🔯</span><span>挂件</span></button>
     <button class="mbtn" data-grp="speck"><span class="ico">✨</span><span>智能</span></button>
 </div>
+<div class="right-tools" id="rightTools">
+  <div class="rt-group">
+    <button type="button" class="rt-btn" onclick="zoomCanvas(0.8)" title="缩小">－</button>
+    <button type="button" class="rt-btn" onclick="fitZoom()" title="适应">⤢</button>
+    <button type="button" class="rt-btn" onclick="zoomCanvas(1.25)" title="放大">＋</button>
+  </div>
+  <div class="rt-group">
+    <button type="button" class="rt-btn" onclick="undoBrush()" title="后退一步">↩</button>
+    <button type="button" class="rt-btn" onclick="redoBrush()" title="前进一步">↷</button>
+  </div>
+</div>
+<div class="cascade" id="cascade"></div>
 <div class="scrim" id="scrim"></div>
 
 <script src="js/data.js"></script>

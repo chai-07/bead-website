@@ -627,9 +627,11 @@ function restoreCrop(){
 function setFloatVisible(show){
     var fw=document.getElementById('floatOriginal');
     var tb=document.getElementById('toggleOriginalBtn');
-    document.getElementById('floatOriginal').style.left = "400px";
-    document.getElementById('floatOriginal').style.top = "60px";
     if(!fw)return;
+    if(document.body.classList.contains('force-desktop')){
+      fw.style.left = "400px";
+      fw.style.top = "60px";
+    }
     fw.style.display=show?'block':'none';
     if(tb)tb.textContent=show?'🙈 原图':'👁 原图';
 }
