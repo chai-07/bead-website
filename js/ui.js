@@ -111,8 +111,37 @@ function openSheet(name, grp){
   if(mt){var ma={draft:'mtDraft',export:'mtExport'};mt.querySelectorAll('.mt-btn').forEach(function(b){b.classList.toggle('active', !!(ma[grp]&&b.id===ma[grp]));});}
 }
 function openSettings(){openSheet('settings');}
-function openReview(){openSheet('review');}
+function openReview(){
+  if(document.body.classList.contains('force-desktop')){ openSheet('review'); return; }
+  var rp=document.getElementById('reviewPanel');
+  if(rp&&rp.classList.contains('open')){ closeReview(); }
+  else { openSheet('review'); }
+}
 function closeSheet(){closeAll();var cp=document.getElementById('control-panel');if(cp){cp.querySelectorAll('[data-grp]').forEach(function(g){g.style.display='';});cp.style.height='';cp.style.maxHeight='';}var rp=document.getElementById('reviewPanel');if(rp){rp.style.height='';rp.style.maxHeight='';}var mb=document.getElementById('mobileBar');if(mb)mb.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('active');});var mt=document.getElementById('mobileTop');if(mt)mt.querySelectorAll('.mt-btn').forEach(function(b){b.classList.remove('active');});}
+/* 移动端：显示色号开关（点一下开 / 再点关，不用下拉） */
+function mtToggleCode(btn){
+  var cb=document.getElementById('showColorCodes');
+  if(!cb)return;
+  cb.checked=!cb.checked;
+  if(typeof toggleColorCodes==='function')toggleColorCodes();
+  if(btn)btn.classList.toggle('active', cb.checked);
+}
+function syncCodeBtn(){
+  var cb=document.getElementById('showColorCodes'); var b=document.getElementById('mtCode');
+  if(cb&&b)b.classList.toggle('active', cb.checked);
+}
+/* 移动端：网格显示改为 radio；保留隐藏 select 以兼容 rerender/draft/export 对 #showGrid.value 的读取 */
+function setGrid(v){
+  var s=document.getElementById('showGrid');
+  if(s){ s.value=v; if(typeof gridData!=='undefined'&&gridData)rerender(); }
+  var rs=document.querySelectorAll('input[name="showGrid"]');
+  for(var i=0;i<rs.length;i++){ rs[i].checked=(rs[i].value===v); }
+}
+function syncGridRadio(){
+  var s=document.getElementById('showGrid'); if(!s)return;
+  var rs=document.querySelectorAll('input[name="showGrid"]');
+  for(var i=0;i<rs.length;i++){ rs[i].checked=(rs[i].value===s.value); }
+}
 /* 应用页启动：根据 ?mode=desktop|mobile 固定布局（缺省按屏宽） */
 (function(){
   var m=new URLSearchParams(location.search).get('mode');
@@ -182,7 +211,7 @@ function openSlider(rowId){
   });
   // 顶部下拉：点击展开对应分组，再次点击或点击别处收起
   var mobileTop=document.getElementById('mobileTop');
-  var ddId={grid:'dd-grid', code:'dd-code', draft:'dd-draft', export:'dd-export'};
+  var ddId={grid:'dd-grid', draft:'dd-draft', export:'dd-export'};
   if(mobileTop)mobileTop.querySelectorAll('.mt-btn[data-dd]').forEach(function(btn){
     btn.addEventListener('click',function(e){
       if(!isMb())return;
@@ -193,7 +222,15 @@ function openSlider(rowId){
       MB_closeAllMenus();
       if(willOpen && dd){
         var group=document.querySelector('[data-grp="'+grp+'"]');
-        if(group){ MB_mount(group, dd); dd.classList.add('open'); }
+        if(group){ MB_mount(group, dd); dd.classList.add('open');
+          var r=btn.getBoundingClientRect();
+          var dw=dd.offsetWidth, vw=window.innerWidth;
+          var left=r.left;
+          if(left+dw > vw-6) left=Math.max(6, vw-dw-6);
+          dd.style.top=(r.bottom+4)+'px';
+          dd.style.left=left+'px';
+          dd.style.right='auto';
+        }
       }
     });
   });
@@ -201,7 +238,12 @@ function openSlider(rowId){
   document.addEventListener('click',function(e){
     if(!isMb())return;
     var t=e.target;
-    if(t.closest('#mobileTop')||t.closest('#cascade')||t.closest('#mobileBar')||t.closest('#rightTools'))return;
+    if(t.closest('#mobileTop')||t.closest('#cascade')||t.closest('#mobileBar')||t.closest('#rightTools')||t.closest('#reviewPanel'))return;
     MB_closeAllMenus();
+    if(typeof closeReview==='function')closeReview();
   });
+  // 同步显示色号 / 网格 radio 的初始与变更状态
+  var cb=document.getElementById('showColorCodes'); if(cb)cb.addEventListener('change', syncCodeBtn);
+  syncCodeBtn(); syncGridRadio();
+  var sg=document.getElementById('showGrid'); if(sg)sg.addEventListener('change', syncGridRadio);
 })();

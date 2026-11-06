@@ -123,7 +123,7 @@ function loadDraft(){
     var drafts=readAllDrafts();
     var d=drafts[name];
     if(!d){alert('草稿「'+name+'」不存在');refreshDraftSelect();return;}
-    try{applyDraftData(d);document.getElementById('draftName').value=name;document.getElementById('exportName').value=name;}
+    try{applyDraftData(d);if(typeof syncGridRadio==='function')syncGridRadio();document.getElementById('draftName').value=name;document.getElementById('exportName').value=name;}
     catch(e){alert('读取失败：'+e.message);}
 }
 function deleteDraft(){
@@ -152,6 +152,7 @@ document.getElementById('draftFileInput').addEventListener('change',function(e){
             var d=JSON.parse(ev.target.result);
             if(!d.gridData)throw new Error('不是有效的拼豆草稿文件');
             applyDraftData(d);
+            if(typeof syncGridRadio==='function')syncGridRadio();
             if(d.name)document.getElementById('draftName').value=d.name;
             if(d.name)document.getElementById('exportName').value=d.name;
             document.getElementById('pixelInfo').textContent='✅ 已导入草稿文件「'+(d.name||f.name)+'」';

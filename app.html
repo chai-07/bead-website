@@ -86,7 +86,7 @@
 <button class="btn btn-download" id="colorPdfBtn" style="margin-top:6px" disabled onclick="downloadColorPdf()">📕 彩色PDF</button>
 <button class="btn btn-download2" id="csvBtn" disabled onclick="downloadCsv()">📊 CSV耗材清单</button>
 <button class="btn" id="packageBtn"  disabled onclick="packageExport()">📦 一键打包导出（4种）</button>
-<span class="hint" id="pkgHint">打包将优先让你选择文件夹保存；浏览器不支持时自动下载ZIP（解压即得文件夹）</span>
+<span class="hint" id="pkgHint">打包将优先让你选择文件夹保存；<br>浏览器不支持时自动下载ZIP（解压即得文件夹）</span>
 </div>
 </div>
 <div class="center-column">
@@ -116,8 +116,13 @@
 <button class="mini" id="redoBtn" onclick="redoBrush()">↷ 前进</button>
 </div></div>
 <div class="control-group" data-grp="grid"><h3>🔲 网格</h3>
-<div class="setting-row"><label>显示网格线</label><select id="showGrid"><option value="yes" selected>是</option><option value="no">否</option></select></div>
+<div class="setting-row radio-row"><label>显示网格线</label>
+<span class="radio-set">
+<label class="radio"><input type="radio" name="showGrid" value="yes" checked onchange="setGrid('yes')"> 是</label>
+<label class="radio"><input type="radio" name="showGrid" value="no" onchange="setGrid('no')"> 否</label>
+</span></div>
 <div class="setting-row"><label>网格线颜色</label><input type="color" id="gridColor" value="#cccccc"></div>
+<select id="showGrid" style="display:none"><option value="yes" selected>是</option><option value="no">否</option></select>
 </div>
 <div class="control-group" data-grp="code" style="flex-direction:row;align-items:center"><div class="checkbox-row" style="margin:0"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div></div>
 <div class="control-group" data-grp="draft"><h3>📦 草稿</h3>
@@ -142,16 +147,16 @@
 </aside>
 </div>
 <div class="mobile-top" id="mobileTop">
+  <button type="button" class="mt-btn" id="mtSwitch" onclick="location.href='index.html'" title="切换版本"><span class="mt-ico">⇄</span><span class="mt-txt">切换</span></button>
   <div class="mt-left">
     <div class="mt-item"><button type="button" class="mt-btn" data-dd="grid"><span class="mt-ico">🔲</span><span class="mt-txt">网格</span></button><div class="mt-drop" id="dd-grid"></div></div>
-    <div class="mt-item"><button type="button" class="mt-btn" data-dd="code"><span class="mt-ico">🔢</span><span class="mt-txt">显示色号</span></button><div class="mt-drop" id="dd-code"></div></div>
+    <button type="button" class="mt-btn" id="mtCode" onclick="mtToggleCode(this)"><span class="mt-ico">🔢</span><span class="mt-txt">显示色号</span></button>
   </div>
   <div class="mt-right">
     <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="draft"><span class="mt-ico">📂</span><span class="mt-txt">草稿</span></button><div class="mt-drop" id="dd-draft"></div></div>
     <div class="mt-item"><button type="button" class="mt-btn mt-accent" data-dd="export"><span class="mt-ico">💾</span><span class="mt-txt">导出</span></button><div class="mt-drop" id="dd-export"></div></div>
     <button type="button" class="mt-btn" onclick="setFloatVisible(document.getElementById('floatOriginal').style.display!=='block')" title="显示原图"><span class="mt-ico">👁</span><span class="mt-txt">原图</span></button>
     <button type="button" class="mt-btn" onclick="openReview()" title="评审报告"><span class="mt-ico">📋</span><span class="mt-txt">评审</span></button>
-    <button type="button" class="mt-btn" onclick="location.href='index.html'" title="切换版本"><span class="mt-ico">⇄</span><span class="mt-txt">切换</span></button>
   </div>
 </div>
 <div class="mobile-bar" id="mobileBar">
