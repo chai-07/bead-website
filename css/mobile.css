@@ -57,7 +57,7 @@
   body:not(.force-desktop) .mobile-top .mt-btn.mt-accent{background:#e94560;border-color:#e94560;color:#fff}
   body:not(.force-desktop) .title-switch{display:none!important}
   /* 底部功能分类 tab（横向滚动） */
-  body:not(.force-desktop) .mobile-bar{display:flex!important;position:fixed;left:0;right:0;bottom:0;top:auto!important;z-index:78;gap:6px;height:calc(52px + env(safe-area-inset-bottom));box-sizing:border-box;align-items:center;padding:0 12px;background:#16213e;border-top:2px solid #0f3460;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  body:not(.force-desktop) .mobile-bar{display:flex!important;position:fixed;left:0;right:0;bottom:0;top:auto!important;z-index:78;gap:6px;height:calc(52px + env(safe-area-inset-bottom));box-sizing:border-box;align-items:center;padding:0 12px;background:#16213e;border-top:2px solid #0f3460;overflow-x:auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior:contain}
   body:not(.force-desktop) .mobile-bar::-webkit-scrollbar{height:0}
   body:not(.force-desktop) .mobile-bar .mbtn{flex:0 0 auto!important;background:transparent;border:none;color:#cfd6e6;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;font-size:11px;font-weight:600;line-height:1.2;white-space:nowrap;border-radius:8px}
   body:not(.force-desktop) .mobile-bar .mbtn .ico{font-size:20px;line-height:1}
@@ -122,7 +122,7 @@ body.layout-mobile .mobile-top .mt-btn .mt-ico{font-size:15px;line-height:1}
 body.layout-mobile .mobile-top .mt-btn.active{background:#e94560;border-color:#e94560;color:#fff}
 body.layout-mobile .mobile-top .mt-btn.mt-accent{background:#e94560;border-color:#e94560;color:#fff}
 body.layout-mobile .title-switch{display:none!important}
-body.layout-mobile .mobile-bar{display:flex!important;position:fixed;left:0;right:0;bottom:0;top:auto!important;z-index:78;gap:6px;height:calc(52px + env(safe-area-inset-bottom));box-sizing:border-box;align-items:center;padding:0 12px;background:#16213e;border-top:2px solid #0f3460;overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+body.layout-mobile .mobile-bar{display:flex!important;position:fixed;left:0;right:0;bottom:0;top:auto!important;z-index:78;gap:6px;height:calc(52px + env(safe-area-inset-bottom));box-sizing:border-box;align-items:center;padding:0 12px;background:#16213e;border-top:2px solid #0f3460;overflow-x:auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior:contain}
 body.layout-mobile .mobile-bar::-webkit-scrollbar{height:0}
 body.layout-mobile .mobile-bar .mbtn{flex:0 0 auto!important;background:transparent;border:none;color:#cfd6e6;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 10px;font-size:11px;font-weight:600;line-height:1.2;white-space:nowrap;border-radius:8px}
 body.layout-mobile .mobile-bar .mbtn .ico{font-size:20px;line-height:1}
@@ -166,9 +166,11 @@ body.layout-mobile .mobile-top{overflow-x:auto!important;flex-wrap:nowrap!import
 .mt-drop .radio input{width:16px;height:16px;margin:0}
 
 /* 级联菜单容器：固定在底部分类栏上方，自底向上堆叠（新层级插到最前=最上方） */
-.cascade{display:none;position:fixed;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom));top:auto;max-height:calc(100vh - 120px);overflow-y:auto;flex-direction:column;z-index:125;pointer-events:none}
+.cascade{display:none;position:fixed;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom));top:auto;max-height:calc(100vh - 120px);overflow-y:auto;flex-direction:column;z-index:125;pointer-events:none;touch-action:pan-y;overscroll-behavior:contain}
 .cascade.open{display:flex}
 .cascade-bar{pointer-events:auto;background:#16213e;border-top:2px solid #0f3460;box-shadow:0 -8px 24px rgba(0,0,0,.45);padding:10px 12px}
+/* 滑块：touch-action:none 让横向拖动完全交给滑块，避免触发系统边缘"返回"手势 */
+.cascade-bar input[type=range]{touch-action:none;width:100%}
 .cascade-bar.level1{border-radius:14px 14px 0 0}
 .cascade-bar .control-group{background:transparent!important;border:none!important;padding:0!important;margin:0 0 10px!important;box-shadow:none!important}
 .cascade-bar .control-group:last-child{margin-bottom:0!important}

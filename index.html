@@ -49,7 +49,7 @@
       go(mode);
     });
   });
-  if(remember&&saved){ go(saved); }
+  if(remember&&saved&&!new URLSearchParams(location.search).get('choose')){ go(saved); }
 })();
 </script>
 </body>

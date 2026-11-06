@@ -205,6 +205,12 @@ function openSlider(rowId){
     b.addEventListener('click',function(){
       if(!isMb())return;
       var g=b.dataset.grp;
+      if(g==='upload'){ // 上传：直接唤起系统选择框，不再弹出级联菜单栏
+        MB_closeAllMenus();
+        var fi=document.getElementById('fileInput');
+        if(fi){ if(fi.parentNode&&getComputedStyle(fi.parentNode).display==='none'){ document.body.appendChild(fi); } fi.click(); }
+        return;
+      }
       if(g && b.classList.contains('active')){ MB_closeAllMenus(); }
       else { openCategory(g); }
     });
