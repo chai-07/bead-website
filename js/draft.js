@@ -102,6 +102,7 @@ function applyDraftData(d){
     function applyGrid(){
         gridData=d.gridData;gridW=d.gridW;gridH=d.gridH;undoStack=[];redoStack=[];wandSelection=null;editMask=makeEditMask(gridW,gridH);resetTemplateUI();
         rerender();fitZoom();document.getElementById('downloadBtn').disabled=false;document.getElementById('downloadCodeBtn').disabled=false;
+        document.getElementById('colorPdfBtn').disabled=false;document.getElementById('csvBtn').disabled=false;document.getElementById('packageBtn').disabled=false;
     }
     if(d.img){
         originalImage=new Image();
