@@ -22,7 +22,20 @@ function buildCsv(){
     return out;
 }
 function canvasToBlob(c,type,q){return new Promise(function(res){c.toBlob(function(b){res(b);},type,q);});}
-function downloadBlob(blob,name){var l=document.createElement('a');l.download=name;l.href=URL.createObjectURL(blob);l.click();setTimeout(function(){URL.revokeObjectURL(l.href);},1500);}
+function downloadBlob(blob,name,openFallback){
+  var url=URL.createObjectURL(blob);
+  var l=document.createElement('a');
+  l.download=name;l.href=url;l.rel='noopener';
+  document.body.appendChild(l);l.click();document.body.removeChild(l);
+  /* iOS Safari / 微信等 webview 内 programmatic 下载常被拦截：退回新标签打开供长按保存 */
+  var ua=navigator.userAgent||'';
+  var isIOS=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(openFallback&&(isIOS||/MicroMessenger|Weibo|QQ\/|FBAN|WebView/i.test(ua))){
+    setTimeout(function(){try{window.open(url,'_blank');}catch(e){}},350);
+  }
+  setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}},60000);
+}
+function toast(msg){var el=document.getElementById('pixelInfo');if(el){el.textContent=msg;}}
 function pdfFromCanvas(canvas,q){
     var dataURL=canvas.toDataURL('image/jpeg',q||0.92),comma=dataURL.indexOf(',');
     var bin=atob(dataURL.slice(comma+1)),bytes=new Uint8Array(bin.length);
@@ -77,8 +90,8 @@ function buildZipSync(files){
     var out=new Uint8Array(total),p=0;for(var k=0;k<chunks.length;k++){out.set(chunks[k],p);p+=chunks[k].length;}
     return out;
 }
-function downloadColorPdf(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(pdfFromCanvas(renderVariant('effect'),0.92),getExportPrefix()+'_彩色.pdf');}
-function downloadCsv(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(new Blob([buildCsv()],{type:'text/csv;charset=utf-8'}),getExportPrefix()+'_耗材清单.csv');}
+function downloadColorPdf(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(pdfFromCanvas(renderVariant('effect'),0.92),getExportPrefix()+'_彩色.pdf',true);toast('已开始下载：彩色 PDF');}
+function downloadCsv(){if(!gridData){alert('请先生成图纸');return;}downloadBlob(new Blob([buildCsv()],{type:'text/csv;charset=utf-8'}),getExportPrefix()+'_耗材清单.csv',false);toast('已开始下载：CSV 耗材清单');}
 async function packageExport(){
     if(!gridData){alert('请先生成图纸');return;}
     var sg=document.getElementById('showGrid').value==='yes',gc=document.getElementById('gridColor').value;
@@ -99,7 +112,7 @@ async function packageExport(){
         }catch(err){ if(err&&err.name==='AbortError')return; }
     }
     var arr=[];for(var i=0;i<files.length;i++){var ab=new Uint8Array(await files[i].blob.arrayBuffer());arr.push({name:files[i].name,data:ab});}
-    downloadBlob(new Blob([buildZipSync(arr)],{type:'application/zip'}),prefix+'_打包.zip');
-    document.getElementById('pixelInfo').textContent=' 浏览器不支持选文件夹，已打包ZIP下载（解压即得文件夹）';
+    downloadBlob(new Blob([buildZipSync(arr)],{type:'application/zip'}),prefix+'_打包.zip',false);
+    toast('已开始下载：一键打包 ZIP（解压即得 4 个文件）');
 }
 

@@ -488,8 +488,26 @@ function applyWandFill(rgba){
     wandSelection=null;rerender();
     document.getElementById('pixelInfo').textContent=' 魔棒选区已用「'+(selectedBrushIsNull?'镂空null':selectedBrushId)+'」填充';
 }
-function downloadResult(){showCodes=false;var s=wandSelection;wandSelection=null;rerender();var l=document.createElement('a');l.download=getExportPrefix()+'_效果图.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();}
-function downloadCodeResult(){showCodes=true;var s=wandSelection;wandSelection=null;rerender();setTimeout(function(){var l=document.createElement('a');l.download=getExportPrefix()+'_色号图纸.png';l.href=document.getElementById('resultCanvas').toDataURL('image/png');l.click();wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();},200);}
+function downloadResult(){
+  var s=wandSelection;wandSelection=null;showCodes=false;rerender();
+  var c=document.getElementById('resultCanvas');
+  c.toBlob(function(b){
+    if(b){downloadBlob(b,getExportPrefix()+'_效果图.png',true);toast('已开始下载：效果图 PNG（若未自动保存，请长按图片保存）');}
+    else{var a=document.createElement('a');a.download=getExportPrefix()+'_效果图.png';a.href=c.toDataURL('image/png');document.body.appendChild(a);a.click();document.body.removeChild(a);toast('已开始下载：效果图 PNG');}
+    wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();
+  },'image/png');
+}
+function downloadCodeResult(){
+  var s=wandSelection;wandSelection=null;showCodes=true;rerender();
+  var c=document.getElementById('resultCanvas');
+  setTimeout(function(){
+    c.toBlob(function(b){
+      if(b){downloadBlob(b,getExportPrefix()+'_色号图纸.png',true);toast('已开始下载：色号图纸 PNG（若未自动保存，请长按图片保存）');}
+      else{var a=document.createElement('a');a.download=getExportPrefix()+'_色号图纸.png';a.href=c.toDataURL('image/png');document.body.appendChild(a);a.click();document.body.removeChild(a);toast('已开始下载：色号图纸 PNG');}
+      wandSelection=s;showCodes=document.getElementById('showColorCodes').checked;rerender();
+    },'image/png');
+  },200);
+}
 
 // （已移除：分享口令 / 导入口令功能）
 
