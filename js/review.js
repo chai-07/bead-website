@@ -223,6 +223,7 @@ function buildReview(){
         var rb=document.getElementById('fixBackOverview');if(rb)rb.onclick=function(){reviewTab='overview';buildReview();};
     }
     body.querySelectorAll('.hl-btn').forEach(function(b){b.onclick=function(){highlightColor(this.getAttribute('data-id'));};});
+    updateHlButtons(); // 同步色号按钮绿色常亮状态（评审面板每次重建后恢复）
 }
 
 /* 画布定位风险：黄色闪烁标记选中风险的像素 */

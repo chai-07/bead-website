@@ -35,3 +35,4 @@ body.choosing .scrim{display:none!important}
 #versionChooser .vc-foot input{accent-color:var(--accent)}
 #versionChooser .vc-txt b{color:var(--txt)}
 #versionChooser .vc-txt span{color:var(--txt2)}
+#versionChooser .vc-card { color: #D8F96E; }

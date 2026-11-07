@@ -12,7 +12,7 @@ function initMardFullGrid(){
         item.addEventListener('click',function(e){
             if(eyedropperActive){toggleEyedropper();return}
             var idx=parseInt(this.dataset.index);
-            selectBrush(idx);
+            pickMardBrush(idx);
         });
         grid.appendChild(item);
     }
@@ -21,6 +21,13 @@ function initMardFullGrid(){
     for(var i=0;i<MARD_COLORS.length;i++){if(MARD_COLORS[i].id==='H19'){blackIdx=i;break;}}
     selectBrush(blackIdx>=0?blackIdx:0);
     _gridInit=true;
+}
+function pickMardBrush(mardIdx){
+    selectBrush(mardIdx);
+    // 颜色高亮激活时：点击色板即把高亮区域全部改成该色
+    if(typeof highlightId!=='undefined' && highlightId!==null && highlightCells && highlightCells.length){
+        recolorHighlight(MARD_COLORS[mardIdx].rgb);
+    }
 }
 function selectBrush(idx){
     selectedBrushIsNull=false;
@@ -100,7 +107,8 @@ function rebuildSwatchGrid(colors){
         var _mi=MARD_COLORS.indexOf(mc); if(_mi<0)_mi=nearestMardIndex(mc.rgb); item.dataset.mard=_mi; item.dataset.index=i;
         item.addEventListener('click',function(e){
             if(eyedropperActive){toggleEyedropper();return;}
-            selectBrush(parseInt(this.dataset.mard));
+            var mi=parseInt(this.dataset.mard);
+            pickMardBrush(mi);
             document.querySelectorAll('.mard-full-item').forEach(function(c){c.classList.remove('active');});
             this.classList.add('active');
         });

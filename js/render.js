@@ -629,8 +629,7 @@ function setFloatVisible(show){
     var tb=document.getElementById('toggleOriginalBtn');
     if(!fw)return;
     if(document.body.classList.contains('force-desktop')){
-      fw.style.left = "400px";
-      fw.style.top = "60px";
+      fw.style.top = "12px"; fw.style.right = "12px"; fw.style.left = "auto"; fw.style.bottom = "auto";
     }
     fw.style.display=show?'block':'none';
     if(tb)tb.textContent=show?' 原图':' 原图';
@@ -736,17 +735,48 @@ function applyTemplate(name,live){
 
 /* ---------- 7. 颜色高亮（覆盖 rerender 以叠加高亮层，不修改原绘制） ---------- */
 var highlightId=null;
-function highlightColor(id){highlightId=id;if(gridData)rerender();}
-function clearHighlight(){highlightId=null;if(gridData)rerender();}
+var highlightCells=[]; // 高亮时锁定的 [x,y] 坐标集合（按位置记录，便于反复改色）
+function highlightColor(id){
+    highlightId=id;
+    highlightCells=[];
+    if(gridData){
+        for(var y=0;y<gridH;y++)for(var x=0;x<gridW;x++){
+            var clr=gridData[y][x];
+            if(clr[3]>=128 && findMardId(clr)===id) highlightCells.push([x,y]);
+        }
+    }
+    updateHlButtons();
+    if(gridData)rerender();
+}
+function clearHighlight(){
+    highlightId=null;
+    highlightCells=[];
+    updateHlButtons();
+    if(gridData)rerender();
+}
+// 同步色号按钮的“绿色常亮”状态（即使评审面板被刷新也保持）
+function updateHlButtons(){
+    var btns=document.querySelectorAll('.hl-btn');
+    for(var i=0;i<btns.length;i++){
+        var b=btns[i];
+        if(highlightId!==null && b.getAttribute('data-id')===highlightId) b.classList.add('hl-btn--active');
+        else b.classList.remove('hl-btn--active');
+    }
+}
+// 清除高亮前，点击色板某色：高亮区域所有色块改成该色
+function recolorHighlight(rgb){
+    if(!highlightCells.length || !gridData) return;
+    var col=[rgb[0],rgb[1],rgb[2],255];
+    for(var i=0;i<highlightCells.length;i++){ var p=highlightCells[i]; gridData[p[1]][p[0]]=col.slice(); }
+    rerender();
+}
 function applyHighlightOverlay(){
-    if(!highlightId||!gridData)return;
+    if(!highlightCells.length||!gridData)return;
     var c=document.getElementById('resultCanvas'); if(!c)return;
     var ctx=c.getContext('2d'),margin=40,cs=30;
     ctx.save();
-    for(var y=0;y<gridH;y++)for(var x=0;x<gridW;x++){
-        var clr=gridData[y][x]; if(clr[3]<128)continue;
-        if(findMardId(clr)===highlightId){ctx.fillStyle='rgba(233,69,96,0.5)';ctx.fillRect(margin+x*cs,margin+y*cs,cs,cs);}
-    }
+    ctx.fillStyle='rgba(198,244,50,0.40)';
+    for(var i=0;i<highlightCells.length;i++){ var p=highlightCells[i]; ctx.fillRect(margin+p[0]*cs,margin+p[1]*cs,cs,cs); }
     ctx.restore();
 }
 var _origRerender=rerender;

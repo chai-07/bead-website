@@ -124,16 +124,16 @@
 <div class="setting-row"><label>网格线颜色</label><input type="color" id="gridColor" value="#cccccc"></div>
 <select id="showGrid" style="display:none"><option value="yes" selected>是</option><option value="no">否</option></select>
 </div>
-<div class="control-group" data-grp="code" style="flex-direction:row;align-items:center"><div class="checkbox-row" style="margin:0"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div></div>
+<div class="control-group" data-grp="code" style="flex-direction:row;align-items:center"><h3> 显示色号标注</h3><div class="checkbox-row" style="margin:0"><input type="checkbox" id="showColorCodes" onchange="toggleColorCodes()"><label for="showColorCodes">显示MARD色号标注</label></div></div>
 <div class="control-group" data-grp="draft"><h3> 草稿</h3>
 <div class="draft-row">
 <input type="text" id="draftName" placeholder="草稿名称">
 <button class="btn btn-download2" onclick="saveDraft()"> 暂存</button>
 <select id="draftSelect"><option value="">— 读取 —</option></select>
 <button class="btn btn-download2" onclick="loadDraft()"> 读取</button>
-<span class="mini-cap"><span class="cap">删除</span><button class="mini" onclick="deleteDraft()" title="删除选中">🗑</button></span>
-<span class="mini-cap"><span class="cap">导出</span><button class="mini" onclick="exportDraft()" title="导出文件">💾</button></span>
-<span class="mini-cap"><span class="cap">导入</span><button class="mini" onclick="document.getElementById('draftFileInput').click()" title="导入文件">📁</button></span>
+<button class="btn btn-download2" onclick="deleteDraft()" title="删除选中草稿">删除</button>
+<button class="btn btn-download2" onclick="exportDraft()" title="导出草稿文件">导出</button>
+<button class="btn btn-download2" onclick="document.getElementById('draftFileInput').click()" title="导入草稿文件">导入</button>
 </div>
 <input type="file" id="draftFileInput" accept=".json,application/json" style="display:none">
 <p class="file-info" id="draftInfo"></p></div>
