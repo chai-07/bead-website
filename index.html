@@ -30,8 +30,10 @@
   function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
   var remember=lsGet(KEY_R)==='1';
   var saved=lsGet(KEY_V);
+  // 真实触屏设备（手机/平板）才推荐手机版；桌面即使窗口较窄也不误判为手机
+  var isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
   var isSmall=window.innerWidth<1200;
-  var reco=isSmall?'mobile':'desktop';
+  var reco=(isTouch&&isSmall)?'mobile':'desktop';
   var def=saved||reco;
   var chooser=document.getElementById('versionChooser');
   chooser.querySelectorAll('.vc-btn').forEach(function(b){
